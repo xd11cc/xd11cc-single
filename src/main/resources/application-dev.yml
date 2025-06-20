@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/xd11cc-single?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: xd11cc@1216
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+# redis配置
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+    password: xd11cc@1216
+
+# swagger配置
+swagger:
+  enabled: true
+  pathMapping: /dev-api
+  title:
+  description:
+  version:
+
