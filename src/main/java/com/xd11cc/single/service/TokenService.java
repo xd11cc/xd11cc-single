@@ -22,4 +22,10 @@ public interface TokenService {
      * @param loginUserDTO
      */
     void verifyToken(LoginUserDTO loginUserDTO);
+
+    /**
+     * 移除token，移除用户信息
+     * @param token
+     */
+    void removeLoginUser(String token);
 }

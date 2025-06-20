@@ -9,13 +9,18 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.web.filter.CorsFilter;
 
 /**
  * @Author: xd11cc
@@ -25,18 +30,18 @@ import org.springframework.security.web.SecurityFilterChain;
  **/
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig {
 
     @Autowired
     private UserDetailsService userDetailsService;
     @Autowired
     private AuthenticationEntryPoint authenticationEntryPoint;
-//    @Autowired
-//    private LogoutSuccessHandler logoutSuccessHandler;
+    @Autowired
+    private LogoutSuccessHandler logoutSuccessHandler;
     @Autowired
     private JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
-//    @Autowired
-//    private CorsFilter corsFilter;
+    @Autowired
+    private CorsFilter corsFilter;
 
     @Bean
     public AuthenticationManager authenticationManagerBean() {
@@ -50,10 +55,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 // CSRF禁用，因为不使用session
-                .csrf(csrf -> csrf.disable())
+                .csrf(AbstractHttpConfigurer::disable)
                 // 禁用HTTP响应标头
                 .headers(headers -> {
-                    headers.cacheControl(cache -> cache.disable()).frameOptions(option -> option.sameOrigin());
+                    headers.cacheControl(HeadersConfigurer.CacheControlConfig::disable).frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin);
                 })
                 // 异常处理类（此处处理认证失败异常）
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint))
@@ -68,12 +73,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                             .anyRequest().authenticated();
                 })
                 // 添加Logout Filter
-//                .logout(logout -> logout.logoutUrl("/logout").logoutSuccessHandler(logoutSuccessHandler))
+                .logout(logout -> logout.logoutUrl("/logout").logoutSuccessHandler(logoutSuccessHandler))
                 // 添加JWT Filter
-//                .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 // 添加CORS Filter
-//                .addFilterBefore(corsFilter, JwtAuthenticationTokenFilter.class)
-//                .addFilterBefore(corsFilter, LogoutFilter.class)
+                .addFilterBefore(corsFilter, JwtAuthenticationTokenFilter.class)
+                .addFilterBefore(corsFilter, LogoutFilter.class)
                 .build();
     }
 

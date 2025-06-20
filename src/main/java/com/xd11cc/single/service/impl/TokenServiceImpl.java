@@ -56,6 +56,14 @@ public class TokenServiceImpl implements TokenService {
 
     }
 
+    @Override
+    public void removeLoginUser(String token) {
+        if (StringUtils.isNotEmpty(token)) {
+            String loginTokenKey = getLoginTokenKey(token);
+            redisCache.removeCacheObject(loginTokenKey);
+        }
+    }
+
     private void refreshToken(LoginUserDTO loginUserDTO) {
         loginUserDTO.setExpireTime(System.currentTimeMillis() + TokenConstants.EXPIRE_TIME);
         String loginTokenKey = getLoginTokenKey(loginUserDTO.getToken());
