@@ -5,6 +5,7 @@ import com.xd11cc.single.entity.vo.LoginResultVO;
 import com.xd11cc.single.entity.vo.base.ResponseVO;
 import com.xd11cc.single.service.ISystemUserService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,13 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
  **/
 @RestController
 @RequestMapping("/user")
-@Api("用户管理")
+@Api(tags = "用户管理")
 public class SystemUserController {
 
     @Autowired
     private ISystemUserService systemUserService;
 
     @PostMapping("/loginByPassword")
+    @ApiOperation("账号密码登录")
     public ResponseVO<LoginResultVO> loginByPassword(@RequestBody LoginPasswordVO loginPasswordVO){
         return ResponseVO.success(systemUserService.loginByPassword(loginPasswordVO));
     }

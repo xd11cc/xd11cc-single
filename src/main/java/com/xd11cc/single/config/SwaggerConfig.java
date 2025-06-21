@@ -10,6 +10,7 @@ import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import java.util.List;
  * swagger配置类
  **/
 @Configuration
+@EnableSwagger2
 public class SwaggerConfig {
 
     /**
@@ -30,9 +32,7 @@ public class SwaggerConfig {
      */
     @Bean
     public Docket createRestApi(SwaggerProperties swaggerProperties) {
-        return new Docket(DocumentationType.SPRING_WEB)
-                // 是否启用swagger
-                .enable(swaggerProperties.isEnabled())
+        return new Docket(DocumentationType.SWAGGER_2)
                 // 用来创建该API的基本信息，展示在文档的页面中（自定义展示信息）
                 .apiInfo(apiInfo(swaggerProperties))
                 // 设置哪些接口暴露给swagger展示
@@ -43,8 +43,7 @@ public class SwaggerConfig {
                 .build()
                 // 设置安全模式，swagger可以设置访问token
                 .securitySchemes(securitySchemes())
-                .securityContexts(securityContexts())
-                .pathMapping(swaggerProperties.getPathMapping());
+                .securityContexts(securityContexts());
     }
 
     /**

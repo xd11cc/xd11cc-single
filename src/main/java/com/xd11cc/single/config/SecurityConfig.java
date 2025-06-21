@@ -42,6 +42,8 @@ public class SecurityConfig {
     private JwtAuthenticationTokenFilter jwtAuthenticationTokenFilter;
     @Autowired
     private CorsFilter corsFilter;
+    @Autowired
+    private SecurityProperties securityProperties;
 
     @Bean
     public AuthenticationManager authenticationManagerBean() {
@@ -68,7 +70,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(requests -> {
                     requests.antMatchers("/login", "/register").permitAll()
                             // 静态资源
-                            .antMatchers("/swagger-ui.html", "/swagger-resources/**").permitAll()
+                            .antMatchers("/doc.html",
+                                    "/webjars/**",
+                                    "/swagger-resources/**",
+                                    "/v2/api-docs/**",
+                                    "/favicon.ico").permitAll()
+                            // 需要匿名的路径
+                            .antMatchers(securityProperties.getPermitAllUrls().toArray(new String[0])).permitAll()
                             // 其他的都需要认证
                             .anyRequest().authenticated();
                 })

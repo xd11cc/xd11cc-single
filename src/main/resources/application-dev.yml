@@ -12,11 +12,18 @@ spring:
     database: 0
     password: xd11cc@1216
 
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
 # swagger配置
 swagger:
   enabled: true
   pathMapping: /dev-api
-  title:
-  description:
-  version:
+  title: xd11cc单体项目框架
+  description: 单体项目框架搭建
+  version: v1.0.0
 
+# security白名单配置
+security:
+  permit-all-urls:

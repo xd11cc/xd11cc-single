@@ -20,7 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
         <mapstruct.version>1.2.0.Final</mapstruct.version>
-        <swagger.version>2.9.2</swagger.version>
+        <knif4j.version>3.0.3</knif4j.version>
         <redisson.version>3.36.0</redisson.version>
         <fastjson2.version>2.0.39</fastjson2.version>
         <hutool.version>5.8.16</hutool.version>
@@ -46,6 +46,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-boot-starter</artifactId>
+            <version>${knif4j.version}</version>
         </dependency>
 
         <dependency>
@@ -80,12 +86,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
-            <version>${swagger.version}</version>
         </dependency>
 
         <dependency>
