@@ -1,6 +1,6 @@
 package com.xd11cc.single.config.context;
 
-import com.xd11cc.single.entity.dto.LoginUserDTO;
+import org.springframework.security.core.Authentication;
 
 /**
  * @Author: xd11cc
@@ -10,17 +10,18 @@ import com.xd11cc.single.entity.dto.LoginUserDTO;
  **/
 public class SecurityContextHolder {
 
-    private static final ThreadLocal<LoginUserDTO> THREADLOCAL = new ThreadLocal<>();
+    private static final ThreadLocal<Authentication> THREADLOCAL = new ThreadLocal<>();
 
-    public static LoginUserDTO getContext() {
+    public static Authentication getContext() {
         return THREADLOCAL.get();
     }
 
-    public static void setContext(LoginUserDTO loginUserDTO) {
-        THREADLOCAL.set(loginUserDTO);
+    public static void setContext(Authentication authentication) {
+        THREADLOCAL.set(authentication);
     }
 
     public static void clearContext() {
         THREADLOCAL.remove();
     }
+
 }

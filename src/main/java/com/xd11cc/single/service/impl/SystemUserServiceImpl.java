@@ -22,8 +22,4 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
                 .eq(SystemUserDO::getUsername, username));
     }
 
-    @Override
-    public void validateUser(SystemUserDO systemUserDO) {
-
-    }
 }

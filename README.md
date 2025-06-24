@@ -1,5 +1,9 @@
 1、基础组织架构模块
-2、security整合安全框架
+2、security + Jwt整合安全框架
+3、swagger2整合接口文档
+
+
+// todo
 3、freemarker整合代码生成器模版
 4、flowable整合工作流
 5、rabbitMQ整合消息队列

@@ -16,4 +16,9 @@ public class CacheConstants {
      */
     public static final String LOGIN_TOKEN_KEY = "login_tokens:";
 
+    /**
+     * 登录密码错误次数
+     */
+    public static final String PASSWORD_ERROR_COUNT_KEY = "password_error_count_key:";
+
 }

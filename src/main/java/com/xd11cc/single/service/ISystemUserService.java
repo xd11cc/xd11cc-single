@@ -16,9 +16,4 @@ public interface ISystemUserService extends IService<SystemUserDO> {
      */
     SystemUserDO getByUsername(String username);
 
-    /**
-     * 验证用户信息
-     * @param systemUserDO
-     */
-    void validateUser(SystemUserDO systemUserDO);
 }

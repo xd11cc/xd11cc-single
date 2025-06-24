@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public enum SystemEnableEnum {
 
-    YES("01", "是"),
-    NO("02", "否"),
+    NO("01", "否"),
+    YES("02", "是"),
     ;
 
     private String code;

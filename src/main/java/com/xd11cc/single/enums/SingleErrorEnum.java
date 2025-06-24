@@ -26,7 +26,8 @@ public enum SingleErrorEnum implements ErrorCode {
     USER_NOT_FOUND(1001001, "用户不存在！"),
     PASSWORD_ERROR(1001002, "密码错误！"),
     ILLEGAL_VISIT(1001003, "非法访问！"),
-    USER_DISABLE(1001004, "账户已禁用！")
+    USER_DISABLE(1001004, "账户已禁用！"),
+    USER_LOCKED(1001005, "密码错误超过{}次，账户已锁定！"),
     ;
 
     private int errorCode;

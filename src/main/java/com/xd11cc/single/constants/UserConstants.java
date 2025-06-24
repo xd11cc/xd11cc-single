@@ -15,4 +15,9 @@ public class UserConstants {
      * 用户密码最长长度
      */
     public static final int USER_PASSWORD_MAX_LENGTH = 20;
+
+    /**
+     * 密码最多重试次数
+     */
+    public static final int PASSWORD_MAX_RETRY_COUNT = 5;
 }
