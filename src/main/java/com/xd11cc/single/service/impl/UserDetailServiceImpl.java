@@ -53,7 +53,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
         if (retryCount == null) {
             retryCount = 0;
         }
-        if (retryCount > UserConstants.PASSWORD_MAX_RETRY_COUNT) {
+        if (retryCount >= UserConstants.PASSWORD_MAX_RETRY_COUNT) {
             throw new ServiceException(SingleErrorEnum.USER_LOCKED, new Object[]{UserConstants.PASSWORD_MAX_RETRY_COUNT});
         }
         // 获取上下文中用户输入的密码凭证
