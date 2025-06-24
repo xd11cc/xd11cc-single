@@ -18,8 +18,6 @@ spring:
 
 # swagger配置
 swagger:
-  enabled: true
-  pathMapping: /dev-api
   title: 后端API
   description: 单体项目框架搭建
   version: v1.0.0

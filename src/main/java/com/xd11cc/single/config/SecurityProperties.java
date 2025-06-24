@@ -11,6 +11,8 @@ import java.util.List;
 /**
  * @Author: xd11cc
  * @Date: 2025/6/21 21:39
+ *
+ * security白名单路由配置
  **/
 @Data
 @NoArgsConstructor
