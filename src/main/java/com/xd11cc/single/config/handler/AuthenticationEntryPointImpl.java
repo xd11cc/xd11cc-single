@@ -1,7 +1,7 @@
 package com.xd11cc.single.config.handler;
 
 import com.xd11cc.single.enums.SingleErrorEnum;
-import com.xd11cc.single.exception.ServiceExceptions;
+import com.xd11cc.single.exception.ServiceException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -20,6 +20,6 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) {
-        ServiceExceptions.throwWithErrorCode(SingleErrorEnum.UNAUTHORIZED);
+        throw new ServiceException(SingleErrorEnum.UNAUTHORIZED);
     }
 }

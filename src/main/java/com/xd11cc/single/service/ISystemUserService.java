@@ -2,8 +2,6 @@ package com.xd11cc.single.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xd11cc.single.entity.domain.SystemUserDO;
-import com.xd11cc.single.entity.vo.LoginPasswordVO;
-import com.xd11cc.single.entity.vo.LoginResultVO;
 
 /**
  * @Author: xd11cc
@@ -11,12 +9,16 @@ import com.xd11cc.single.entity.vo.LoginResultVO;
  **/
 public interface ISystemUserService extends IService<SystemUserDO> {
 
-    LoginResultVO loginByPassword(LoginPasswordVO loginPasswordVO);
-
     /**
      * 根据用户查询用户信息
      * @param username
      * @return
      */
     SystemUserDO getByUsername(String username);
+
+    /**
+     * 验证用户信息
+     * @param systemUserDO
+     */
+    void validateUser(SystemUserDO systemUserDO);
 }

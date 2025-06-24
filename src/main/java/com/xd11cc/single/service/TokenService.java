@@ -28,4 +28,11 @@ public interface TokenService {
      * @param token
      */
     void removeLoginUser(String token);
+
+    /**
+     * 创建用户token信息
+     * @param loginUserDTO
+     * @return
+     */
+    String createToken(LoginUserDTO loginUserDTO);
 }

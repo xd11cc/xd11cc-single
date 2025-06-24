@@ -79,6 +79,8 @@ public class LoginUserDTO implements UserDetails {
     }
 
     public LoginUserDTO(Set<String> permissions, SystemUserDO systemUserDO) {
+        this.userId = systemUserDO.getId();
+        this.deptId = systemUserDO.getDeptId();
         this.permissions = permissions;
         this.systemUserDO = systemUserDO;
     }

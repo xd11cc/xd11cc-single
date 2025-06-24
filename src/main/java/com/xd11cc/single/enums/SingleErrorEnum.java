@@ -23,7 +23,10 @@ import lombok.NoArgsConstructor;
 @Getter
 public enum SingleErrorEnum implements ErrorCode {
     UNAUTHORIZED(401, "未授权"),
-    USER_NOT_FOUND(1001001, "用户不存在！")
+    USER_NOT_FOUND(1001001, "用户不存在！"),
+    PASSWORD_ERROR(1001002, "密码错误！"),
+    ILLEGAL_VISIT(1001003, "非法访问！"),
+    USER_DISABLE(1001004, "账户已禁用！")
     ;
 
     private int errorCode;

@@ -5,6 +5,7 @@ import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.TokenConstants;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.service.TokenService;
+import com.xd11cc.single.utils.IdUtils;
 import com.xd11cc.single.utils.JwtUtils;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,8 +35,9 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public LoginUserDTO getLoginUser(HttpServletRequest request) {
-        String token = request.getHeader("token");
+        String token = request.getHeader(TokenConstants.AUTHORIZATION);
         if (StringUtils.isNotEmpty(token)) {
+            token = token.replace(TokenConstants.TOKEN_PREFIX, "");
             try {
                 Claims claims = JwtUtils.parseToken(token);
                 String uuidToken = (String) claims.get(TokenConstants.LOGIN_USER_KEY);
@@ -62,6 +66,19 @@ public class TokenServiceImpl implements TokenService {
             String loginTokenKey = getLoginTokenKey(token);
             redisCache.removeCacheObject(loginTokenKey);
         }
+    }
+
+    @Override
+    public String createToken(LoginUserDTO loginUserDTO) {
+        String token = IdUtils.fastUUID();
+        loginUserDTO.setToken(token);
+        loginUserDTO.setLoginTime(System.currentTimeMillis());
+        refreshToken(loginUserDTO);
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(TokenConstants.LOGIN_USER_KEY, token);
+        claims.put(Claims.SUBJECT, loginUserDTO.getUsername());
+        return JwtUtils.createToken(claims);
     }
 
     private void refreshToken(LoginUserDTO loginUserDTO) {

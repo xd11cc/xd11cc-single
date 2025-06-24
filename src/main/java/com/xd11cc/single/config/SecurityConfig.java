@@ -68,15 +68,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 注解标记允许匿名访问的url
                 .authorizeHttpRequests(requests -> {
-                    requests.antMatchers("/login", "/register").permitAll()
-                            // 静态资源
-                            .antMatchers("/doc.html",
-                                    "/webjars/**",
-                                    "/swagger-resources/**",
-                                    "/v2/api-docs/**",
-                                    "/favicon.ico").permitAll()
-                            // 需要匿名的路径
-                            .antMatchers(securityProperties.getPermitAllUrls().toArray(new String[0])).permitAll()
+                    // 需要匿名的路径
+                    requests.antMatchers(securityProperties.getPermitAllUrls().toArray(new String[0])).permitAll()
                             // 其他的都需要认证
                             .anyRequest().authenticated();
                 })

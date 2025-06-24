@@ -11,10 +11,19 @@ public class TokenConstants {
      */
     public static final String TOKEN_SECRET = "xd11cc@1216";
 
+    /**
+     * token前缀
+     */
     public static final String TOKEN_PREFIX = "Bearer ";
 
+    /**
+     * 授权
+     */
     public static final String AUTHORIZATION = "Authorization";
 
+    /**
+     * 获取用户token的key
+     */
     public static final String LOGIN_USER_KEY = "login_user_key";
 
     /**
@@ -26,4 +35,5 @@ public class TokenConstants {
      * token过期时间小于20min刷新token
      */
     public static final long EXPIRE_REFRESH_TOKEN_TIME = 20 * 60 * 1000;
+
 }

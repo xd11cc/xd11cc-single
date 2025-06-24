@@ -15,4 +15,5 @@ public class CacheConstants {
      * 登录用户令牌
      */
     public static final String LOGIN_TOKEN_KEY = "login_tokens:";
+
 }

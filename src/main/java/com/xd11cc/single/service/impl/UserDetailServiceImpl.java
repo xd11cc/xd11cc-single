@@ -1,9 +1,10 @@
 package com.xd11cc.single.service.impl;
 
+import com.xd11cc.single.config.context.SecurityContextHolder;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.SingleErrorEnum;
-import com.xd11cc.single.exception.ServiceExceptions;
+import com.xd11cc.single.exception.ServiceException;
 import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.service.ISystemUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +29,14 @@ public class UserDetailServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         SystemUserDO systemUserDO = systemUserService.getByUsername(username);
         if (systemUserDO == null) {
-            ServiceExceptions.throwWithErrorCode(SingleErrorEnum.USER_NOT_FOUND);
+            throw new ServiceException(SingleErrorEnum.USER_NOT_FOUND);
         }
-        return new LoginUserDTO(systemMenuService.getPermissionMenu(systemUserDO), systemUserDO);
+        // 设置用户信息
+        systemUserService.validateUser(systemUserDO);
+        // 构建用户信息
+        LoginUserDTO loginUserDTO = new LoginUserDTO(systemMenuService.getPermissionMenu(systemUserDO), systemUserDO);
+        // 设置用户上下文
+        SecurityContextHolder.setContext(loginUserDTO);
+        return loginUserDTO;
     }
 }

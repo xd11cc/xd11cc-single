@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * @Author: xd11cc
  * @Date: 2025/6/14 00:43
@@ -13,12 +15,15 @@ import lombok.Data;
 public class BaseLoginVO {
 
     @ApiModelProperty("登录途径 0-用户名+密码 1-手机号+密码")
+    @NotNull(message = "非法登录")
     private Integer way;
 
     @ApiModelProperty("登录设备 0-电脑")
+    @NotNull(message = "非法登录")
     private Integer device;
 
     @ApiModelProperty("登录程序 0-网页")
+    @NotNull(message = "非法登录")
     private Integer app;
 
     @ApiModelProperty("操作系统")
