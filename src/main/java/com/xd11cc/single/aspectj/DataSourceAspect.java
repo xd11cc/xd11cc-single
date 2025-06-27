@@ -24,11 +24,11 @@ public class DataSourceAspect {
 
     @Pointcut("@annotation(com.xd11cc.single.annotation.DataSource) ||" +
             "@within(com.xd11cc.single.annotation.DataSource)")
-    public void doPointCut(){
+    public void pointCut(){
 
     }
 
-    @Around("doPointCut()")
+    @Around("pointCut()")
     public Object doAround(ProceedingJoinPoint point) throws Throwable {
         DataSource dataSource = getDataSource(point);
         if (null != dataSource) {

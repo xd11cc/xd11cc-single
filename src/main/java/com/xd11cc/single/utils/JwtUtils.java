@@ -10,6 +10,8 @@ import java.util.Map;
 /**
  * @Author: xd11cc
  * @Date: 2025/6/16 15:48
+ *
+ * JWT工具类
  **/
 public class JwtUtils {
 

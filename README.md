@@ -1,6 +1,7 @@
 1、基础组织架构模块
 2、security + Jwt整合安全框架
 3、swagger2整合接口文档
+4、druid整合动态多数据源
 
 
 // todo

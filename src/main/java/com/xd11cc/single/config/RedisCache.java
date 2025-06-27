@@ -1,5 +1,6 @@
 package com.xd11cc.single.config;
 
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.HashOperations;
@@ -22,6 +23,8 @@ public class RedisCache {
 
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private RedissonClient redissonClient;
 
     /**
      * 设置基本类型
@@ -265,5 +268,9 @@ public class RedisCache {
      */
     public RedisTemplate getRedisTemplate() {
         return redisTemplate;
+    }
+
+    public RedissonClient getRedissonClient() {
+        return redissonClient;
     }
 }
