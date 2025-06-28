@@ -4,7 +4,36 @@ spring:
   profiles:
 #    active: @profileActive@
     active: dev
+  mvc:
+    pathmatch:
+      # 由于spring默认的url匹配策略是PATH_PATTERN_PARSER，与security匹配规则不一致可能会导致安全策略失效
+      matching-strategy: ant_path_matcher
 server:
   port: 8080
   servlet:
     context-path: /xd11cc
+
+# swagger配置
+swagger:
+  title: 后端API
+  description: 单体项目框架搭建
+  version: v1.0.0
+
+# security白名单配置
+security:
+  permit-all-urls:
+    # 静态资源
+    - /**/**.html
+    - /**/**.css
+    - /**/**.js
+    # swagger白名单配置
+    - /doc.html
+    - /swagger-ui.html
+    - /webjars/**
+    - /swagger-resources/**
+    - /v2/api-docs/**
+    - /favicon.ico
+    # druid监控地址
+    - /druid/**
+    # 登录相关白名单
+    - /user/loginByPassword

@@ -63,32 +63,46 @@ spring:
     port: 6379
     database: 0
     password: xd11cc@1216
+    # 连接超时时间
+    connect-timeout: 10s
+    lettuce:
+      pool:
+        # 连接池中最小空闲连接
+        min-idle: 0
+        # 连接池中最大空闲连接
+        max-idle: 8
+        # 连接池的最大数据库连接
+        max-active: 8
+        # 连接池的最大阻塞等待时间（负值代表没有限制）
+        max-wait: -1ms
 
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
-
-# swagger配置
-swagger:
-  title: 后端API
-  description: 单体项目框架搭建
-  version: v1.0.0
-
-# security白名单配置
-security:
-  permit-all-urls:
-    # 静态资源
-    - /**/**.html
-    - /**/**.css
-    - /**/**.js
-    # swagger白名单配置
-    - /doc.html
-    - /swagger-ui.html
-    - /webjars/**
-    - /swagger-resources/**
-    - /v2/api-docs/**
-    - /favicon.ico
-    # druid监控地址
-    - /druid/**
-    # 登录相关白名单
-    - /user/loginByPassword
+  # rabbitmq配置
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    stream:
+      username: guest
+      password: guest
+    # 虚拟主机
+    virtual-host: /
+    # 发布确认模式
+    publisher-confirm-type: correlated
+    # 开启返回模式
+    publisher-returns: true
+    listener:
+      simple:
+        # 手动ACK确认
+        acknowledge-mode: manual
+        # 每次预取消消息数量
+        prefetch: 10
+        # 最小消费者数量
+        concurrency: 5
+        # 最大消费者数量
+        max-concurrency: 10
+        retry:
+          # 开启重试
+          enabled: true
+          # 最大重试次数
+          max-attempts: 3
+          # 重试间隔
+          initial-interval: 1000ms

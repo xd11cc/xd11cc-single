@@ -1,5 +1,6 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.annotation.RateLimit;
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
 import com.xd11cc.single.entity.vo.LoginResultVO;
 import com.xd11cc.single.entity.vo.base.ResponseVO;
@@ -31,6 +32,7 @@ public class LoginController {
 
     @GetMapping("/test")
     @ApiOperation("测试接口")
+    @RateLimit
     public ResponseVO<LoginResultVO> test(){
         log.info("test");
         return ResponseVO.success();
