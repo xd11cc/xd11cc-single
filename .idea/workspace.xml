@@ -1,5 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2f858947-4a43-4f2b-ba6a-a9890fa31154" name="Changes" comment="添加全局异常" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="AnnotationType" />
+        <option value="Interface" />
+        <option value="Enum" />
+        <option value="Exception" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
       <MavenGeneralSettings>
@@ -10,19 +37,287 @@
       </MavenGeneralSettings>
     </option>
   </component>
+  <component name="MavenRunner">
+    <option name="skipTests" value="true" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="DEPENDENCY_CHECKER_PROBLEMS_TAB" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 5
+}</component>
   <component name="ProjectId" id="2yRSNfysqmmZL9zaR4fjcKRjfjl" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.Confirmation&quot;
+    &quot;Application.SystemUserServiceImpl.executor&quot;: &quot;Run&quot;,
+    &quot;Application.TokenServiceImpl.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.RedisCacheTest.delRedisCache.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.RedisCacheTest.getRedisCache.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.RedisCacheTest.setRedisCache.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.xd11cc-single [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.xd11cc-single [compile].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.xd11cc-single [package].executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.SingleController.executor&quot;: &quot;Debug&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.fileTypes&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="ReactorSettings">
+    <option name="notificationShown" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="com.xd11cc.single.entity.vo" />
+      <recent name="com.xd11cc.single.service" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.xd11cc.single.utils" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Spring Boot.SingleController">
+    <configuration name="SystemUserServiceImpl" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.xd11cc.single.service.impl.SystemUserServiceImpl" />
+      <module name="xd11cc-single" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.xd11cc.single.service.impl.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TokenServiceImpl" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.xd11cc.single.service.impl.TokenServiceImpl" />
+      <module name="xd11cc-single" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.xd11cc.single.service.impl.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RedisCacheTest.delRedisCache" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="xd11cc-single" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.xd11cc.single.service.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.xd11cc.single.service" />
+      <option name="MAIN_CLASS_NAME" value="com.xd11cc.single.service.RedisCacheTest" />
+      <option name="METHOD_NAME" value="delRedisCache" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="RedisCacheTest.getRedisCache" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="xd11cc-single" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.xd11cc.single.service.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.xd11cc.single.service" />
+      <option name="MAIN_CLASS_NAME" value="com.xd11cc.single.service.RedisCacheTest" />
+      <option name="METHOD_NAME" value="getRedisCache" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SingleController" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <module name="xd11cc-single" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.xd11cc.single.SingleController" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.xd11cc.single.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Spring Boot.SingleController" />
+        <item itemvalue="Application.TokenServiceImpl" />
+        <item itemvalue="Application.SystemUserServiceImpl" />
+        <item itemvalue="JUnit.RedisCacheTest.getRedisCache" />
+        <item itemvalue="JUnit.RedisCacheTest.delRedisCache" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.23654.153" />
+        <option value="bundled-js-predefined-d6986cc7102b-822845ee3bb5-JavaScript-IU-243.23654.153" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
+      <changelist id="2f858947-4a43-4f2b-ba6a-a9890fa31154" name="Changes" comment="" />
       <created>1739427245416</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1739427245416</updated>
+      <workItem from="1749795856263" duration="87427000" />
+      <workItem from="1750432689099" duration="9000" />
+      <workItem from="1750432721914" duration="22774000" />
+      <workItem from="1750664230515" duration="19000" />
+      <workItem from="1750667666060" duration="84110000" />
     </task>
+    <task id="LOCAL-00001" summary="README.md">
+      <option name="closed" value="true" />
+      <created>1749797947924</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1749797947924</updated>
+    </task>
+    <task id="LOCAL-00002" summary="项目初始化、整合swagger、security+jwt、redis">
+      <option name="closed" value="true" />
+      <created>1750422751946</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1750422751946</updated>
+    </task>
+    <task id="LOCAL-00003" summary="完善security配置">
+      <option name="closed" value="true" />
+      <created>1750433145886</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1750433145886</updated>
+    </task>
+    <task id="LOCAL-00004" summary="完善security配置，切换接口文档knif4j">
+      <option name="closed" value="true" />
+      <created>1750513572330</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1750513572330</updated>
+    </task>
+    <task id="LOCAL-00005" summary="完善security + JWT + swagger2整合">
+      <option name="closed" value="true" />
+      <created>1750732942158</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1750732942158</updated>
+    </task>
+    <task id="LOCAL-00006" summary="完善登录接口验证等">
+      <option name="closed" value="true" />
+      <created>1750748751009</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1750748751009</updated>
+    </task>
+    <task id="LOCAL-00007" summary="完善登录接口验证等">
+      <option name="closed" value="true" />
+      <created>1750749083929</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1750749083929</updated>
+    </task>
+    <task id="LOCAL-00008" summary="完善项目信息及配置">
+      <option name="closed" value="true" />
+      <created>1750756466246</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1750756466247</updated>
+    </task>
+    <task id="LOCAL-00009" summary="整合druid实现动态数据源配置">
+      <option name="closed" value="true" />
+      <created>1751017028696</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1751017028696</updated>
+    </task>
+    <task id="LOCAL-00010" summary="整合druid实现动态数据源配置">
+      <option name="closed" value="true" />
+      <created>1751017043284</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1751017043284</updated>
+    </task>
+    <task id="LOCAL-00011" summary="整合redisson实现限流功能">
+      <option name="closed" value="true" />
+      <created>1751037378334</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1751037378334</updated>
+    </task>
+    <task id="LOCAL-00012" summary="整合rabbitmq">
+      <option name="closed" value="true" />
+      <created>1751083026033</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1751083026033</updated>
+    </task>
+    <task id="LOCAL-00013" summary="添加全局异常">
+      <option name="closed" value="true" />
+      <created>1751434977275</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1751434977275</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="SHOW_DIRTY_RECURSIVELY" value="true" />
+    <MESSAGE value="README.md" />
+    <MESSAGE value="项目初始化、整合swagger、security+jwt、redis" />
+    <MESSAGE value="完善security配置" />
+    <MESSAGE value="完善security配置，切换接口文档knif4j" />
+    <MESSAGE value="完善security + JWT + swagger2整合" />
+    <MESSAGE value="完善登录接口验证等" />
+    <MESSAGE value="完善项目信息及配置" />
+    <MESSAGE value="整合druid实现动态数据源配置" />
+    <MESSAGE value="整合redisson实现限流功能" />
+    <MESSAGE value="整合rabbitmq" />
+    <MESSAGE value="添加全局异常" />
+    <option name="LAST_COMMIT_MESSAGE" value="添加全局异常" />
   </component>
 </project>
