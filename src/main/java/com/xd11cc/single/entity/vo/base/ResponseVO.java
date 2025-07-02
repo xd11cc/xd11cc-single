@@ -1,5 +1,6 @@
 package com.xd11cc.single.entity.vo.base;
 
+import com.xd11cc.single.exception.ErrorCode;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -51,6 +52,10 @@ public class ResponseVO<T> implements Serializable {
 
     public static <T> ResponseVO<T> fail(int code, String msg) {
         return resetResult(null, code, msg);
+    }
+
+    public static <T> ResponseVO<T> fail(ErrorCode errorCode) {
+        return resetResult(null, errorCode.getErrorCode(), errorCode.getErrorMsg());
     }
 
     private static <T> ResponseVO<T> resetResult(T data, int code, String msg) {

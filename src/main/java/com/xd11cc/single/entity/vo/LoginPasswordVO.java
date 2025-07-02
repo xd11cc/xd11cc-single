@@ -4,6 +4,7 @@ import com.xd11cc.single.entity.vo.base.BaseLoginVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.NotBlank;
 
@@ -13,6 +14,7 @@ import javax.validation.constraints.NotBlank;
  **/
 @Data
 @ApiModel("密码登录对象")
+@EqualsAndHashCode(callSuper = true)
 public class LoginPasswordVO extends BaseLoginVO {
 
     @NotBlank(message = "请输入用户名")

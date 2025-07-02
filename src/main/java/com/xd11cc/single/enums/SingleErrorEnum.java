@@ -22,7 +22,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 public enum SingleErrorEnum implements ErrorCode {
+    BAD_REQUEST(400, "请求参数有误"),
     UNAUTHORIZED(401, "未授权"),
+    METHOD_NOT_ALLOWED(405, "请求方法不正确"),
+    SYSTEM_ERROR(500, "系统异常"),
     USER_NOT_FOUND(1001001, "用户不存在！"),
     PASSWORD_ERROR(1001002, "密码错误！"),
     ILLEGAL_VISIT(1001003, "非法访问！"),

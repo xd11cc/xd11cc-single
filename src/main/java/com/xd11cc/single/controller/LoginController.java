@@ -9,7 +9,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 /**
  * @Author: xd11cc
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/user")
 @Api(tags = "登录管理")
+@Validated
 public class LoginController {
 
     @Autowired
@@ -26,7 +30,7 @@ public class LoginController {
 
     @PostMapping("/loginByPassword")
     @ApiOperation("账号密码登录")
-    public ResponseVO<LoginResultVO> loginByPassword(@RequestBody LoginPasswordVO loginPasswordVO){
+    public ResponseVO<LoginResultVO> loginByPassword(@Valid @RequestBody LoginPasswordVO loginPasswordVO){
         return ResponseVO.success(loginService.loginByPassword(loginPasswordVO));
     }
 
