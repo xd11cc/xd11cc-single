@@ -57,9 +57,9 @@ public class LoginServiceImpl implements LoginService {
         // 4、创建token信息
         LoginUserDTO loginUserDTO = (LoginUserDTO) authentication.getPrincipal();
         String accessToken = tokenService.createToken(loginUserDTO);
-        log.info("accessToken:{}", accessToken);
-        log.info("getPrincipal:{}", authentication.getPrincipal());
-        return null;
+        return LoginResultVO.builder()
+                .userId(loginUserDTO.getUserId())
+                .accessToken(accessToken).build();
     }
 
     /**
