@@ -25,8 +25,13 @@ public class SystemMenuServiceImpl extends ServiceImpl<SystemMenuMapper, SystemM
 
     @Override
     public List<TreeMenuVO> getTreeMenu(Long userId) {
-        List<SystemMenuDO> treeMenuVOS = baseMapper.selectTreeMenu(userId);
-        return buildTreeMenu(treeMenuVOS, null);
+        List<SystemMenuDO> systemMenuDOS = null;
+        if (SystemUserDO.isAdmin(userId)){
+            systemMenuDOS = list();
+        }else {
+            systemMenuDOS = baseMapper.selectTreeMenu(userId);
+        }
+        return buildTreeMenu(systemMenuDOS, null);
     }
 
     /**

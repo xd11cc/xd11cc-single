@@ -57,4 +57,7 @@ public class SystemUserDO extends BaseVO {
     @ApiModelProperty("头像路径")
     private String headUrl;
 
+    public static boolean isAdmin(Long userId) {
+        return null != userId && userId == 1L;
+    }
 }
