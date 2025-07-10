@@ -24,8 +24,7 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) {
         Throwable throwable = authException.getCause();
         if (throwable instanceof ServiceException) {
-            ServiceException serviceException = (ServiceException) throwable;
-            throw serviceException;
+            throw (ServiceException) throwable;
         }
         throw new ServiceException(SingleErrorEnum.UNAUTHORIZED);
     }

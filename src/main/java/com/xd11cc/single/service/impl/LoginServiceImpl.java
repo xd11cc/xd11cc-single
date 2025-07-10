@@ -49,11 +49,16 @@ public class LoginServiceImpl implements LoginService {
         }
         // 3、判断当前用户是否已登陆
         checkLoginStatus(loginPasswordVO);
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginPasswordVO.getUsername(), loginPasswordVO.getPassword());
-        // 设置用户上下文
-        SecurityContextHolder.setContext(authenticationToken);
-        // 该方法会去调用UserDetailsServiceImpl.loadUserByUsername
-        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+        Authentication authentication;
+        try {
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginPasswordVO.getUsername(), loginPasswordVO.getPassword());
+            // 设置用户上下文
+            SecurityContextHolder.setContext(authenticationToken);
+            // 该方法会去调用UserDetailsServiceImpl.loadUserByUsername
+            authentication = authenticationManager.authenticate(authenticationToken);
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
         // 4、创建token信息
         LoginUserDTO loginUserDTO = (LoginUserDTO) authentication.getPrincipal();
         String accessToken = tokenService.createToken(loginUserDTO);

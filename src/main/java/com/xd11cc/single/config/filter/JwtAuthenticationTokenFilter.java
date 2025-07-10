@@ -2,6 +2,8 @@ package com.xd11cc.single.config.filter;
 
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.service.TokenService;
+import com.xd11cc.single.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +23,7 @@ import java.io.IOException;
  *
  * jwt token过滤器
  **/
+@Slf4j
 @Component
 public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
@@ -31,14 +34,16 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // 1、根据token获取用户信息
         LoginUserDTO loginUserDTO = tokenService.getLoginUser(request);
-        if (null != loginUserDTO && loginUserDTO.getAuthorities().isEmpty()) {
+        if (null != loginUserDTO) {
             // 2、验证token有效期，即将失效刷新令牌
             tokenService.verifyToken(loginUserDTO);
-            // 3、构建认证对象
-            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginUserDTO, null, loginUserDTO.getAuthorities());
-            usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            // 4、注入安全上下文
-            SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            if (SecurityUtils.getAuthentication() == null) {
+                // 3、构建认证对象
+                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginUserDTO, null, loginUserDTO.getAuthorities());
+                usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                // 4、注入安全上下文
+                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            }
         }
         filterChain.doFilter(request, response);
     }

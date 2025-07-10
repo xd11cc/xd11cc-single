@@ -1,10 +1,10 @@
 package com.xd11cc.single.utils;
 
-import com.xd11cc.single.config.context.SecurityContextHolder;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.SingleErrorEnum;
 import com.xd11cc.single.exception.ServiceException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
@@ -51,6 +51,6 @@ public class SecurityUtils {
      * @return
      */
     public static Authentication getAuthentication() {
-        return SecurityContextHolder.getContext();
+        return SecurityContextHolder.getContext().getAuthentication();
     }
 }
