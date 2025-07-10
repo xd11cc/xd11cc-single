@@ -1,19 +1,18 @@
-package com.xd11cc.single.entity.domain;
+package com.xd11cc.single.entity.vo;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.xd11cc.single.entity.vo.base.BaseVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @Author: xd11cc
- * @Date: 2025/6/13 23:29
+ * @Date: 2025/7/9 16:21
  **/
 @Data
-@ApiModel("菜单")
-@TableName("system_menu")
-public class SystemMenuDO extends BaseVO {
+@ApiModel("菜单树形结构")
+public class TreeMenuVO {
 
     @ApiModelProperty("主键id")
     private Long id;
@@ -45,14 +44,9 @@ public class SystemMenuDO extends BaseVO {
     @ApiModelProperty("菜单状态，字典类型system_enable_status")
     private String status;
 
-    @ApiModelProperty("权限字符")
-    private String permission;
-
     @ApiModelProperty("菜单图标")
     private String icon;
 
-    public SystemMenuDO(Long id, Long parentId) {
-        this.id = id;
-        this.parentId = parentId;
-    }
+    @ApiModelProperty("子菜单")
+    private List<TreeMenuVO> children;
 }
