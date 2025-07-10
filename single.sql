@@ -65,27 +65,28 @@ CREATE TABLE `system_role_menu` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色菜单表';
 
 CREATE TABLE `system_menu` (
-    `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
-    `parent_id` bigint DEFAULT NULL COMMENT '父菜单id',
-    `menu_name` varchar(20) NOT NULL COMMENT '菜单名称',
-    `sort` int NOT NULL COMMENT '显示排序',
-    `path` varchar(255) NOT NULL COMMENT '路由地址',
-    `component` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '组件路径',
-    `if_frame` char(2) NOT NULL COMMENT '是否为外链，字典类型system_logic_status',
-    `menu_type` char(2) NOT NULL COMMENT '菜单类型，字典类型system_menu_type',
-    `visible` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '是否隐藏，字典类型system_logic_status',
-    `status` char(2) NOT NULL COMMENT '菜单状态，字典类型system_enable_status',
-    `permission` varchar(255) DEFAULT NULL COMMENT '权限字符',
-    `icon` varchar(255) DEFAULT NULL COMMENT '菜单图标',
-    `create_user_id` bigint NOT NULL COMMENT '创建人id',
-    `create_time` datetime NOT NULL COMMENT '创建时间',
-    `update_user_id` bigint NOT NULL COMMENT '更新人id',
-    `update_time` datetime NOT NULL COMMENT '更新时间',
-    `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-    `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
-    `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
-    PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';
+   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+   `parent_id` bigint DEFAULT NULL COMMENT '父菜单id',
+   `menu_name` varchar(20) NOT NULL COMMENT '菜单名称',
+   `sort` int NOT NULL COMMENT '显示排序',
+   `path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '路由路径（如/user/list）',
+   `router_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '路由唯一名称',
+   `component` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '组件路径',
+   `icon` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '菜单图标',
+   `if_frame` char(2) NOT NULL COMMENT '是否为外链，字典类型system_logic_status',
+   `menu_type` char(2) NOT NULL COMMENT '菜单类型，字典类型system_menu_type',
+   `visible` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '是否隐藏，字典类型system_logic_status',
+   `status` char(2) NOT NULL COMMENT '菜单状态，字典类型system_enable_status',
+   `permission` varchar(255) DEFAULT NULL COMMENT '权限字符',
+   `create_user_id` bigint NOT NULL COMMENT '创建人id',
+   `create_time` datetime NOT NULL COMMENT '创建时间',
+   `update_user_id` bigint NOT NULL COMMENT '更新人id',
+   `update_time` datetime NOT NULL COMMENT '更新时间',
+   `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
+   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+   PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';
 
 CREATE TABLE `system_dept` (
    `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
