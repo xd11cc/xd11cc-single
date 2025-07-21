@@ -9,7 +9,7 @@ spring:
       # 由于spring默认的url匹配策略是PATH_PATTERN_PARSER，与security匹配规则不一致可能会导致安全策略失效
       matching-strategy: ant_path_matcher
 server:
-  port: 8080
+  port: 10001
   servlet:
     context-path: /xd11cc
 

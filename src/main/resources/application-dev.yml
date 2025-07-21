@@ -7,8 +7,8 @@ spring:
       master:
         url: jdbc:mysql://127.0.0.1:3306/xd11cc_single?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
         username: root
-#        password: xd11cc@1216
-        password: root
+        password: xd11cc@1216
+#        password: root
       slave:
         enable: false
         url:
@@ -63,8 +63,8 @@ spring:
     host: 127.0.0.1
     port: 6379
     database: 0
-    password:
-#    password: xd11cc@1216
+#    password:
+    password: xd11cc@1216
     # 连接超时时间
     connect-timeout: 10s
     lettuce:

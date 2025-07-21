@@ -1,0 +1,16 @@
+services:
+  app:
+    image: xd11cc-single
+    container_name: xd11cc-single
+    ports:
+      - "10001:10001"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JAVA_OPTS=-Xmx512m -Xms256m
+#    restart: always
+    networks:
+      - xd11cc-network
+
+networks:
+  xd11cc-network:
+    external: true
