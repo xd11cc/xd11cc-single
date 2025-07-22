@@ -1,7 +1,11 @@
 package com.xd11cc.single.config.handler;
 
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
+import com.xd11cc.single.entity.vo.base.ResponseVO;
 import com.xd11cc.single.enums.SingleErrorEnum;
 import com.xd11cc.single.exception.ServiceException;
+import com.xd11cc.single.utils.ServletUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
@@ -22,10 +26,11 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) {
+        log.error("请求地址：{}", request.getRequestURI());
         Throwable throwable = authException.getCause();
         if (throwable instanceof ServiceException) {
             throw (ServiceException) throwable;
         }
-        throw new ServiceException(SingleErrorEnum.UNAUTHORIZED);
+        ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SingleErrorEnum.UNAUTHORIZED)));
     }
 }

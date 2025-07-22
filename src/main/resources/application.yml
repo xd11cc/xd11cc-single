@@ -33,6 +33,8 @@ security:
     - /swagger-resources/**
     - /v2/api-docs/**
     - /favicon.ico
+    - /csrf
+    - /
     # druid监控地址
     - /druid/**
     # 登录相关白名单
