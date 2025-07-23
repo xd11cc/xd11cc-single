@@ -77,34 +77,3 @@ spring:
         max-active: 8
         # 连接池的最大阻塞等待时间（负值代表没有限制）
         max-wait: -1ms
-
-  # rabbitmq配置
-  rabbitmq:
-    host: 127.0.0.1
-    port: 5672
-    stream:
-      username: guest
-      password: guest
-    # 虚拟主机
-    virtual-host: /
-    # 发布确认模式
-    publisher-confirm-type: correlated
-    # 开启返回模式
-    publisher-returns: true
-    listener:
-      simple:
-        # 手动ACK确认
-        acknowledge-mode: manual
-        # 每次预取消消息数量
-        prefetch: 10
-        # 最小消费者数量
-        concurrency: 5
-        # 最大消费者数量
-        max-concurrency: 10
-        retry:
-          # 开启重试
-          enabled: true
-          # 最大重试次数
-          max-attempts: 3
-          # 重试间隔
-          initial-interval: 1000ms

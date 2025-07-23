@@ -165,3 +165,39 @@ CREATE TABLE `system_dict_data` (
     `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='字典数据表';
+
+CREATE TABLE system_job (
+    id BIGINT NOT NULL COMMENT '主键id' auto_increment PRIMARY KEY,
+    job_name VARCHAR ( 50 ) NOT NULL COMMENT '任务名称',
+    job_group CHAR ( 2 ) NOT NULL COMMENT '任务组名',
+    invoke_target VARCHAR ( 255 ) NOT NULL COMMENT '调度目标字符串',
+    cron_expression VARCHAR ( 50 ) NOT NULL COMMENT 'cron执行表达式',
+    execution_policy CHAR ( 2 ) NOT NULL COMMENT '执行策略',
+    CONCURRENT CHAR ( 2 ) NOT NULL COMMENT '是否允许并发执行',
+    STATUS CHAR ( 2 ) NOT NULL COMMENT '状态',
+    `create_user_id` BIGINT NOT NULL COMMENT '创建人id',
+    `create_time` DATETIME NOT NULL COMMENT '创建时间',
+    `update_user_id` BIGINT NOT NULL COMMENT '更新人id',
+    `update_time` DATETIME NOT NULL COMMENT '更新时间',
+    `del_flag` TINYINT NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
+    `remark` VARCHAR ( 255 ) CHARACTER
+           SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+    `tenant_id` BIGINT DEFAULT NULL COMMENT '租户id'
+) COMMENT '系统任务表';
+CREATE TABLE system_job_log (
+    id BIGINT NOT NULL COMMENT '主键id' auto_increment PRIMARY KEY,
+    job_id BIGINT NOT NULL COMMENT '任务id',
+    job_name VARCHAR ( 50 ) NOT NULL COMMENT '任务名称',
+    job_group CHAR ( 2 ) NOT NULL COMMENT '任务组名',
+    invoke_target VARCHAR ( 255 ) NOT NULL COMMENT '调度目标字符串',
+    job_message VARCHAR ( 500 ) COMMENT '日志信息',
+    STATUS CHAR ( 2 ) COMMENT '执行状态',
+    `create_user_id` BIGINT NOT NULL COMMENT '创建人id',
+    `create_time` DATETIME NOT NULL COMMENT '创建时间',
+    `update_user_id` BIGINT NOT NULL COMMENT '更新人id',
+    `update_time` DATETIME NOT NULL COMMENT '更新时间',
+    `del_flag` TINYINT NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
+    `remark` VARCHAR ( 255 ) CHARACTER
+           SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+    `tenant_id` BIGINT DEFAULT NULL COMMENT '租户id'
+) COMMENT '系统任务日志表';
