@@ -18,7 +18,7 @@
 // * @author xd11cc
 // * @date 2025-07-22 15:27:39
 // *
-// * Quartz配置类，当需要集群或分布式时启用（单体架构通过内存+自定义数据实现）
+// * Quartz配置类，当需要集群或分布式时启用（单体架构通过内存+自定义数据实现）todo
 // */
 //@Configuration
 //public class QuartzConfig {
