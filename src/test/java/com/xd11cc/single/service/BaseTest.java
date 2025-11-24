@@ -1,7 +1,7 @@
 package com.xd11cc.single.service;
 
 import cn.hutool.core.util.ZipUtil;
-import com.xd11cc.single.utils.FileConvertUtils;
+//import com.xd11cc.single.utils.FileConvertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -163,8 +163,8 @@ public class BaseTest {
         log.info("...........");
     }
 
-    @Test
-    public void fileConvert() {
-        FileConvertUtils.PdfToWord("/Users/xudecheng/Desktop/xd11cc/file/许德承简历-Java.pdf", "/Users/xudecheng/Desktop/xd11cc/file/许德承简历-Java.docx");
-    }
+//    @Test
+//    public void fileConvert() {
+//        FileConvertUtils.PdfToWord("/Users/xudecheng/Desktop/xd11cc/file/许德承简历-Java.pdf", "/Users/xudecheng/Desktop/xd11cc/file/许德承简历-Java.docx");
+//    }
 }

@@ -77,3 +77,9 @@ spring:
         max-active: 8
         # 连接池的最大阻塞等待时间（负值代表没有限制）
         max-wait: -1ms
+  # rabbitmq配置
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: xd11cc@1216
