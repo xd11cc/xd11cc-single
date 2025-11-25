@@ -183,4 +183,29 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <repository>
+            <id>xd11cc-nexus</id>
+            <url>https://xd11cc.xyz/repository/xd11cc-maven-release/</url>
+        </repository>
+
+        <snapshotRepository>
+            <id>xd11cc-nexus</id>
+            <url>https://xd11cc.xyz/repository/xd11cc-maven-snapshot/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>xd11cc-nexus</id>
+            <name>xd11cc</name>
+            <url>https://xd11cc.xyz/repository/xd11cc-maven-group/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>
