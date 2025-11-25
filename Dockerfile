@@ -1,4 +1,4 @@
-FROM openjdk:8u111-jdk-alpine
+FROM openjdk:8-jre-slim
 MAINTAINER xd11cc
 
 WORKDIR /app
