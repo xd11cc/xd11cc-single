@@ -83,3 +83,14 @@ spring:
     port: 5672
     username: admin
     password: xd11cc@1216
+
+# xxl-job配置
+xxl:
+  job:
+    executor:
+      app-name: ${spring.application.name}
+      log-path: ${spring.application.name}/xxl-job
+      log-retention-days: 30
+    admin:
+      addresses: https://xd11cc.xyz/xxl-job-admin
+    access-token: default_token

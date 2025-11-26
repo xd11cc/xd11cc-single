@@ -1,12 +1,13 @@
 package com.xd11cc.single.service;
 
 import cn.hutool.core.util.ZipUtil;
-//import com.xd11cc.single.utils.FileConvertUtils;
+import com.xd11cc.single.utils.FileConvertUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.DigestUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -161,10 +162,12 @@ public class BaseTest {
         log.info("encrypt:{}", encrypt);
         log.info("equal:{}", encrypt.equals("d669f77257a381d06853f57fe84c5c48"));
         log.info("...........");
+        String password = "xd11cc@1216";
+        System.out.println(DigestUtils.md5DigestAsHex(password.getBytes()));
     }
 
-//    @Test
-//    public void fileConvert() {
-//        FileConvertUtils.PdfToWord("/Users/xudecheng/Desktop/xd11cc/file/许德承简历-Java.pdf", "/Users/xudecheng/Desktop/xd11cc/file/许德承简历-Java.docx");
-//    }
+    @Test
+    public void fileConvert() {
+        FileConvertUtils.PdfToWord("/Users/xudecheng/Desktop/xd11cc/file/许德承简历-Java.pdf", "/Users/xudecheng/Desktop/xd11cc/file/许德承简历-Java.docx");
+    }
 }
