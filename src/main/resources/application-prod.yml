@@ -86,5 +86,5 @@ xxl:
       log-path: ${spring.application.name}/xxl-job
       log-retention-days: 30
     admin:
-      addresses: https://xd11cc-job/xxl-job-admin
+      addresses: https://xd11cc-job:8084/xxl-job-admin
     access-token: default_token
