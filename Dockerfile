@@ -14,7 +14,7 @@ ENV PARAMS=""
 COPY target/xd11cc-single-*.jar xd11cc-single.jar
 
 # 暴露应用端口
-EXPOSE 20001
+EXPOSE 10001
 
 ENV JAVA_OPTS="-Xmx512m -Xms256m"
 

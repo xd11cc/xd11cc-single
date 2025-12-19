@@ -1,7 +1,7 @@
 package com.xd11cc.single.service;
 
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
-import com.xd11cc.single.entity.vo.LoginResultVO;
+import com.xd11cc.single.entity.vo.UserLoginInfoVO;
 
 /**
  * @Author: xd11cc
@@ -14,5 +14,12 @@ public interface LoginService {
      * @param loginPasswordVO
      * @return
      */
-    LoginResultVO loginByPassword(LoginPasswordVO loginPasswordVO);
+    String loginByPassword(LoginPasswordVO loginPasswordVO);
+
+    /**
+     * 获取当前用户登录信息
+     * @param userId
+     * @return
+     */
+    UserLoginInfoVO getUserLoginInfo(Long userId);
 }

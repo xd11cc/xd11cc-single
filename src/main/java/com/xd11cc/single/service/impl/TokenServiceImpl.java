@@ -4,6 +4,8 @@ import com.xd11cc.single.config.RedisCache;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.TokenConstants;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
+import com.xd11cc.single.enums.SingleErrorEnum;
+import com.xd11cc.single.exception.ServiceException;
 import com.xd11cc.single.service.TokenService;
 import com.xd11cc.single.utils.IdUtils;
 import com.xd11cc.single.utils.JwtUtils;
@@ -45,6 +47,7 @@ public class TokenServiceImpl implements TokenService {
                 return redisCache.getCacheObject(loginTokenKey);
             } catch (Exception e) {
                 log.error("获取用户信息异常{}", e.getMessage());
+                throw new ServiceException(SingleErrorEnum.UNAUTHORIZED);
             }
         }
         return null;

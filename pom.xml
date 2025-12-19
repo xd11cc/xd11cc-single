@@ -190,6 +190,7 @@
         </plugins>
     </build>
 
+    <!-- 上传 -->
     <distributionManagement>
         <repository>
             <id>xd11cc-nexus</id>
@@ -202,6 +203,7 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <!-- 下载 -->
     <repositories>
         <repository>
             <id>xd11cc-nexus</id>

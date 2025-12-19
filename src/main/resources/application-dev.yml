@@ -83,6 +83,31 @@ spring:
     port: 5672
     username: admin
     password: xd11cc@1216
+    virtual-host: / # 默认虚拟主机
+    publisher-confirm-type: correlated # 生产者确认配置（确保消息发送到交换机）
+    publisher-returns: true # 生产者回调配置（确保消息路由到队列）
+    # 消费者配置（手动确认消息，避免消息丢失）
+    listener:
+      simple:
+        acknowledge-mode: manual # 手动ACK
+        concurrency: 1 # 消费者并发数
+        max-concurrency: 5 # 最大并发数
+# rabbitmq自定义队列、交换机、路由键配置
+rabbitmq:
+  queue:
+    direct-queue: dev_direct_queue # Direct队列名
+    topic-queue1: dev_topic_queue1 # Topic1队列1
+    topic-queue2: dev_topic_queue2 # Topic2队列2
+    fanout-queue1: dev_fanout_queue1 # Fanout队列1
+    fanout-queue2: dev_fanout_queue2 # Fanout队列2
+  exchange:
+    direct-exchange: dev_direct_exchange # Direct交换机
+    topic-exchange: dev_topic_exchange # Topic交换机
+    fanout-exchange: dev_fanout_exchange # Fanout交换机
+  routing-key:
+    direct-key: dev_direct_key # Direct路由键
+    topic-key1: dev_topic_key1 # Topic路由键1
+    topic-key2: dev_topic_key2 # Topic路由键2
 
 # xxl-job配置
 xxl:

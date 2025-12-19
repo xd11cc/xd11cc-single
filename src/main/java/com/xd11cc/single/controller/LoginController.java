@@ -2,9 +2,10 @@ package com.xd11cc.single.controller;
 
 import com.xd11cc.single.annotation.RateLimit;
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
-import com.xd11cc.single.entity.vo.LoginResultVO;
+import com.xd11cc.single.entity.vo.UserLoginInfoVO;
 import com.xd11cc.single.entity.vo.base.ResponseVO;
 import com.xd11cc.single.service.LoginService;
+import com.xd11cc.single.utils.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -30,15 +31,13 @@ public class LoginController {
 
     @PostMapping("/loginByPassword")
     @ApiOperation("账号密码登录")
-    public ResponseVO<LoginResultVO> loginByPassword(@Valid @RequestBody LoginPasswordVO loginPasswordVO){
+    public ResponseVO<String> loginByPassword(@Valid @RequestBody LoginPasswordVO loginPasswordVO){
         return ResponseVO.success(loginService.loginByPassword(loginPasswordVO));
     }
 
-    @GetMapping("/test")
-    @ApiOperation("测试接口")
-    @RateLimit
-    public ResponseVO<LoginResultVO> test(){
-        log.info("test");
-        return ResponseVO.success();
+    @GetMapping("/getUserInfo")
+    @ApiOperation("查询当前用户登录信息")
+    public ResponseVO<UserLoginInfoVO> getUserLoginInfo(){
+        return ResponseVO.success(loginService.getUserLoginInfo(SecurityUtils.getUserId()));
     }
 }

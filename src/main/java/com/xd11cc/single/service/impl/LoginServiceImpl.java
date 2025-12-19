@@ -2,12 +2,15 @@ package com.xd11cc.single.service.impl;
 
 import com.xd11cc.single.config.context.SecurityContextHolder;
 import com.xd11cc.single.constants.UserConstants;
+import com.xd11cc.single.convert.SystemUserConvert;
+import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
-import com.xd11cc.single.entity.vo.LoginResultVO;
+import com.xd11cc.single.entity.vo.UserLoginInfoVO;
 import com.xd11cc.single.enums.LoginWayEnum;
 import com.xd11cc.single.enums.SingleErrorEnum;
 import com.xd11cc.single.exception.ServiceException;
+import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.service.ISystemUserService;
 import com.xd11cc.single.service.LoginService;
 import com.xd11cc.single.service.TokenService;
@@ -33,10 +36,12 @@ public class LoginServiceImpl implements LoginService {
     private TokenService tokenService;
     @Autowired
     private ISystemUserService systemUserService;
+    @Autowired
+    private ISystemMenuService systemMenuService;
 
     @Override
     @Transactional
-    public LoginResultVO loginByPassword(LoginPasswordVO loginPasswordVO) {
+    public String loginByPassword(LoginPasswordVO loginPasswordVO) {
         // 1、校验验证码 todo
 //        checkCaptcha();
         // 2、校验用户信息
@@ -63,17 +68,22 @@ public class LoginServiceImpl implements LoginService {
         }
         // 4、创建token信息
         LoginUserDTO loginUserDTO = (LoginUserDTO) authentication.getPrincipal();
-        String accessToken = tokenService.createToken(loginUserDTO);
-        return LoginResultVO.builder()
-                .userId(loginUserDTO.getUserId())
-                .accessToken(accessToken).build();
+        return tokenService.createToken(loginUserDTO);
+    }
+
+    @Override
+    public UserLoginInfoVO getUserLoginInfo(Long userId) {
+        SystemUserDO systemUserDO = systemUserService.getById(userId);
+        UserLoginInfoVO userLoginInfoVO = SystemUserConvert.INSTANCE.do2vo(systemUserDO);
+        userLoginInfoVO.setTreeMenuVOS(systemMenuService.getTreeMenu(userId));
+        return userLoginInfoVO;
     }
 
     /**
-     * 检查登录状态
+     * 检查登录状态 todo
      * @param loginPasswordVO
      */
     private void checkLoginStatus(LoginPasswordVO loginPasswordVO) {
-
+        //
     }
 }

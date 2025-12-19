@@ -8,7 +8,7 @@ spring:
     name: xd11cc-single
   profiles:
 #    active: @profileActive@
-    active: prod
+    active: dev
   mvc:
     pathmatch:
       # 由于spring默认的url匹配策略是PATH_PATTERN_PARSER，与security匹配规则不一致可能会导致安全策略失效
