@@ -1,9 +1,10 @@
 package com.xd11cc.single.controller;
 
-import com.xd11cc.single.annotation.RateLimit;
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
+import com.xd11cc.single.entity.vo.RouterVO;
 import com.xd11cc.single.entity.vo.UserLoginInfoVO;
 import com.xd11cc.single.entity.vo.base.ResponseVO;
+import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.service.LoginService;
 import com.xd11cc.single.utils.SecurityUtils;
 import io.swagger.annotations.Api;
@@ -14,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @Author: xd11cc
@@ -29,6 +31,9 @@ public class LoginController {
     @Autowired
     private LoginService loginService;
 
+    @Autowired
+    private ISystemMenuService systemMenuService;
+
     @PostMapping("/loginByPassword")
     @ApiOperation("账号密码登录")
     public ResponseVO<String> loginByPassword(@Valid @RequestBody LoginPasswordVO loginPasswordVO){
@@ -39,5 +44,11 @@ public class LoginController {
     @ApiOperation("查询当前用户登录信息")
     public ResponseVO<UserLoginInfoVO> getUserLoginInfo(){
         return ResponseVO.success(loginService.getUserLoginInfo(SecurityUtils.getUserId()));
+    }
+
+    @GetMapping("/getRoutes")
+    @ApiOperation("查询当前用户路由信息")
+    public ResponseVO<List<RouterVO>> getRoutes(){
+        return ResponseVO.success(systemMenuService.getRoutes(SecurityUtils.getUserId()));
     }
 }

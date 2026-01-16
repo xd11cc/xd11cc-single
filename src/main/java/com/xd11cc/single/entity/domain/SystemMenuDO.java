@@ -33,14 +33,14 @@ public class SystemMenuDO extends BaseVO {
     @ApiModelProperty("组件路径")
     private String component;
 
-    @ApiModelProperty("是否为外链，字典类型system_logic_status")
-    private String ifFrame;
+    @ApiModelProperty("路由参数")
+    private String query;
+
+    @ApiModelProperty("菜单图标")
+    private String icon;
 
     @ApiModelProperty("菜单类型，字典类型system_menu_type")
     private String menuType;
-
-    @ApiModelProperty("是否隐藏，字典类型system_logic_status")
-    private String visible;
 
     @ApiModelProperty("菜单状态，字典类型system_enable_status")
     private String status;
@@ -48,11 +48,7 @@ public class SystemMenuDO extends BaseVO {
     @ApiModelProperty("权限字符")
     private String permission;
 
-    @ApiModelProperty("菜单图标")
-    private String icon;
+    @ApiModelProperty("是否显示，0-否 1-是")
+    private boolean visible;
 
-    public SystemMenuDO(Long id, Long parentId) {
-        this.id = id;
-        this.parentId = parentId;
-    }
 }

@@ -75,7 +75,7 @@ public class LoginServiceImpl implements LoginService {
     public UserLoginInfoVO getUserLoginInfo(Long userId) {
         SystemUserDO systemUserDO = systemUserService.getById(userId);
         UserLoginInfoVO userLoginInfoVO = SystemUserConvert.INSTANCE.do2vo(systemUserDO);
-        userLoginInfoVO.setTreeMenuVOS(systemMenuService.getTreeMenu(userId));
+        userLoginInfoVO.setPermissions(systemMenuService.getPermissionMenu(systemUserDO));
         return userLoginInfoVO;
     }
 

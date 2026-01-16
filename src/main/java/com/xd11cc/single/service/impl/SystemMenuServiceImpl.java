@@ -1,10 +1,11 @@
 package com.xd11cc.single.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xd11cc.single.convert.SystemMenuConvert;
 import com.xd11cc.single.entity.domain.SystemMenuDO;
 import com.xd11cc.single.entity.domain.SystemUserDO;
-import com.xd11cc.single.entity.vo.TreeMenuVO;
+import com.xd11cc.single.entity.vo.MetaVO;
+import com.xd11cc.single.entity.vo.RouterVO;
+import com.xd11cc.single.enums.MenuTypeEnum;
 import com.xd11cc.single.mapper.SystemMenuMapper;
 import com.xd11cc.single.service.ISystemMenuService;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class SystemMenuServiceImpl extends ServiceImpl<SystemMenuMapper, SystemM
     }
 
     @Override
-    public List<TreeMenuVO> getTreeMenu(Long userId) {
+    public List<RouterVO> getRoutes(Long userId) {
         List<SystemMenuDO> systemMenuDOS = null;
         if (SystemUserDO.isAdmin(userId)){
             systemMenuDOS = list();
@@ -39,18 +40,34 @@ public class SystemMenuServiceImpl extends ServiceImpl<SystemMenuMapper, SystemM
      * @param systemMenuDOS
      * @return
      */
-    private static List<TreeMenuVO> buildTreeMenu(List<SystemMenuDO> systemMenuDOS, Long rootId) {
-        List<TreeMenuVO> treeMenuVOS = new ArrayList<>();
+    private static List<RouterVO> buildTreeMenu(List<SystemMenuDO> systemMenuDOS, Long rootId) {
+        List<RouterVO> routerVOS = new ArrayList<>();
         systemMenuDOS.forEach(systemMenuDO -> {
-            if (Objects.equals(systemMenuDO.getParentId(), rootId)) {
-                TreeMenuVO treeMenuVO = SystemMenuConvert.INSTANCE.do2TreeVO(systemMenuDO);
-                treeMenuVO.setChildren(buildTreeMenu(systemMenuDOS, systemMenuDO.getId()));
-                treeMenuVOS.add(treeMenuVO);
+            if (rootId.equals(systemMenuDO.getParentId())) {
+                RouterVO routerVO = new RouterVO();
+                routerVO.setName(systemMenuDO.getMenuName());
+                routerVO.setPath(systemMenuDO.getPath());
+                routerVO.setComponent(systemMenuDO.getComponent());
+                if (MenuTypeEnum.DIR.getCode().equals(systemMenuDO.getMenuType())) {
+                    routerVO.setRedirect("noRedirect");
+                }
+                // 构建其他元素
+                MetaVO metaVO = MetaVO.builder()
+                        .title(systemMenuDO.getMenuName())
+                        .elIcon(systemMenuDO.getIcon())
+                        .query(systemMenuDO.getQuery())
+                        .hidden(systemMenuDO.isVisible())
+                        .permission(systemMenuDO.getPermission())
+                        .sort(systemMenuDO.getSort())
+                        .build();
+                routerVO.setMeta(metaVO);
+                routerVO.setChildren(buildTreeMenu(systemMenuDOS, systemMenuDO.getId()));
+                routerVOS.add(routerVO);
             }
         });
         // 排序
-        treeMenuVOS.sort(Comparator.comparing(TreeMenuVO::getSort));
-        treeMenuVOS.forEach(t ->t.getChildren().sort(Comparator.comparing(TreeMenuVO::getSort)));
-        return treeMenuVOS;
+        routerVOS.sort(Comparator.comparing(r -> r.getMeta().getSort()));
+        routerVOS.forEach(t ->t.getChildren().sort(Comparator.comparing(r -> r.getMeta().getSort())));
+        return routerVOS;
     }
 }

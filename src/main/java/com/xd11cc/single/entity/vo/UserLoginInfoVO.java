@@ -3,7 +3,7 @@ package com.xd11cc.single.entity.vo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * @author xd11cc
@@ -37,7 +37,12 @@ UserLoginInfoVO {
     @ApiModelProperty("头像路径")
     private String headUrl;
 
-    @ApiModelProperty("用户菜单信息")
-    private List<TreeMenuVO> treeMenuVOS;
+    @ApiModelProperty("角色标识")
+    private Set<String> roles;
 
+    @ApiModelProperty("角色id")
+    private Set<Long> roleIds;
+
+    @ApiModelProperty("菜单权限标识")
+    private Set<String> permissions;
 }
