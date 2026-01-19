@@ -3,6 +3,7 @@ package com.xd11cc.single.config.handler;
 import com.xd11cc.single.entity.vo.base.ResponseVO;
 import com.xd11cc.single.enums.SingleErrorEnum;
 import com.xd11cc.single.exception.ErrorCode;
+import com.xd11cc.single.exception.RateLimitException;
 import com.xd11cc.single.exception.ServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
@@ -79,6 +80,12 @@ public class GlobalExceptionHandler {
         return ResponseVO.fail(SingleErrorEnum.BAD_REQUEST.getErrorCode(), String.format("请求参数有误：%s", next.getMessage()));
     }
 
+    @ExceptionHandler(RateLimitException.class)
+    public ResponseVO<?> handleRateLimitException(RateLimitException e){
+        log.error(e.getMessage(), e);
+        return ResponseVO.fail(e.getMessage());
+    }
+
     /**
      * 处理业务逻辑上的异常
      * @param e
@@ -99,7 +106,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseVO<?> handleException(Exception e, HttpServletRequest request){
         String requestURI = request.getRequestURI();
-        log.error("请求地址：{}, 发生系统异常:{}", requestURI, e.getMessage());
+        log.error("请求地址：{}, 发生系统异常:{}", requestURI, e.getMessage(), e);
         Throwable throwable = e.getCause();
         if (throwable instanceof ServiceException){
             ServiceException serviceException = (ServiceException) throwable;

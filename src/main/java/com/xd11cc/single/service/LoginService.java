@@ -22,4 +22,5 @@ public interface LoginService {
      * @return
      */
     UserLoginInfoVO getUserLoginInfo(Long userId);
+
 }

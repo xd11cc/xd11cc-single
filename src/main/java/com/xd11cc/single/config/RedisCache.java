@@ -23,8 +23,6 @@ public class RedisCache {
 
     @Autowired
     private RedisTemplate redisTemplate;
-    @Autowired
-    private RedissonClient redissonClient;
 
     /**
      * 设置基本类型
@@ -270,7 +268,4 @@ public class RedisCache {
         return redisTemplate;
     }
 
-    public RedissonClient getRedissonClient() {
-        return redissonClient;
-    }
 }

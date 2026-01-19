@@ -20,7 +20,7 @@ public @interface RateLimit {
      * 限流前缀
      * @return
      */
-    String key() default "rate_limit:";
+    String key() default "default:";
 
     /**
      * 时间窗口大小

@@ -19,6 +19,12 @@ public class CacheConstants {
     /**
      * 登录密码错误次数
      */
-    public static final String PASSWORD_ERROR_COUNT_KEY = "password_error_count_key:";
+    public static final String PASSWORD_ERROR_COUNT_KEY = "password_error_count:";
+
+    /**
+     * 接口限流key
+     */
+    public static final String RATE_LIMIT_KEY = "rate_limit:";
+
 
 }

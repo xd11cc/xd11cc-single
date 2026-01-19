@@ -42,8 +42,8 @@ public class LoginServiceImpl implements LoginService {
     @Override
     @Transactional
     public String loginByPassword(LoginPasswordVO loginPasswordVO) {
-        // 1、校验验证码 todo
-//        checkCaptcha();
+        // 1、校验验证码
+        checkCaptcha();
         // 2、校验用户信息
         // 校验是否非法登录获取token
         if (LoginWayEnum.PC.getCode() != loginPasswordVO.getWay()) {
@@ -69,6 +69,12 @@ public class LoginServiceImpl implements LoginService {
         // 4、创建token信息
         LoginUserDTO loginUserDTO = (LoginUserDTO) authentication.getPrincipal();
         return tokenService.createToken(loginUserDTO);
+    }
+
+    /**
+     * 校验验证码
+     */
+    private void checkCaptcha() {
     }
 
     @Override
