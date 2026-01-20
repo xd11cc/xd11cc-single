@@ -33,6 +33,6 @@ public class LogoutSuccessHandlerImpl implements LogoutSuccessHandler {
         if (null != loginUser) {
             tokenService.removeLoginUser(loginUser.getToken());
         }
-        ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.success()));
+        ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.success("退出成功！")));
     }
 }

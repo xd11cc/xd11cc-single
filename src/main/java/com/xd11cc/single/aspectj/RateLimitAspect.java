@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Aspect
@@ -29,11 +28,6 @@ public class RateLimitAspect {
 
     @Autowired
     private RedissonClient redissonClient;
-
-
-    // 限流器本地缓存（可选，根据实际情况决定）
-    private final ConcurrentHashMap<String, RRateLimiter> limiterCache =
-            new ConcurrentHashMap<>(64);
 
     @Pointcut("@annotation(com.xd11cc.single.annotation.RateLimit)")
     public void pointCut() {}
@@ -63,7 +57,7 @@ public class RateLimitAspect {
         );
 
         // 4. 尝试获取令牌，显式指定获取1个，语义更清晰
-        if (rateLimiter.tryAcquire()) {
+        if (rateLimiter.tryAcquire(1)) {
             log.debug("限流放行 -> key:{}，接口:{}.{}", rateLimitKey, method.getDeclaringClass().getName(), method.getName());
             return joinPoint.proceed();
         } else {
