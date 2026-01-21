@@ -3,7 +3,7 @@ package com.xd11cc.single.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xd11cc.single.entity.domain.SystemMenuDO;
 import com.xd11cc.single.entity.domain.SystemUserDO;
-import com.xd11cc.single.entity.vo.RouterVO;
+import com.xd11cc.single.entity.vo.RouteVO;
 
 import java.util.List;
 import java.util.Set;
@@ -25,6 +25,6 @@ public interface ISystemMenuService extends IService<SystemMenuDO> {
      * 获取路由信息
      * @return
      */
-    List<RouterVO> getRoutes(Long userId);
+    List<RouteVO> getRoutes(Long userId);
 
 }

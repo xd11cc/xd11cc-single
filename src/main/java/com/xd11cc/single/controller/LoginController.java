@@ -2,7 +2,7 @@ package com.xd11cc.single.controller;
 
 import cloud.tianai.captcha.application.ImageCaptchaApplication;
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
-import com.xd11cc.single.entity.vo.RouterVO;
+import com.xd11cc.single.entity.vo.RouteVO;
 import com.xd11cc.single.entity.vo.UserLoginInfoVO;
 import com.xd11cc.single.entity.vo.base.ResponseVO;
 import com.xd11cc.single.service.ISystemMenuService;
@@ -54,7 +54,7 @@ public class LoginController {
 
     @GetMapping("/getRoutes")
     @ApiOperation("查询当前用户路由信息")
-    public ResponseVO<List<RouterVO>> getRoutes(){
+    public ResponseVO<List<RouteVO>> getRoutes(){
         return ResponseVO.success(systemMenuService.getRoutes(SecurityUtils.getUserId()));
     }
 }

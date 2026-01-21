@@ -6,8 +6,8 @@
 
     <select id="selectTreeMenu" resultType="com.xd11cc.single.entity.domain.SystemMenuDO">
         select
-            a.id, a.parent_id, a.menu_name, a.sort, a.path, a.component, a.if_frame,
-            a.menu_type, a.visible, a.status, a.icon
+            a.id, a.parent_id, a.menu_name, a.sort, a.path, a.component, a.route_name
+            a.menu_type, a.visible, a.icon
         from
             system_menu a
         left join
@@ -17,6 +17,6 @@
         left join
             system_user_role d on c.id = d.role_id
         where
-            d.user_id = #{userId}
+            d.user_id = #{userId} and a.status = 0 and a.menu_type in ('C', 'M')
     </select>
 </mapper>

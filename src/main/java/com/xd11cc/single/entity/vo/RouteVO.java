@@ -12,7 +12,13 @@ import java.util.List;
  */
 @Data
 @ApiModel("路由信息")
-public class RouterVO {
+public class RouteVO {
+
+    @ApiModelProperty("主键id")
+    private Long id;
+
+    @ApiModelProperty("父id")
+    private Long parentId;
 
     @ApiModelProperty("路由名称")
     private String name;
@@ -29,6 +35,9 @@ public class RouterVO {
     @ApiModelProperty("其他元素")
     private MetaVO meta;
 
+    @ApiModelProperty("顺序序号")
+    private Integer sort;
+
     @ApiModelProperty("子菜单")
-    private List<RouterVO> children;
+    private List<RouteVO> children;
 }

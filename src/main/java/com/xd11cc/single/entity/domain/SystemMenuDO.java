@@ -33,6 +33,9 @@ public class SystemMenuDO extends BaseVO {
     @ApiModelProperty("组件路径")
     private String component;
 
+    @ApiModelProperty("路由名称")
+    private String routeName;
+
     @ApiModelProperty("路由参数")
     private String query;
 

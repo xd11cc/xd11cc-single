@@ -18,17 +18,18 @@ public class MetaVO {
     private String title;
 
     @ApiModelProperty("图标")
-    private String elIcon;
+    private String icon;
 
     @ApiModelProperty("路由参数")
     private String query;
 
-    @ApiModelProperty("是否显示")
-    private boolean hidden;
+    @ApiModelProperty("是否隐藏 0-显示 1-隐藏")
+    private boolean visible;
 
     @ApiModelProperty("权限字符")
     private String permission;
 
-    @ApiModelProperty("排序字段")
-    private Integer sort;
+    @ApiModelProperty("是否显示根目录")
+    private boolean alwaysShow;
+
 }

@@ -11,5 +11,5 @@ import org.springframework.stereotype.Service;
  * @date 2025-12-18 13:53:54
  */
 @Service
-public class SystemUserRoleService extends ServiceImpl<SystemUserRoleMapper, SystemUserRoleDO> implements ISystemUserRoleService {
+public class SystemUserRoleServiceImpl extends ServiceImpl<SystemUserRoleMapper, SystemUserRoleDO> implements ISystemUserRoleService {
 }
