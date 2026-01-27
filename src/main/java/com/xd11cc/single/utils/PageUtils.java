@@ -5,7 +5,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.xd11cc.single.entity.base.BasePageVO;
 import com.xd11cc.single.entity.base.ResponseVO;
-import org.apache.commons.lang3.StringUtils;
+import com.xd11cc.single.utils.StringUtils;
 
 import java.util.*;
 import java.util.function.Supplier;

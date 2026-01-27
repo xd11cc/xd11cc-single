@@ -1,6 +1,6 @@
 package com.xd11cc.single.utils;
 
-import org.apache.commons.lang3.StringUtils;
+import com.xd11cc.single.utils.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 
