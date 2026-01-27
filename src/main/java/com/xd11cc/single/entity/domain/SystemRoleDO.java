@@ -1,7 +1,7 @@
 package com.xd11cc.single.entity.domain;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xd11cc.single.entity.base.BaseDO;
+import com.xd11cc.single.entity.base.BaseTenantDO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 @ApiModel("角色")
 @TableName("system_role")
-public class SystemRoleDO extends BaseDO {
+public class SystemRoleDO extends BaseTenantDO {
 
     @ApiModelProperty("主键id")
     private Long id;

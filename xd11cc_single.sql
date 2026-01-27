@@ -11,7 +11,7 @@
  Target Server Version : 80042 (8.0.42)
  File Encoding         : 65001
 
- Date: 15/01/2026 13:46:51
+ Date: 27/01/2026 17:21:36
 */
 
 SET NAMES utf8mb4;
@@ -53,6 +53,7 @@ CREATE TABLE `system_dept_post` (
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='部门岗位表';
 
@@ -92,9 +93,8 @@ CREATE TABLE `system_dict_type` (
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
-  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='字典类型表';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='字典类型表';
 
 -- ----------------------------
 -- Table structure for system_job
@@ -151,26 +151,23 @@ CREATE TABLE `system_menu` (
   `menu_name` varchar(20) NOT NULL COMMENT '菜单名称',
   `sort` int NOT NULL COMMENT '显示排序',
   `path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '路由路径（如/user/list）',
-  `router_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '路由唯一名称',
   `component` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '组件路径',
+  `route_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '路由名称',
   `query` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '路由参数',
   `icon` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '菜单图标',
-  `if_frame` tinyint NOT NULL DEFAULT '0' COMMENT '是否为外链，0-否 1-是',
-  `visible` tinyint NOT NULL DEFAULT '0' COMMENT '是否隐藏，0-否 1-是',
   `menu_type` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '菜单类型，字典类型system_menu_type',
   `status` char(2) NOT NULL COMMENT '菜单状态，字典类型system_enable_status',
   `permission` varchar(255) DEFAULT NULL COMMENT '权限字符',
+  `visible` tinyint NOT NULL DEFAULT '0' COMMENT '是否隐藏，0-否 1-是',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
   `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
-  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
-  `keep_alive` tinyint NOT NULL DEFAULT '0' COMMENT '是否缓存，0-否 1-是',
   PRIMARY KEY (`id`),
   UNIQUE KEY `path` (`path`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';
 
 -- ----------------------------
 -- Table structure for system_post
@@ -224,6 +221,7 @@ CREATE TABLE `system_role_menu` (
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
   `remark` varchar(255) NOT NULL COMMENT '备注',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色菜单表';
 
@@ -270,6 +268,7 @@ CREATE TABLE `system_user_role` (
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
   `remark` varchar(255) NOT NULL COMMENT '备注',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色表';
 
