@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-public enum SingleErrorEnum implements ErrorCode {
+public enum SystemErrorEnum implements ErrorCode {
     BAD_REQUEST(400, "请求参数有误"),
     UNAUTHORIZED(401, "未授权"),
     METHOD_NOT_ALLOWED(405, "请求方法不正确"),
@@ -32,6 +32,7 @@ public enum SingleErrorEnum implements ErrorCode {
     USER_FORBIDDEN(1001004, "账户已禁用！"),
     USER_LOCKED(1001005, "密码错误超过{}次，账户已锁定！"),
     CHOOSE_RIGHT_DOMAIN(1001006, "请使用正确的域名访问！"),
+    DICT_TYPE_HAVE_DATA(1001007, "{}字典类型下存在字典数据！"),
     ;
 
     private int errorCode;

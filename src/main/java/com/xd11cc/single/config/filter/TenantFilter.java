@@ -7,7 +7,7 @@ import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.SecurityConstants;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.dto.TenantDTO;
-import com.xd11cc.single.enums.SingleErrorEnum;
+import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.enums.SystemStatusEnum;
 import com.xd11cc.single.utils.ServletUtils;
 import com.xd11cc.single.utils.StringUtils;
@@ -54,18 +54,18 @@ public class TenantFilter extends OncePerRequestFilter {
         TenantDTO tenantDTO = redisCache.getCacheMapValue(CacheConstants.TENANT_DOMAIN, domain, false);
         if (tenantDTO == null){
             log.warn("域名：{}，查不到租户ID", domain);
-            ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SingleErrorEnum.CHOOSE_RIGHT_DOMAIN)));
+            ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SystemErrorEnum.CHOOSE_RIGHT_DOMAIN)));
             return;
         }
         // 验证是否禁用
         if (SystemStatusEnum.FORBIDDEN.getCode().equals(tenantDTO.getStatus())){
             log.warn("租户已禁用：{}", tenantDTO);
-            ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SingleErrorEnum.SYSTEM_ERROR)));
+            ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SystemErrorEnum.SYSTEM_ERROR)));
             return;
         }
         if (new Date().getTime() > tenantDTO.getExpireTime().getTime()){
             log.warn("租户已过期：{}", tenantDTO);
-            ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SingleErrorEnum.SYSTEM_ERROR)));
+            ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SystemErrorEnum.SYSTEM_ERROR)));
             return;
         }
 

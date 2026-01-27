@@ -1,7 +1,7 @@
 package com.xd11cc.single.config.handler;
 
 import com.xd11cc.single.entity.base.ResponseVO;
-import com.xd11cc.single.enums.SingleErrorEnum;
+import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.exception.ErrorCode;
 import com.xd11cc.single.exception.RateLimitException;
 import com.xd11cc.single.exception.ServiceException;
@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
     public ResponseVO<?> httpRequestMethodNotSupportedException(HttpServletRequest request, HttpRequestMethodNotSupportedException e) {
         String requestURI = request.getRequestURI();
         log.error("请求地址:{}，不支持：'{}'请求", requestURI, e.getMethod());
-        return ResponseVO.fail(SingleErrorEnum.METHOD_NOT_ALLOWED.getErrorCode(), e.getMessage());
+        return ResponseVO.fail(SystemErrorEnum.METHOD_NOT_ALLOWED.getErrorCode(), e.getMessage());
     }
 
     /**
@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
     public ResponseVO<?> methodArgumentNotValidException(HttpServletRequest request, MethodArgumentNotValidException e) {
         log.error("请求地址：{}，请求参数有误:{}", request.getRequestURI(), e.getMessage());
         String message = Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage();
-        return ResponseVO.fail(SingleErrorEnum.BAD_REQUEST.getErrorCode(), String.format("请求参数有误：%s", message));
+        return ResponseVO.fail(SystemErrorEnum.BAD_REQUEST.getErrorCode(), String.format("请求参数有误：%s", message));
     }
 
     /**
@@ -64,7 +64,7 @@ public class GlobalExceptionHandler {
     public ResponseVO<?> bindException(HttpServletRequest request, BindException e) {
         log.error("请求地址：{}，请求参数有误:{}", request.getRequestURI(), e.getMessage());
         String message = Objects.requireNonNull(e.getBindingResult().getFieldError()).getDefaultMessage();
-        return ResponseVO.fail(SingleErrorEnum.BAD_REQUEST.getErrorCode(), String.format("请求参数有误：%s", message));
+        return ResponseVO.fail(SystemErrorEnum.BAD_REQUEST.getErrorCode(), String.format("请求参数有误：%s", message));
     }
 
     /**
@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
     public ResponseVO<?> constraintViolationException(HttpServletRequest request, ConstraintViolationException e) {
         log.error("请求地址:{}，请求参数不通过:{}", request.getRequestURI(), e.getMessage());
         ConstraintViolation<?> next = e.getConstraintViolations().iterator().next();
-        return ResponseVO.fail(SingleErrorEnum.BAD_REQUEST.getErrorCode(), String.format("请求参数有误：%s", next.getMessage()));
+        return ResponseVO.fail(SystemErrorEnum.BAD_REQUEST.getErrorCode(), String.format("请求参数有误：%s", next.getMessage()));
     }
 
     @ExceptionHandler(RateLimitException.class)
@@ -112,6 +112,6 @@ public class GlobalExceptionHandler {
             ServiceException serviceException = (ServiceException) throwable;
             return ResponseVO.fail(serviceException.getErrorCode().getErrorCode(), serviceException.getMessage());
         }
-        return ResponseVO.fail(SingleErrorEnum.SYSTEM_ERROR);
+        return ResponseVO.fail(SystemErrorEnum.SYSTEM_ERROR);
     }
 }

@@ -5,9 +5,11 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.xd11cc.single.entity.base.BasePageVO;
 import com.xd11cc.single.entity.base.ResponseVO;
-import com.xd11cc.single.utils.StringUtils;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -46,7 +48,7 @@ public class PageUtils {
      * @return
      * @param <R>
      */
-    public static <R> ResponseVO<?> page(BasePageVO basePageVO, Supplier<List<R>> supplier){
+    public static <R> ResponseVO page(BasePageVO basePageVO, Supplier<List<R>> supplier){
         try {
             Page<R> p = null;
             if (StringUtils.isNoneBlank(basePageVO.getOrderBy())){

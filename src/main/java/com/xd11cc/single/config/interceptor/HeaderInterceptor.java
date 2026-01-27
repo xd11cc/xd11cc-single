@@ -27,7 +27,7 @@ public class HeaderInterceptor implements AsyncHandlerInterceptor {
         }
         // 处理租户id
         Long tenantId = (Long) request.getAttribute(SecurityConstants.TENANT_ID);
-        if (!StringUtils.isNull(tenantId)) {
+        if (StringUtils.isNotNull(tenantId)) {
             TenantContextHolder.setTenantId(tenantId);
         }
 

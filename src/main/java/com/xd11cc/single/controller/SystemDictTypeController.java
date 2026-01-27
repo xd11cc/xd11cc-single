@@ -1,17 +1,18 @@
 package com.xd11cc.single.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.xd11cc.single.entity.domain.SystemDictTypeDO;
-import com.xd11cc.single.entity.vo.SystemDictTypeQueryVO;
 import com.xd11cc.single.entity.base.ResponseVO;
+import com.xd11cc.single.entity.domain.SystemDictTypeDO;
+import com.xd11cc.single.entity.vo.SystemDictTypeAddVO;
+import com.xd11cc.single.entity.vo.SystemDictTypeQueryVO;
 import com.xd11cc.single.service.ISystemDictTypeService;
 import com.xd11cc.single.utils.PageUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import com.xd11cc.single.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -19,6 +20,7 @@ import java.util.List;
  * @date 2026-01-22 22:28:46
  */
 @Api(tags = "字典管理")
+@Validated
 @RestController
 @RequestMapping("/dict/type")
 public class SystemDictTypeController {
@@ -29,33 +31,26 @@ public class SystemDictTypeController {
     @ApiOperation("字典类型分页")
     @PostMapping("/page")
     public ResponseVO<List<SystemDictTypeDO>> page(@RequestBody SystemDictTypeQueryVO systemDictTypeQueryVO){
-        PageUtils.startPage(systemDictTypeQueryVO.getPageNo(), systemDictTypeQueryVO.getPageSize());
-        LambdaQueryWrapper<SystemDictTypeDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(!StringUtils.isEmpty(systemDictTypeQueryVO.getName()),
-                SystemDictTypeDO::getName, systemDictTypeQueryVO.getName());
-        wrapper.like(!StringUtils.isEmpty(systemDictTypeQueryVO.getType()),
-                SystemDictTypeDO::getType, systemDictTypeQueryVO.getType());
-        return PageUtils.getDataTable(systemDictTypeService.list(wrapper));
+        return PageUtils.page(systemDictTypeQueryVO, ()-> systemDictTypeService.getList(systemDictTypeQueryVO));
     }
 
     @ApiOperation("新增字典类型")
     @PostMapping("/add")
-    public ResponseVO<?> add(@RequestBody SystemDictTypeDO systemDictTypeDO){
-        systemDictTypeService.save(systemDictTypeDO);
+    public ResponseVO<?> add(@Valid @RequestBody SystemDictTypeAddVO systemDictTypeAddVO){
+        systemDictTypeService.add(systemDictTypeAddVO);
         return ResponseVO.success();
     }
 
     @ApiOperation("删除字典类型")
     @GetMapping("/removeByIds/{ids}")
     public ResponseVO<?> removeByIds(@PathVariable("ids") List<Long> ids){
-        // todo 判断字典类型下是否有数据
-        systemDictTypeService.removeByIds(ids);
+        systemDictTypeService.deleteByIds(ids);
         return ResponseVO.success();
     }
 
     @ApiOperation("更新字典类型")
     @PostMapping("/modifyById")
-    public ResponseVO<?> modifyById(@RequestBody SystemDictTypeDO systemDictTypeDO){
+    public ResponseVO<?> modifyById(@Valid @RequestBody SystemDictTypeDO systemDictTypeDO){
         systemDictTypeService.updateById(systemDictTypeDO);
         return ResponseVO.success();
     }

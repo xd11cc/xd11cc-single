@@ -63,7 +63,7 @@ security:
 # 需要忽略租户的表
 tenant:
   ignoreTables:
-    - system_user_role
     - system_menu
+    - system_dict_type
   ignoreUrls:
     -

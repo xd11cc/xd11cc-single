@@ -7,7 +7,7 @@ import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
 import com.xd11cc.single.entity.vo.UserLoginInfoVO;
 import com.xd11cc.single.enums.LoginWayEnum;
-import com.xd11cc.single.enums.SingleErrorEnum;
+import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.exception.ServiceException;
 import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.service.ISystemUserService;
@@ -47,12 +47,12 @@ public class LoginServiceImpl implements LoginService {
         // 2、校验用户信息
         // 校验是否非法登录获取token
         if (LoginWayEnum.PC.getCode() != loginPasswordVO.getWay()) {
-            throw new ServiceException(SingleErrorEnum.ILLEGAL_VISIT);
+            throw new ServiceException(SystemErrorEnum.ILLEGAL_VISIT);
         }
         // 校验密码规则是否正确
         if (loginPasswordVO.getPassword().length() > UserConstants.USER_PASSWORD_MAX_LENGTH ||
                 loginPasswordVO.getPassword().length() < UserConstants.USER_PASSWORD_MIN_LENGTH) {
-            throw new ServiceException(SingleErrorEnum.PASSWORD_ERROR);
+            throw new ServiceException(SystemErrorEnum.PASSWORD_ERROR);
         }
         // 3、判断当前用户是否已登陆
         checkLoginStatus(loginPasswordVO);

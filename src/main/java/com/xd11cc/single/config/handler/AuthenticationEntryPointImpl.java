@@ -2,7 +2,7 @@ package com.xd11cc.single.config.handler;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.xd11cc.single.entity.base.ResponseVO;
-import com.xd11cc.single.enums.SingleErrorEnum;
+import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.exception.ServiceException;
 import com.xd11cc.single.utils.ServletUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +30,6 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
         if (throwable instanceof ServiceException) {
             throw (ServiceException) throwable;
         }
-        ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SingleErrorEnum.UNAUTHORIZED)));
+        ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SystemErrorEnum.UNAUTHORIZED)));
     }
 }

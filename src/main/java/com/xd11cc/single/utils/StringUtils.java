@@ -24,6 +24,15 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     /**
+     * 判断一个Collection是非空，包含List、Set、Queue
+     * @param coll Collection
+     * @return true: 非空 false: 为空
+     */
+    public static boolean isNotEmpty(Collection<?> coll){
+        return !isEmpty(coll);
+    }
+
+    /**
      * 判断一个字符串是否为空串
      * @param str String
      * @return true: 为空 false: 非空
@@ -33,12 +42,30 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     /**
+     * 判断一个字符串是否为非空串
+     * @param str String
+     * @return true: 非空 false: 为空
+     */
+    public static boolean isNotEmpty(String str) {
+        return !isEmpty(str);
+    }
+
+    /**
      * 判断一个对象是否为空
      * @param obj Object
      * @return true: 为空 false: 非空
      */
     public static boolean isNull(Object obj) {
         return obj == null;
+    }
+
+    /**
+     * 判断一个对象是否非空
+     * @param obj Object
+     * @return true: 非空 false: 为空
+     */
+    public static boolean isNotNull(Object obj) {
+        return !isNull(obj);
     }
 
     /**

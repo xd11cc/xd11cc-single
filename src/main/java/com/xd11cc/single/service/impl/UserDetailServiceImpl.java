@@ -5,7 +5,7 @@ import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.UserConstants;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
-import com.xd11cc.single.enums.SingleErrorEnum;
+import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.enums.SystemStatusEnum;
 import com.xd11cc.single.exception.ServiceException;
 import com.xd11cc.single.service.ISystemMenuService;
@@ -44,10 +44,10 @@ public class UserDetailServiceImpl implements UserDetailsService {
         SystemUserDO systemUserDO = systemUserService.getByUsername(username);
         // 校验用户信息
         if (systemUserDO == null) {
-            throw new ServiceException(SingleErrorEnum.USER_NOT_FOUND);
+            throw new ServiceException(SystemErrorEnum.USER_NOT_FOUND);
         }
         if (SystemStatusEnum.FORBIDDEN.getCode().equals(systemUserDO.getStatus())) {
-            throw new ServiceException(SingleErrorEnum.USER_FORBIDDEN);
+            throw new ServiceException(SystemErrorEnum.USER_FORBIDDEN);
         }
         Long userId = systemUserDO.getId();
         // 判断密码是否正确或超过最大重试次数
@@ -56,7 +56,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
             retryCount = 0;
         }
         if (retryCount >= UserConstants.PASSWORD_MAX_RETRY_COUNT) {
-            throw new ServiceException(SingleErrorEnum.USER_LOCKED, new Object[]{UserConstants.PASSWORD_MAX_RETRY_COUNT});
+            throw new ServiceException(SystemErrorEnum.USER_LOCKED, new Object[]{UserConstants.PASSWORD_MAX_RETRY_COUNT});
         }
         // 获取上下文中用户输入的密码凭证
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -64,7 +64,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
         if (!SecurityUtils.matchPassword(password, systemUserDO.getPassword())) {
             retryCount += 1;
             redisCache.setCacheObject(getPasswordErrorCountKey(userId), retryCount);
-            throw new ServiceException(SingleErrorEnum.PASSWORD_ERROR);
+            throw new ServiceException(SystemErrorEnum.PASSWORD_ERROR);
         }
         if (redisCache.hasKey(getPasswordErrorCountKey(userId))) {
             redisCache.removeCacheObject(getPasswordErrorCountKey(userId));
