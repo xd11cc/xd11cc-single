@@ -1,12 +1,9 @@
 package com.xd11cc.single.config.interceptor;
 
-import com.xd11cc.single.config.RedisCache;
 import com.xd11cc.single.config.context.TenantContextHolder;
 import com.xd11cc.single.constants.SecurityConstants;
 import com.xd11cc.single.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.AsyncHandlerInterceptor;
