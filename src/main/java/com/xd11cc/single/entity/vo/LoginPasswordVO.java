@@ -1,6 +1,6 @@
 package com.xd11cc.single.entity.vo;
 
-import com.xd11cc.single.entity.vo.base.BaseLoginVO;
+import com.xd11cc.single.entity.base.BaseLoginVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

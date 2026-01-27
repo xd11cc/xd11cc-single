@@ -1,6 +1,5 @@
 package com.xd11cc.single.service.impl;
 
-import com.xd11cc.single.config.context.SecurityContextHolder;
 import com.xd11cc.single.constants.UserConstants;
 import com.xd11cc.single.convert.SystemUserConvert;
 import com.xd11cc.single.entity.domain.SystemUserDO;
@@ -19,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,7 +60,7 @@ public class LoginServiceImpl implements LoginService {
         try {
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginPasswordVO.getUsername(), loginPasswordVO.getPassword());
             // 设置用户上下文
-            SecurityContextHolder.setContext(authenticationToken);
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             // 该方法会去调用UserDetailsServiceImpl.loadUserByUsername
             authentication = authenticationManager.authenticate(authenticationToken);
         } finally {

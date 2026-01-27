@@ -1,6 +1,6 @@
 package com.xd11cc.single.config.handler;
 
-import com.xd11cc.single.entity.vo.base.ResponseVO;
+import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.enums.SingleErrorEnum;
 import com.xd11cc.single.exception.ErrorCode;
 import com.xd11cc.single.exception.RateLimitException;

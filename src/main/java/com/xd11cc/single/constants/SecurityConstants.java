@@ -4,7 +4,7 @@ package com.xd11cc.single.constants;
  * @Author: xd11cc
  * @Date: 2025/6/16 15:51
  **/
-public class TokenConstants {
+public class SecurityConstants {
 
     /**
      * 生成token密钥
@@ -35,5 +35,15 @@ public class TokenConstants {
      * token过期时间小于20min刷新token
      */
     public static final long EXPIRE_REFRESH_TOKEN_TIME = 20 * 60 * 1000;
+
+    /**
+     * 租户id
+     */
+    public static final String TENANT_ID = "tenant_id";
+
+    /**
+     * 用户token
+     */
+    public static final String USER_TOKEN = "user_token";
 
 }

@@ -86,7 +86,7 @@ public class RateLimitAspect {
     }
 
     private String buildRateLimitKey(Method method, RateLimit rateLimit) {
-        StringBuilder sb = new StringBuilder(CacheConstants.RATE_LIMIT_KEY);
+        StringBuilder sb = new StringBuilder(CacheConstants.RATE_LIMIT);
         sb.append(rateLimit.key());
         switch (rateLimit.type()) {
             case IP:

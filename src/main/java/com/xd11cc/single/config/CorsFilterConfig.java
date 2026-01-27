@@ -2,6 +2,8 @@ package com.xd11cc.single.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -13,6 +15,7 @@ import org.springframework.web.filter.CorsFilter;
  * 解决跨域配置
  **/
 @Configuration
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilterConfig {
 
     @Bean

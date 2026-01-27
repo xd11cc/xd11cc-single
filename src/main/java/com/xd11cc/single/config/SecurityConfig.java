@@ -1,6 +1,7 @@
 package com.xd11cc.single.config;
 
 import com.xd11cc.single.config.filter.JwtAuthenticationTokenFilter;
+import com.xd11cc.single.config.properties.SecurityProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

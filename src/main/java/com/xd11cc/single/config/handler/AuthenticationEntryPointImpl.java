@@ -1,8 +1,7 @@
 package com.xd11cc.single.config.handler;
 
-import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
-import com.xd11cc.single.entity.vo.base.ResponseVO;
+import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.enums.SingleErrorEnum;
 import com.xd11cc.single.exception.ServiceException;
 import com.xd11cc.single.utils.ServletUtils;

@@ -1,10 +1,9 @@
 package com.xd11cc.single.controller;
 
-import cloud.tianai.captcha.application.ImageCaptchaApplication;
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
 import com.xd11cc.single.entity.vo.RouteVO;
 import com.xd11cc.single.entity.vo.UserLoginInfoVO;
-import com.xd11cc.single.entity.vo.base.ResponseVO;
+import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.service.LoginService;
 import com.xd11cc.single.utils.SecurityUtils;
@@ -34,9 +33,6 @@ public class LoginController {
 
     @Autowired
     private ISystemMenuService systemMenuService;
-
-    @Autowired
-    private ImageCaptchaApplication imageCaptchaApplication;
 
     private static final String CAPTCHA_CODE_KEY = "captchaCodeKey:";
 

@@ -1,7 +1,7 @@
 package com.xd11cc.single.entity.domain;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xd11cc.single.entity.vo.base.BaseVO;
+import com.xd11cc.single.entity.base.BaseDO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 @ApiModel("岗位")
 @TableName("system_post")
-public class SystemPostDO extends BaseVO {
+public class SystemPostDO extends BaseDO {
 
     @ApiModelProperty("主键id")
     private Long id;
@@ -26,4 +26,7 @@ public class SystemPostDO extends BaseVO {
 
     @ApiModelProperty("岗位状态，字典类型system_enable_status")
     private String status;
+
+    @ApiModelProperty("备注")
+    private String remark;
 }

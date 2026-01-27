@@ -1,5 +1,6 @@
 package com.xd11cc.single.config;
 
+import com.xd11cc.single.config.properties.XxlJobProperties;
 import com.xxl.job.core.executor.impl.XxlJobSpringExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

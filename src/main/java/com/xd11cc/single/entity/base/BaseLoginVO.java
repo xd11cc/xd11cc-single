@@ -1,4 +1,4 @@
-package com.xd11cc.single.entity.vo.base;
+package com.xd11cc.single.entity.base;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

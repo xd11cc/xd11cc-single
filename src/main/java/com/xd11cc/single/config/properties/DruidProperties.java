@@ -1,4 +1,4 @@
-package com.xd11cc.single.config;
+package com.xd11cc.single.config.properties;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import lombok.Data;

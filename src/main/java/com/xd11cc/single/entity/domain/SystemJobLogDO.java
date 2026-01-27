@@ -1,7 +1,7 @@
 package com.xd11cc.single.entity.domain;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xd11cc.single.entity.vo.base.BaseVO;
+import com.xd11cc.single.entity.base.BaseDO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 @ApiModel("系统任务日志")
 @TableName("system_job_log")
-public class SystemJobLogDO extends BaseVO {
+public class SystemJobLogDO extends BaseDO {
 
     @ApiModelProperty("主键id")
     private Long id;
@@ -32,4 +32,7 @@ public class SystemJobLogDO extends BaseVO {
 
     @ApiModelProperty("状态")
     private String status;
+
+    @ApiModelProperty("备注")
+    private String remark;
 }

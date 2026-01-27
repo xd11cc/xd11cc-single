@@ -1,6 +1,6 @@
 package com.xd11cc.single.utils;
 
-import com.xd11cc.single.constants.TokenConstants;
+import com.xd11cc.single.constants.SecurityConstants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -18,13 +18,13 @@ public class JwtUtils {
     public static String createToken(Map<String, Object> claims){
         return Jwts.builder()
                 .setClaims(claims)
-                .signWith(SignatureAlgorithm.HS256, TokenConstants.TOKEN_SECRET)
+                .signWith(SignatureAlgorithm.HS256, SecurityConstants.TOKEN_SECRET)
                 .compact();
     }
 
     public static Claims parseToken(String token){
         return Jwts.parser()
-                .setSigningKey(TokenConstants.TOKEN_SECRET)
+                .setSigningKey(SecurityConstants.TOKEN_SECRET)
                 .parseClaimsJws(token)
                 .getBody();
     }

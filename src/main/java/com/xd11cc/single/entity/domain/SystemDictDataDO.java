@@ -1,7 +1,7 @@
 package com.xd11cc.single.entity.domain;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xd11cc.single.entity.vo.base.BaseVO;
+import com.xd11cc.single.entity.base.BaseDO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 @ApiModel("字典数据")
 @TableName("system_dict_data")
-public class SystemDictDataDO extends BaseVO {
+public class SystemDictDataDO extends BaseDO {
 
     @ApiModelProperty("主键id")
     private Long id;
@@ -35,5 +35,8 @@ public class SystemDictDataDO extends BaseVO {
 
     @ApiModelProperty("排序")
     private String sort;
+
+    @ApiModelProperty("备注")
+    private String remark;
 
 }

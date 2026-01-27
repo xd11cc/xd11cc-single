@@ -2,7 +2,7 @@ package com.xd11cc.single.config.handler;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
-import com.xd11cc.single.entity.vo.base.ResponseVO;
+import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.service.TokenService;
 import com.xd11cc.single.utils.ServletUtils;
 import org.springframework.beans.factory.annotation.Autowired;

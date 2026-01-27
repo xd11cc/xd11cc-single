@@ -1,4 +1,4 @@
-package com.xd11cc.single.config;
+package com.xd11cc.single.config.properties;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

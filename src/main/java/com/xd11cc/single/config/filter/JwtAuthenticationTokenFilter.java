@@ -1,8 +1,10 @@
 package com.xd11cc.single.config.filter;
 
+import com.xd11cc.single.constants.SecurityConstants;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.service.TokenService;
 import com.xd11cc.single.utils.SecurityUtils;
+import com.xd11cc.single.utils.TenantUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,19 +34,26 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // 1、根据token获取用户信息
-        LoginUserDTO loginUserDTO = tokenService.getLoginUser(request);
-        if (null != loginUserDTO) {
-            // 2、验证token有效期，即将失效刷新令牌
-            tokenService.verifyToken(loginUserDTO);
-            if (SecurityUtils.getAuthentication() == null) {
-                // 3、构建认证对象
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginUserDTO, null, loginUserDTO.getAuthorities());
-                usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                // 4、注入安全上下文
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        Long tenantId = (Long) request.getAttribute(SecurityConstants.TENANT_ID);
+        TenantUtils.executeAndClear(tenantId, ()->{
+            // 1、根据token获取用户信息
+            LoginUserDTO loginUserDTO = tokenService.getLoginUser(request);
+            if (null != loginUserDTO) {
+                // 2、验证token有效期，即将失效刷新令牌
+                tokenService.verifyToken(loginUserDTO);
+                if (SecurityUtils.getAuthentication() == null) {
+                    // 3、构建认证对象
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(loginUserDTO, null, loginUserDTO.getAuthorities());
+                    usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    // 4、注入安全上下文
+                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                }
             }
-        }
-        filterChain.doFilter(request, response);
+            try {
+                filterChain.doFilter(request, response);
+            } catch (IOException | ServletException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }

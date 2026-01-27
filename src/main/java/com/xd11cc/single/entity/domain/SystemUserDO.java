@@ -1,7 +1,7 @@
 package com.xd11cc.single.entity.domain;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xd11cc.single.entity.vo.base.BaseVO;
+import com.xd11cc.single.entity.base.BaseDO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 @ApiModel("用户")
 @TableName("system_user")
-public class SystemUserDO extends BaseVO {
+public class SystemUserDO extends BaseDO {
 
     @ApiModelProperty("主键id")
     private Long id;
@@ -51,11 +51,14 @@ public class SystemUserDO extends BaseVO {
     @ApiModelProperty("岗位名称")
     private String postName;
 
-    @ApiModelProperty("账号状态，字典类型system_enable_status")
-    private String status;
+    @ApiModelProperty("账号状态，字典类型system_status")
+    private Integer status;
 
     @ApiModelProperty("头像路径")
     private String headUrl;
+
+    @ApiModelProperty("备注")
+    private String remark;
 
     public static boolean isAdmin(Long userId) {
         return null != userId && userId == 1L;

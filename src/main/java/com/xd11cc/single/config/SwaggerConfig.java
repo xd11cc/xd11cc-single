@@ -1,6 +1,7 @@
 package com.xd11cc.single.config;
 
-import com.xd11cc.single.constants.TokenConstants;
+import com.xd11cc.single.config.properties.SwaggerProperties;
+import com.xd11cc.single.constants.SecurityConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.models.auth.In;
 import org.springframework.context.annotation.Bean;
@@ -72,7 +73,7 @@ public class SwaggerConfig {
         AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
         authorizationScopes[0] = authorizationScope;
         List<SecurityReference> securityReferences = new ArrayList<>();
-        securityReferences.add(new SecurityReference(TokenConstants.AUTHORIZATION, authorizationScopes));
+        securityReferences.add(new SecurityReference(SecurityConstants.AUTHORIZATION, authorizationScopes));
         return securityReferences;
     }
 
@@ -81,7 +82,7 @@ public class SwaggerConfig {
      * @return
      */
     private List<SecurityScheme> securitySchemes() {
-        return Collections.singletonList(new ApiKey(TokenConstants.AUTHORIZATION, TokenConstants.AUTHORIZATION, In.HEADER.toValue()));
+        return Collections.singletonList(new ApiKey(SecurityConstants.AUTHORIZATION, SecurityConstants.AUTHORIZATION, In.HEADER.toValue()));
     }
 
     /**

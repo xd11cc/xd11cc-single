@@ -2,7 +2,7 @@ package com.xd11cc.single.service.impl;
 
 import com.xd11cc.single.config.RedisCache;
 import com.xd11cc.single.constants.CacheConstants;
-import com.xd11cc.single.constants.TokenConstants;
+import com.xd11cc.single.constants.SecurityConstants;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.SingleErrorEnum;
 import com.xd11cc.single.exception.ServiceException;
@@ -31,18 +31,18 @@ public class TokenServiceImpl implements TokenService {
     @Autowired
     private RedisCache redisCache;
 
-    private String getLoginTokenKey(String uuidToken) {
-        return CacheConstants.LOGIN_TOKEN_KEY + uuidToken;
+    public static String getLoginTokenKey(String uuidToken) {
+        return CacheConstants.LOGIN_TOKEN + uuidToken;
     }
 
     @Override
     public LoginUserDTO getLoginUser(HttpServletRequest request) {
-        String token = request.getHeader(TokenConstants.AUTHORIZATION);
+        String token = request.getHeader(SecurityConstants.AUTHORIZATION);
         if (StringUtils.isNotEmpty(token)) {
-            token = token.replace(TokenConstants.TOKEN_PREFIX, "");
+            token = token.replace(SecurityConstants.TOKEN_PREFIX, "");
             try {
                 Claims claims = JwtUtils.parseToken(token);
-                String uuidToken = (String) claims.get(TokenConstants.LOGIN_USER_KEY);
+                String uuidToken = (String) claims.get(SecurityConstants.LOGIN_USER_KEY);
                 String loginTokenKey = getLoginTokenKey(uuidToken);
                 return redisCache.getCacheObject(loginTokenKey);
             } catch (Exception e) {
@@ -57,7 +57,7 @@ public class TokenServiceImpl implements TokenService {
     public void verifyToken(LoginUserDTO loginUserDTO) {
         Long expireTime = loginUserDTO.getExpireTime();
         long currentTime = System.currentTimeMillis();
-        if ((expireTime - currentTime) <= TokenConstants.EXPIRE_REFRESH_TOKEN_TIME) {
+        if ((expireTime - currentTime) <= SecurityConstants.EXPIRE_REFRESH_TOKEN_TIME) {
             refreshToken(loginUserDTO);
         }
 
@@ -79,14 +79,14 @@ public class TokenServiceImpl implements TokenService {
         refreshToken(loginUserDTO);
 
         Map<String, Object> claims = new HashMap<>();
-        claims.put(TokenConstants.LOGIN_USER_KEY, token);
+        claims.put(SecurityConstants.LOGIN_USER_KEY, token);
         claims.put(Claims.SUBJECT, loginUserDTO.getUsername());
         return JwtUtils.createToken(claims);
     }
 
     private void refreshToken(LoginUserDTO loginUserDTO) {
-        loginUserDTO.setExpireTime(System.currentTimeMillis() + TokenConstants.EXPIRE_TIME);
+        loginUserDTO.setExpireTime(System.currentTimeMillis() + SecurityConstants.EXPIRE_TIME);
         String loginTokenKey = getLoginTokenKey(loginUserDTO.getToken());
-        redisCache.setCacheObject(loginTokenKey, loginUserDTO, TokenConstants.EXPIRE_TIME, TimeUnit.MILLISECONDS);
+        redisCache.setCacheObject(loginTokenKey, loginUserDTO, SecurityConstants.EXPIRE_TIME, TimeUnit.MILLISECONDS);
     }
 }

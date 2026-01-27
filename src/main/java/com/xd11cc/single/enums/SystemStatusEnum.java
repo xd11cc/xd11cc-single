@@ -2,7 +2,6 @@ package com.xd11cc.single.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 /**
  * @Author: xd11cc
@@ -10,14 +9,13 @@ import lombok.NoArgsConstructor;
  **/
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
-public enum SystemEnableEnum {
+public enum SystemStatusEnum {
 
-    NO("01", "否"),
-    YES("02", "是"),
+    NORMAL(0, "正常"),
+    FORBIDDEN(1, "停用"),
     ;
 
-    private String code;
+    private final Integer code;
 
-    private String info;
+    private final String info;
 }

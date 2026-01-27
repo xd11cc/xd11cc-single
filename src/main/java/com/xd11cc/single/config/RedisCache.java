@@ -1,10 +1,8 @@
 package com.xd11cc.single.config;
 
+import com.xd11cc.single.config.context.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundSetOperations;
-import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -30,6 +28,13 @@ public class RedisCache {
      * @param <T>
      */
     public <T> void setCacheObject(String key, final T value) {
+        setCacheObject(key, value, true);
+    }
+
+    public <T> void setCacheObject(String key, final T value, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         redisTemplate.opsForValue().set(key, value);
     }
 
@@ -42,6 +47,13 @@ public class RedisCache {
      * @param <T>
      */
     public <T> void setCacheObject(String key, final T value, final long timeout, final TimeUnit unit) {
+        setCacheObject(key, value, timeout, unit, true);
+    }
+
+    public <T> void setCacheObject(String key, final T value, long timeout, TimeUnit unit, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         redisTemplate.opsForValue().set(key, value, timeout, unit);
     }
 
@@ -53,16 +65,40 @@ public class RedisCache {
      * @return
      */
     public boolean expire(String key, final long timeout, final TimeUnit unit) {
+        return expire(key, timeout, unit, true);
+    }
+
+    public boolean expire(String key, final long timeout, final TimeUnit unit, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         return redisTemplate.expire(key, timeout, unit);
     }
 
     /**
      * 获取过期时间
      * @param key
-     * @param unit
      * @return
      */
+    public long getExpire(String key){
+        return getExpire(key, true);
+    }
+
     public long getExpire(String key, final TimeUnit unit) {
+        return getExpire(key, unit, true);
+    }
+
+    public long getExpire(String key, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
+        return redisTemplate.getExpire(key);
+    }
+
+    public long getExpire(String key, TimeUnit unit, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         return redisTemplate.getExpire(key, unit);
     }
 
@@ -72,6 +108,13 @@ public class RedisCache {
      * @return
      */
     public boolean hasKey(String key) {
+        return hasKey(key, true);
+    }
+
+    public boolean hasKey(String key, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         return redisTemplate.hasKey(key);
     }
 
@@ -82,6 +125,13 @@ public class RedisCache {
      * @param <T>
      */
     public <T> T getCacheObject(String key) {
+        return getCacheObject(key, true);
+    }
+
+    public <T> T getCacheObject(String key, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         ValueOperations<String, T> valueOperations = redisTemplate.opsForValue();
         return valueOperations.get(key);
     }
@@ -91,6 +141,13 @@ public class RedisCache {
      * @param key
      */
     public void removeCacheObject(String key) {
+        removeCacheObject(key, true);
+    }
+
+    public void removeCacheObject(String key, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         redisTemplate.delete(key);
     }
 
@@ -102,6 +159,13 @@ public class RedisCache {
      * @param <T>
      */
     public <T> long setCacheList(String key, final List<T> dataList) {
+        return setCacheList(key, dataList, true);
+    }
+
+    public <T> long setCacheList(String key, final List<T> dataList, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         Long count = redisTemplate.opsForList().rightPushAll(key, dataList);
         return null != count ? count : 0;
     }
@@ -113,6 +177,13 @@ public class RedisCache {
      * @param <T>
      */
     public <T> List<T> getCacheList(String key) {
+        return getCacheList(key, true);
+    }
+
+    public <T> List<T> getCacheList(String key, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         return redisTemplate.opsForList().range(key, 0, -1);
     }
 
@@ -123,7 +194,14 @@ public class RedisCache {
      * @return
      * @param <T>
      */
-    public <T> BoundSetOperations<String, T> boundSetOps(String key, final Set<T> dataSet) {
+    public <T> BoundSetOperations<String, T> setCacheSet(String key, final Set<T> dataSet) {
+        return setCacheSet(key, dataSet, true);
+    }
+
+    public <T> BoundSetOperations<String, T> setCacheSet(String key, final Set<T> dataSet, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         BoundSetOperations<String, T> boundSetOperations = redisTemplate.boundSetOps(key);
         Iterator<T> iterator = dataSet.iterator();
         if (iterator.hasNext()) {
@@ -139,6 +217,13 @@ public class RedisCache {
      * @param <T>
      */
     public <T> Set<T> getCacheSet(String key) {
+        return getCacheSet(key, true);
+    }
+
+    public <T> Set<T> getCacheSet(String key, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         return redisTemplate.opsForSet().members(key);
     }
 
@@ -149,6 +234,13 @@ public class RedisCache {
      * @param <T>
      */
     public <T> void setCacheMap(String key, final Map<String, T> dataMap) {
+        setCacheMap(key, dataMap, true);
+    }
+
+    public <T> void setCacheMap(String key, final Map<String, T> dataMap, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         if (null != dataMap && !dataMap.isEmpty()) {
             redisTemplate.opsForHash().putAll(key, dataMap);
         }
@@ -161,6 +253,13 @@ public class RedisCache {
      * @param <T>
      */
     public <T> Map<String, T> getCacheMap(String key) {
+        return getCacheMap(key, true);
+    }
+
+    public <T> Map<String, T> getCacheMap(String key, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         return redisTemplate.opsForHash().entries(key);
     }
 
@@ -175,6 +274,13 @@ public class RedisCache {
         redisTemplate.opsForHash().put(key, hKey, value);
     }
 
+    public <T> void setCacheMapValue(String key, final String hKey,  final T value, boolean isTenant){
+        if (isTenant){
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
+        redisTemplate.opsForHash().put(key, hKey, value);
+    }
+
     /**
      * 获取map中key的值
      * @param key
@@ -183,6 +289,13 @@ public class RedisCache {
      * @param <T>
      */
     public <T> T getCacheMapValue(String key, final String hKey) {
+        return getCacheMapValue(key, hKey, true);
+    }
+
+    public <T> T getCacheMapValue(String key, final String hKey, boolean isTenant) {
+        if (isTenant){
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         HashOperations<String, String, T> hashOperations = redisTemplate.opsForHash();
         return hashOperations.get(key, hKey);
     }
@@ -195,6 +308,13 @@ public class RedisCache {
      * @param <T>
      */
     public <T> List<T> getMultiCacheMapValue(String key, final Collection<String> hKeys) {
+        return getMultiCacheMapValue(key, hKeys, true);
+    }
+
+    public <T> List<T> getMultiCacheMapValue(String key, Collection<String> hKeys, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         return redisTemplate.opsForHash().multiGet(key, hKeys);
     }
 
@@ -205,6 +325,13 @@ public class RedisCache {
      * @return
      */
     public boolean removeCacheMapValue(String key, final String hKey) {
+        return removeCacheMapValue(key, hKey, true);
+    }
+
+    public boolean removeCacheMapValue(String key, final String hKey, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         return redisTemplate.opsForHash().delete(key, hKey) > 0;
     }
 
@@ -217,6 +344,13 @@ public class RedisCache {
      * @param <T>
      */
     public <T> Boolean zSetAdd(String key, final T value, double score) {
+        return zSetAdd(key, value, score, true);
+    }
+
+    public <T> Boolean zSetAdd(String key, final T value, double score, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         return redisTemplate.opsForZSet().add(key, value, score);
     }
 
@@ -228,6 +362,13 @@ public class RedisCache {
      * @param <T>
      */
     public <T> Long zSetRemove(String key, final T value) {
+        return zSetRemove(key, value, true);
+    }
+
+    public <T> Long zSetRemove(String key, final T value, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         return redisTemplate.opsForZSet().remove(key, value);
     }
 
@@ -242,6 +383,13 @@ public class RedisCache {
      * @param <V>
      */
     public <V> Set<V> zSetRangeByScore(String key, final double min, final double max, final long offset, final long count) {
+        return zSetRangeByScore(key, min, max, offset, count, true);
+    }
+
+    public <V> Set<V> zSetRangeByScore(String key, final double min, final double max, final long offset, final long count, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         return redisTemplate.opsForZSet().rangeByScore(key, min, max, offset, count);
     }
 
@@ -256,6 +404,13 @@ public class RedisCache {
      * @param <V>
      */
     public <V> Set<V> zSetReverseRangeByScore(String key, final double min, final double max, final long offset, final long count) {
+        return zSetReverseRangeByScore(key, min, max, offset, count, true);
+    }
+
+    public <V> Set<V> zSetReverseRangeByScore(String key, final double min, final double max, final long offset, final long count, boolean isTenant) {
+        if (isTenant) {
+            key = key + ":" + TenantContextHolder.getTenantId();
+        }
         return redisTemplate.opsForZSet().reverseRangeByScore(key, min, max, offset, count);
     }
 

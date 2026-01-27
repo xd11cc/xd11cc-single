@@ -1,7 +1,7 @@
 package com.xd11cc.single.entity.domain;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.xd11cc.single.entity.vo.base.BaseVO;
+import com.xd11cc.single.entity.base.BaseDO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,7 +13,7 @@ import lombok.Data;
 @Data
 @ApiModel("菜单")
 @TableName("system_menu")
-public class SystemMenuDO extends BaseVO {
+public class SystemMenuDO extends BaseDO {
 
     @ApiModelProperty("主键id")
     private Long id;
@@ -53,5 +53,8 @@ public class SystemMenuDO extends BaseVO {
 
     @ApiModelProperty("是否显示，0-否 1-是")
     private boolean visible;
+
+    @ApiModelProperty("备注")
+    private String remark;
 
 }

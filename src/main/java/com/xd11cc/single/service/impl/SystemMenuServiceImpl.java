@@ -50,19 +50,19 @@ public class SystemMenuServiceImpl extends ServiceImpl<SystemMenuMapper, SystemM
                 routeVO.setName(systemMenuDO.getRouteName());
                 routeVO.setPath(systemMenuDO.getPath());
                 routeVO.setComponent(systemMenuDO.getComponent());
-                if (MenuTypeEnum.DIR.getCode().equals(systemMenuDO.getMenuType())) {
-                    routeVO.setRedirect("noRedirect");
-                }
                 routeVO.setSort(systemMenuDO.getSort());
                 // 构建其他元素
                 MetaVO metaVO = MetaVO.builder()
                         .title(systemMenuDO.getMenuName())
-                        .icon(systemMenuDO.getIcon())
+                        .elIcon(systemMenuDO.getIcon())
                         .query(systemMenuDO.getQuery())
-                        .visible(systemMenuDO.isVisible())
+                        .hidden(systemMenuDO.isVisible())
                         .permission(systemMenuDO.getPermission())
-                        .alwaysShow(true)
                         .build();
+                if (MenuTypeEnum.DIR.getCode().equals(systemMenuDO.getMenuType())) {
+                    routeVO.setRedirect("noRedirect");
+                    metaVO.setAlwaysShow(true);
+                }
                 routeVO.setMeta(metaVO);
                 routeVO.setChildren(buildTreeMenu(systemMenuDOS, systemMenuDO.getId()));
                 routeVOS.add(routeVO);
