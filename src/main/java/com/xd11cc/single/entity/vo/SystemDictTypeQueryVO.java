@@ -14,8 +14,8 @@ import lombok.Data;
 public class SystemDictTypeQueryVO extends BasePageVO {
 
     @ApiModelProperty("字典名称")
-    private String name;
+    private String dictName;
 
     @ApiModelProperty("字典类型")
-    private String type;
+    private String dictType;
 }

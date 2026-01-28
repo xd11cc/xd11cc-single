@@ -1,25 +1,20 @@
-package com.xd11cc.single.entity.domain;
+package com.xd11cc.single.entity.vo;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.xd11cc.single.entity.base.BaseTenantDO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
- * @Author: xd11cc
- * @Date: 2025/6/13 23:59
- **/
+ * @author xd11cc
+ * @date 2026-01-28 15:37:29
+ * @description
+ */
 @Data
-@ApiModel("字典数据")
-@TableName("system_dict_data")
-public class SystemDictDataDO extends BaseTenantDO {
+@ApiModel("字典数据新增对象")
+public class SystemDictDataAddVO {
 
-    @ApiModelProperty("主键id")
-    private Long id;
-
-    @ApiModelProperty("字典类型")
-    private String dictType;
+    @ApiModelProperty("字典数据类型")
+    private String type;
 
     @ApiModelProperty("标签")
     private String label;
@@ -38,5 +33,4 @@ public class SystemDictDataDO extends BaseTenantDO {
 
     @ApiModelProperty("备注")
     private String remark;
-
 }

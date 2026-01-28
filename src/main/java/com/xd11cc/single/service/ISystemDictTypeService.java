@@ -16,7 +16,7 @@ public interface ISystemDictTypeService extends IService<SystemDictTypeDO> {
 
     List<SystemDictTypeDO> getList(SystemDictTypeQueryVO systemDictTypeQueryVO);
 
-    void add(@Valid SystemDictTypeAddVO systemDictTypeAddVO);
+    int add(@Valid SystemDictTypeAddVO systemDictTypeAddVO);
 
-    void deleteByIds(List<Long> ids);
+    int deleteByIds(List<Long> ids);
 }

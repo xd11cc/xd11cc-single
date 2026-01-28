@@ -22,10 +22,10 @@ public class SystemDictTypeDO extends BaseDO {
     private Long id;
 
     @ApiModelProperty("字典类型")
-    private String type;
+    private String dictType;
 
     @ApiModelProperty("字典类型名称")
-    private String name;
+    private String dictName;
 
     @ApiModelProperty("备注")
     private String remark;

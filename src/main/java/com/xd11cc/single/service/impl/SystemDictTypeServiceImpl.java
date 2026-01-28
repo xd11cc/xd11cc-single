@@ -33,34 +33,34 @@ public class SystemDictTypeServiceImpl extends ServiceImpl<SystemDictTypeMapper,
     @Override
     public List<SystemDictTypeDO> getList(SystemDictTypeQueryVO systemDictTypeQueryVO) {
         LambdaQueryWrapper<SystemDictTypeDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(!StringUtils.isEmpty(systemDictTypeQueryVO.getName()),
-                SystemDictTypeDO::getName, systemDictTypeQueryVO.getName());
-        wrapper.like(!StringUtils.isEmpty(systemDictTypeQueryVO.getType()),
-                SystemDictTypeDO::getType, systemDictTypeQueryVO.getType());
+        wrapper.like(!StringUtils.isEmpty(systemDictTypeQueryVO.getDictName()),
+                SystemDictTypeDO::getDictName, systemDictTypeQueryVO.getDictName());
+        wrapper.like(!StringUtils.isEmpty(systemDictTypeQueryVO.getDictType()),
+                SystemDictTypeDO::getDictType, systemDictTypeQueryVO.getDictType());
         wrapper.orderByDesc(SystemDictTypeDO::getId);
         return baseMapper.selectList(wrapper);
     }
 
     @Override
-    public void add(SystemDictTypeAddVO systemDictTypeAddVO) {
+    public int add(SystemDictTypeAddVO systemDictTypeAddVO) {
         SystemDictTypeDO systemDictTypeDO = SystemDictTypeConvert.INSTANCE.addVO2DO(systemDictTypeAddVO);
         try {
-            baseMapper.insert(systemDictTypeDO);
+            return baseMapper.insert(systemDictTypeDO);
         } catch (DuplicateKeyException e) {
             throw new ServiceException(SystemErrorEnum.DICT_TYPE_EXISTS);
         }
     }
 
     @Override
-    public void deleteByIds(List<Long> ids) {
+    public int deleteByIds(List<Long> ids) {
         List<SystemDictTypeDO> systemDictTypeDOS = baseMapper.selectBatchIds(ids);
-        List<String> types = systemDictTypeDOS.stream().map(SystemDictTypeDO::getType)
+        List<String> types = systemDictTypeDOS.stream().map(SystemDictTypeDO::getDictType)
                 .collect(Collectors.toList());
         List<SystemDictDataDO> systemDictDataDOS = systemDictDataService.list(new LambdaQueryWrapper<SystemDictDataDO>()
-                .in(SystemDictDataDO::getType, types));
+                .in(SystemDictDataDO::getDictType, types));
         if (StringUtils.isNotEmpty(systemDictDataDOS)) {
             throw new ServiceException(SystemErrorEnum.DICT_TYPE_HAVE_DATA, new Object[]{String.join(",", types)});
         }
-        baseMapper.deleteBatchIds(ids);
+        return baseMapper.deleteBatchIds(ids);
     }
 }

@@ -37,21 +37,33 @@ public class SystemDictTypeController {
     @ApiOperation("新增字典类型")
     @PostMapping("/add")
     public ResponseVO<?> add(@Valid @RequestBody SystemDictTypeAddVO systemDictTypeAddVO){
-        systemDictTypeService.add(systemDictTypeAddVO);
-        return ResponseVO.success();
+        int i = systemDictTypeService.add(systemDictTypeAddVO);
+        if (i > 0){
+            return ResponseVO.success(i, "新增成功");
+        }else {
+            return ResponseVO.fail("新增失败");
+        }
     }
 
     @ApiOperation("删除字典类型")
     @GetMapping("/removeByIds/{ids}")
     public ResponseVO<?> removeByIds(@PathVariable("ids") List<Long> ids){
-        systemDictTypeService.deleteByIds(ids);
-        return ResponseVO.success();
+        int i = systemDictTypeService.deleteByIds(ids);
+        if (i > 0){
+            return ResponseVO.success(i, "删除成功");
+        }else {
+            return ResponseVO.fail("删除失败");
+        }
     }
 
     @ApiOperation("更新字典类型")
     @PostMapping("/modifyById")
     public ResponseVO<?> modifyById(@Valid @RequestBody SystemDictTypeDO systemDictTypeDO){
-        systemDictTypeService.updateById(systemDictTypeDO);
-        return ResponseVO.success();
+        boolean b = systemDictTypeService.updateById(systemDictTypeDO);
+        if (b){
+            return ResponseVO.success(b, "修改成功");
+        }else {
+            return ResponseVO.fail("修改失败");
+        }
     }
 }
