@@ -24,7 +24,7 @@ public class SystemPostDO extends BaseTenantDO {
     @ApiModelProperty("岗位名称")
     private String postName;
 
-    @ApiModelProperty("岗位状态，字典类型system_enable_status")
+    @ApiModelProperty("岗位状态，字典类型system_status")
     private String status;
 
     @ApiModelProperty("备注")

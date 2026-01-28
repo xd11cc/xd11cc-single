@@ -45,7 +45,7 @@ public class SystemMenuDO extends BaseDO {
     @ApiModelProperty("菜单类型，字典类型system_menu_type")
     private String menuType;
 
-    @ApiModelProperty("菜单状态，字典类型system_enable_status")
+    @ApiModelProperty("菜单状态，字典类型system_status")
     private String status;
 
     @ApiModelProperty("权限字符")

@@ -33,7 +33,7 @@ public class SystemDeptDO extends BaseTenantDO {
     @ApiModelProperty("排序")
     private Integer sort;
 
-    @ApiModelProperty("部门状态，字典类型system_enable_status")
+    @ApiModelProperty("部门状态，字典类型system_status")
     private String status;
 
     @ApiModelProperty("备注")

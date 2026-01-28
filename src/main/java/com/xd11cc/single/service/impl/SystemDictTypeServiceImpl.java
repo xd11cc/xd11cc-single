@@ -14,6 +14,7 @@ import com.xd11cc.single.service.ISystemDictDataService;
 import com.xd11cc.single.service.ISystemDictTypeService;
 import com.xd11cc.single.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,7 +44,11 @@ public class SystemDictTypeServiceImpl extends ServiceImpl<SystemDictTypeMapper,
     @Override
     public void add(SystemDictTypeAddVO systemDictTypeAddVO) {
         SystemDictTypeDO systemDictTypeDO = SystemDictTypeConvert.INSTANCE.addVO2DO(systemDictTypeAddVO);
-        baseMapper.insert(systemDictTypeDO);
+        try {
+            baseMapper.insert(systemDictTypeDO);
+        } catch (DuplicateKeyException e) {
+            throw new ServiceException(SystemErrorEnum.DICT_TYPE_EXISTS);
+        }
     }
 
     @Override
@@ -53,8 +58,8 @@ public class SystemDictTypeServiceImpl extends ServiceImpl<SystemDictTypeMapper,
                 .collect(Collectors.toList());
         List<SystemDictDataDO> systemDictDataDOS = systemDictDataService.list(new LambdaQueryWrapper<SystemDictDataDO>()
                 .in(SystemDictDataDO::getType, types));
-        if (StringUtils.isNotEmpty(systemDictTypeDOS)) {
-            throw new ServiceException(SystemErrorEnum.DICT_TYPE_HAVE_DATA);
+        if (StringUtils.isNotEmpty(systemDictDataDOS)) {
+            throw new ServiceException(SystemErrorEnum.DICT_TYPE_HAVE_DATA, new Object[]{String.join(",", types)});
         }
         baseMapper.deleteBatchIds(ids);
     }

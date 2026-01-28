@@ -23,7 +23,7 @@ public class FileConvertUtils {
             // 关闭文档
             pdf.close();
 
-            log.info("PDF转换为Word成功！输出路径：" + wordPath);
+            log.info("PDF转换为Word成功，输出路径：" + wordPath);
         } catch (Exception e) {
             log.error("转换失败：" + e.getMessage());
             e.printStackTrace();

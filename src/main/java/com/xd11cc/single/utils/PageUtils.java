@@ -37,7 +37,7 @@ public class PageUtils {
         Map<String, Object> map = new HashMap<>();
         map.put("rows", list);
         map.put("total", new PageInfo<>(list).getTotal());
-        map.put("msg", "查询成功！");
+        map.put("msg", "查询成功");
         return ResponseVO.success(map);
     }
 
@@ -52,9 +52,9 @@ public class PageUtils {
         try {
             Page<R> p = null;
             if (StringUtils.isNoneBlank(basePageVO.getOrderBy())){
-                p = PageHelper.startPage(basePageVO.getPageNo(), basePageVO.getPageSize(), basePageVO.getOrderBy());
+                p = PageHelper.startPage(basePageVO.getCurrentPage(), basePageVO.getPageSize(), basePageVO.getOrderBy());
             }else {
-                p = PageHelper.startPage(basePageVO.getPageNo(), basePageVO.getPageSize());
+                p = PageHelper.startPage(basePageVO.getCurrentPage(), basePageVO.getPageSize());
             }
             List<R> r = supplier.get();
             PageInfo<R> of = PageInfo.of(p);
@@ -62,7 +62,7 @@ public class PageUtils {
             Map<String, Object> map = new HashMap<>();
             map.put("rows", of.getList());
             map.put("total", of.getTotal());
-            map.put("msg", "查询成功！");
+            map.put("msg", "查询成功");
             return ResponseVO.success(map);
         }finally {
             PageHelper.clearPage();
@@ -77,7 +77,7 @@ public class PageUtils {
         Map<String, Object> map = new HashMap<>();
         map.put("rows", Collections.emptyList());
         map.put("total", 0);
-        map.put("msg", "查询成功！");
+        map.put("msg", "查询成功");
         return ResponseVO.success(map);
     }
 }

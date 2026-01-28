@@ -25,14 +25,15 @@ public enum SystemErrorEnum implements ErrorCode {
     BAD_REQUEST(400, "请求参数有误"),
     UNAUTHORIZED(401, "未授权"),
     METHOD_NOT_ALLOWED(405, "请求方法不正确"),
-    SYSTEM_ERROR(500, "系统异常，请联系管理员处理！"),
-    USER_NOT_FOUND(1001001, "用户不存在！"),
-    PASSWORD_ERROR(1001002, "密码错误！"),
-    ILLEGAL_VISIT(1001003, "非法访问！"),
-    USER_FORBIDDEN(1001004, "账户已禁用！"),
-    USER_LOCKED(1001005, "密码错误超过{}次，账户已锁定！"),
-    CHOOSE_RIGHT_DOMAIN(1001006, "请使用正确的域名访问！"),
-    DICT_TYPE_HAVE_DATA(1001007, "{}字典类型下存在字典数据！"),
+    SYSTEM_ERROR(500, "系统异常，请联系管理员处理"),
+    USER_NOT_FOUND(1001001, "用户不存在"),
+    PASSWORD_ERROR(1001002, "密码错误"),
+    ILLEGAL_VISIT(1001003, "非法访问"),
+    USER_FORBIDDEN(1001004, "账户已禁用"),
+    USER_LOCKED(1001005, "密码错误超过{}次，账户已锁定"),
+    CHOOSE_RIGHT_DOMAIN(1001006, "请使用正确的域名访问"),
+    DICT_TYPE_HAVE_DATA(1001007, "{}字典类型下存在字典数据"),
+    DICT_TYPE_EXISTS(1001008, "字典类型已存在"),
     ;
 
     private int errorCode;

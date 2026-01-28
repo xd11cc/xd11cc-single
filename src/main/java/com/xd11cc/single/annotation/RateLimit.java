@@ -50,5 +50,5 @@ public @interface RateLimit {
      * 限流提示信息
      * @return
      */
-    String message() default "请求过于频繁，请稍后重试！";
+    String message() default "请求过于频繁，请稍后重试";
 }

@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class BasePageVO extends BaseQueryVO{
 
-    private Integer pageNo = 1;
+    private Integer currentPage = 1;
 
     private Integer pageSize = 10;
 

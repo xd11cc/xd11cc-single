@@ -31,11 +31,11 @@ public class ResponseVO<T> implements Serializable {
     private String msg;
 
     public static <T> ResponseVO<T> success() {
-        return resetResult(null, SUCCESS, null);
+        return resetResult(null, SUCCESS, "操作成功");
     }
 
     public static <T> ResponseVO<T> success(T data) {
-        return resetResult(data, SUCCESS, null);
+        return resetResult(data, SUCCESS, "操作成功");
     }
 
     public static <T> ResponseVO<T> success(T data, String msg) {

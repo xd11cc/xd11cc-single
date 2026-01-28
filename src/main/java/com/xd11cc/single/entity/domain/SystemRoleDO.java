@@ -24,7 +24,7 @@ public class SystemRoleDO extends BaseTenantDO {
     @ApiModelProperty("角色名称")
     private String roleName;
 
-    @ApiModelProperty("角色状态，字典类型system_enable_status")
+    @ApiModelProperty("角色状态，字典类型system_status")
     private String status;
 
     @ApiModelProperty("备注")
