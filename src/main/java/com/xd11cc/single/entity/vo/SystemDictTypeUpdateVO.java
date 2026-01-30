@@ -1,9 +1,11 @@
 package com.xd11cc.single.entity.vo;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
@@ -13,10 +15,11 @@ import javax.validation.constraints.Size;
  * @description
  */
 @Data
+@ApiModel("字典类型更新对象")
 public class SystemDictTypeUpdateVO {
 
     @ApiModelProperty("主键id")
-    @NotBlank(message = "字典类型不存在")
+    @NotNull(message = "请选择字典类型")
     private Long id;
 
     @ApiModelProperty("字典类型")

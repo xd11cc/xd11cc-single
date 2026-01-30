@@ -6,6 +6,7 @@ import com.xd11cc.single.entity.vo.SystemDictTypeAddVO;
 import com.xd11cc.single.entity.vo.SystemDictTypeQueryVO;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 /**
@@ -19,4 +20,6 @@ public interface ISystemDictTypeService extends IService<SystemDictTypeDO> {
     int add(@Valid SystemDictTypeAddVO systemDictTypeAddVO);
 
     int deleteByIds(List<Long> ids);
+
+    SystemDictTypeDO getByDictType(String dictType);
 }

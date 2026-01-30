@@ -34,6 +34,8 @@ public enum SystemErrorEnum implements ErrorCode {
     CHOOSE_RIGHT_DOMAIN(1001006, "请使用正确的域名访问"),
     DICT_TYPE_HAVE_DATA(1001007, "{}字典类型下存在字典数据"),
     DICT_TYPE_EXISTS(1001008, "字典类型已存在"),
+    DICT_DATA_EXISTS(1001009, "字典数据已存在"),
+    DICT_TYPE_NOT_EXISTS(1001010, "字典类型不存在"),
     ;
 
     private int errorCode;

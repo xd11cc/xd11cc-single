@@ -27,16 +27,19 @@ public class SystemDictDataDO extends BaseTenantDO {
     @ApiModelProperty("键值")
     private String value;
 
-    @ApiModelProperty("键值颜色")
-    private String valueColor;
+    @ApiModelProperty("css样式")
+    private String cssClass;
 
-    @ApiModelProperty("背景颜色")
-    private String backgroundColor;
+    @ApiModelProperty("列表样式")
+    private String listClass;
 
     @ApiModelProperty("排序")
-    private String sort;
+    private Integer sort;
 
     @ApiModelProperty("备注")
     private String remark;
+
+    @ApiModelProperty("状态，字典system_status")
+    private String status;
 
 }

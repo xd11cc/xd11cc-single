@@ -16,6 +16,8 @@ spring:
     pathmatch:
       # 由于spring默认的url匹配策略是PATH_PATTERN_PARSER，与security匹配规则不一致可能会导致安全策略失效
       matching-strategy: ant_path_matcher
+  main:
+    allow-circular-references: true # 开启循环依赖支持
 
 logging:
   level:
@@ -25,6 +27,9 @@ mybatis-plus:
   global-config:
     db-config:
       logic-delete-field: del_flag # 全局逻辑删除字段名
+      id-type: auto
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 # 分页插件
 pagehelper:
@@ -64,4 +69,3 @@ tenant:
     - system_menu
     - system_dict_type
   ignoreUrls:
-    -

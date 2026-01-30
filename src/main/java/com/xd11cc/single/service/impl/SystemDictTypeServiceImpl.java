@@ -63,4 +63,11 @@ public class SystemDictTypeServiceImpl extends ServiceImpl<SystemDictTypeMapper,
         }
         return baseMapper.deleteBatchIds(ids);
     }
+
+    @Override
+    public SystemDictTypeDO getByDictType(String dictType) {
+        LambdaQueryWrapper<SystemDictTypeDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SystemDictTypeDO::getDictType, dictType);
+        return baseMapper.selectOne(wrapper);
+    }
 }

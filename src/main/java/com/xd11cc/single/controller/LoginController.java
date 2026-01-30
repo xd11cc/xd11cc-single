@@ -34,8 +34,6 @@ public class LoginController {
     @Autowired
     private ISystemMenuService systemMenuService;
 
-    private static final String CAPTCHA_CODE_KEY = "captchaCodeKey:";
-
     @PostMapping("/loginByPassword")
     @ApiOperation("账号密码登录")
     public ResponseVO<String> loginByPassword(@Valid @RequestBody LoginPasswordVO loginPasswordVO){

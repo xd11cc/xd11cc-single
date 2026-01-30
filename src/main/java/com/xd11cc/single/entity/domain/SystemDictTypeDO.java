@@ -1,7 +1,5 @@
 package com.xd11cc.single.entity.domain;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xd11cc.single.entity.base.BaseDO;
 import io.swagger.annotations.ApiModel;
@@ -18,7 +16,6 @@ import lombok.Data;
 public class SystemDictTypeDO extends BaseDO {
 
     @ApiModelProperty("主键id")
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     @ApiModelProperty("字典类型")
