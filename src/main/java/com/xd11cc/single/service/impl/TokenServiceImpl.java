@@ -32,7 +32,7 @@ public class TokenServiceImpl implements TokenService {
     private RedisCache redisCache;
 
     public static String getLoginTokenKey(String uuidToken) {
-        return CacheConstants.LOGIN_TOKEN + uuidToken;
+        return CacheConstants.LOGIN_TOKEN_KEY + uuidToken;
     }
 
     @Override

@@ -47,7 +47,7 @@ public class RedisCacheTest {
         TenantDTO tenantDTO = new TenantDTO();
         tenantDTO.setId(1L);
         tenantDTO.setName("xd11cc租户");
-        tenantDTO.setStatus(0);
+        tenantDTO.setStatus("0");
         tenantDTO.setDomain("xd11cc.xyz");
         tenantDTO.setExpireTime(DateUtil.offsetDay(new Date(), 1000));
         tenantDTO.setAccountCount(100);
@@ -55,7 +55,7 @@ public class RedisCacheTest {
         map.put("localhost", tenantDTO);
         map.put("127.0.0.1", tenantDTO);
         map.forEach((k,v)->{
-            redisCache.setCacheMapValue(CacheConstants.TENANT_DOMAIN, k, v, false);
+            redisCache.setCacheMapValue(CacheConstants.TENANT_DOMAIN_KEY, k, v, false);
         });
     }
 }

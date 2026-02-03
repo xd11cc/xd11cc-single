@@ -36,7 +36,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
     private RedisCache redisCache;
     
     private static String getPasswordErrorCountKey(Long userId){
-        return CacheConstants.PASSWORD_ERROR_COUNT + userId;
+        return CacheConstants.PASSWORD_ERROR_COUNT_KEY + userId;
     }
 
     @Override

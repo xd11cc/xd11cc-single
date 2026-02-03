@@ -52,7 +52,7 @@ public class SystemUserDO extends BaseTenantDO {
     private String postName;
 
     @ApiModelProperty("账号状态，字典类型system_status")
-    private Integer status;
+    private String status;
 
     @ApiModelProperty("头像路径")
     private String headUrl;

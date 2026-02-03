@@ -28,7 +28,7 @@ public class TenantDTO implements Serializable {
     /**
      * 租户状态
      */
-    private Integer status;
+    private String status;
 
     /**
      * 绑定的域名

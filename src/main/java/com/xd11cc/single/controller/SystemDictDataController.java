@@ -14,7 +14,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author xd11cc
@@ -65,7 +67,23 @@ public class SystemDictDataController {
 
     @ApiOperation("查询字典数据")
     @PostMapping("/page")
-    public ResponseVO<SystemDictDataDO> page(@Valid @RequestBody SystemDictDataQueryVO systemDictDataQueryVO){
+    public ResponseVO<List<SystemDictDataDO>> page(@Valid @RequestBody SystemDictDataQueryVO systemDictDataQueryVO){
         return PageUtils.page(systemDictDataQueryVO, () ->systemDictDataService.getList(systemDictDataQueryVO));
+    }
+
+    @ApiOperation("根据字典类型查询字典数据")
+    @GetMapping("/getCache/{dictType}")
+    public ResponseVO<List<SystemDictDataDO>> getCache(@PathVariable("dictType") String dictType){
+        return ResponseVO.success(systemDictDataService.getCache(dictType));
+    }
+
+    @ApiOperation("根据字典类型组查询字典数据")
+    @GetMapping("/getCacheGroup/{dictTypes}")
+    public ResponseVO<Map<String, List<SystemDictDataDO>>> getCacheGroup(@PathVariable("dictTypes") List<String> dictTypes){
+        Map<String, List<SystemDictDataDO>> map = new HashMap<>();
+        dictTypes.forEach(d ->{
+            map.put(d, systemDictDataService.getCache(d));
+        });
+        return ResponseVO.success(map);
     }
 }

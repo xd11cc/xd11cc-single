@@ -14,20 +14,25 @@ public class CacheConstants {
     /**
      * 登录用户令牌
      */
-    public static final String LOGIN_TOKEN = "login_tokens:";
+    public static final String LOGIN_TOKEN_KEY = "login_tokens:";
 
     /**
      * 登录密码错误次数
      */
-    public static final String PASSWORD_ERROR_COUNT = "password_error_count:";
+    public static final String PASSWORD_ERROR_COUNT_KEY = "password_error_count:";
 
     /**
      * 接口限流key
      */
-    public static final String RATE_LIMIT = "rate_limit:";
+    public static final String RATE_LIMIT_KEY = "rate_limit:";
 
     /**
      * 租户域名key
      */
-    public static final String TENANT_DOMAIN = "tenant_domain";
+    public static final String TENANT_DOMAIN_KEY = "tenant_domain";
+
+    /**
+     * 字典数据key
+     */
+    public static final String DICT_TYPE_KEY = "dict_type:";
 }

@@ -26,4 +26,7 @@ public class SystemDictDataQueryVO extends BasePageVO {
     @ApiModelProperty("键值")
     private String value;
 
+    @ApiModelProperty("状态")
+    private String status;
+
 }

@@ -51,7 +51,7 @@ public class TenantFilter extends OncePerRequestFilter {
 
         String domain = request.getServerName();
         // 根据域名查询租户ID
-        TenantDTO tenantDTO = redisCache.getCacheMapValue(CacheConstants.TENANT_DOMAIN, domain, false);
+        TenantDTO tenantDTO = redisCache.getCacheMapValue(CacheConstants.TENANT_DOMAIN_KEY, domain, false);
         if (tenantDTO == null){
             log.warn("域名：{}，查不到租户ID", domain);
             ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SystemErrorEnum.CHOOSE_RIGHT_DOMAIN)));

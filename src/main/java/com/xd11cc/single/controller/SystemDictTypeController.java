@@ -71,6 +71,12 @@ public class SystemDictTypeController {
         return PageUtils.page(systemDictTypeQueryVO, ()-> systemDictTypeService.getList(systemDictTypeQueryVO));
     }
 
+    @ApiOperation("字典类型列表")
+    @GetMapping("/list")
+    public ResponseVO<List<SystemDictTypeDO>> list(){
+        return ResponseVO.success(systemDictTypeService.list());
+    }
+
     @ApiModelProperty("导出")
     @PostMapping("/export")
     public void export(@RequestBody SystemDictTypeQueryVO systemDictTypeQueryVO){

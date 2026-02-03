@@ -24,4 +24,6 @@ public interface ISystemDictDataService extends IService<SystemDictDataDO> {
     int modifyById(@Valid SystemDictDataUpdateVO systemDictDataUpdateVO);
 
     List<SystemDictDataDO> getList(SystemDictDataQueryVO systemDictDataQueryVO);
+
+    List<SystemDictDataDO> getCache(String dictType);
 }
