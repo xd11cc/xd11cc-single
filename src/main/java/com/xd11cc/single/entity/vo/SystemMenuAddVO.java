@@ -1,30 +1,31 @@
-package com.xd11cc.single.entity.domain;
+package com.xd11cc.single.entity.vo;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.xd11cc.single.entity.base.BaseDO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-/**
- * @Author: xd11cc
- * @Date: 2025/6/13 23:29
- **/
-@Data
-@ApiModel("菜单")
-@TableName("system_menu")
-public class SystemMenuDO extends BaseDO {
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
-    @ApiModelProperty("主键id")
-    private Long id;
+/**
+ * @author xd11cc
+ * @date 2026-02-03 11:07:49
+ * @description
+ */
+@Data
+@ApiModel("菜单新增对象")
+public class SystemMenuAddVO {
 
     @ApiModelProperty("父菜单id")
+    @NotNull(message = "父菜单不能为空")
     private Long parentId;
 
     @ApiModelProperty("菜单名称")
+    @NotBlank(message = "菜单名称不能为空")
     private String menuName;
 
     @ApiModelProperty("排序")
+    @NotNull(message = "排序不能为空")
     private Integer sort;
 
     @ApiModelProperty("路由地址")
@@ -56,5 +57,4 @@ public class SystemMenuDO extends BaseDO {
 
     @ApiModelProperty("备注")
     private String remark;
-
 }

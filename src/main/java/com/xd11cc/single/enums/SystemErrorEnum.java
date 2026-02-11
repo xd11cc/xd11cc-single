@@ -36,6 +36,7 @@ public enum SystemErrorEnum implements ErrorCode {
     DICT_TYPE_EXISTS(1001008, "字典类型已存在"),
     DICT_DATA_EXISTS(1001009, "字典数据已存在"),
     DICT_TYPE_NOT_EXISTS(1001010, "字典类型不存在"),
+    MENU_HAVE_CHILDREN(1001011, "当前目录或菜单下存在子集"),
     ;
 
     private int errorCode;

@@ -9,10 +9,10 @@ import lombok.Getter;
  **/
 @Getter
 @AllArgsConstructor
-public enum SystemStatusEnum {
+public enum SystemVisibleEnum {
 
-    NORMAL("0", "正常"),
-    FORBIDDEN("1", "停用"),
+    SHOW("0", "显示"),
+    HIDDEN("1", "隐藏"),
     ;
 
     private final String code;

@@ -4,7 +4,13 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xd11cc.single.mapper.SystemMenuMapper">
 
-    <select id="selectTreeMenu" resultType="com.xd11cc.single.entity.domain.SystemMenuDO">
+    <sql id="base_column_sql">
+        id, parent_id, menu_name, sort, path, component, route_name, query, icon, menu_type,
+        status, permission, visible, create_user_id, create_time, update_user_id, update_time,
+        del_flag, remark
+    </sql>
+
+    <select id="selectRoutes" resultType="com.xd11cc.single.entity.domain.SystemMenuDO">
         select
             a.id, a.parent_id, a.menu_name, a.sort, a.path, a.component, a.route_name
             a.menu_type, a.visible, a.icon
@@ -17,6 +23,54 @@
         left join
             system_user_role d on c.id = d.role_id
         where
-            d.user_id = #{userId} and a.status = 0 and a.menu_type in ('C', 'M')
+            d.user_id = #{userId} and a.status = 0 and a.menu_type in ('C', 'M') and a.del_flag = 0
+    </select>
+
+    <resultMap id="BaseTreeMap" type="com.xd11cc.single.entity.vo.SystemMenuTreeVO">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="parent_id" jdbcType="BIGINT" property="parentId" />
+        <result column="menu_name" jdbcType="VARCHAR" property="menuName" />
+        <result column="sort" jdbcType="INTEGER" property="sort" />
+        <result column="path" jdbcType="VARCHAR" property="path" />
+        <result column="component" jdbcType="VARCHAR" property="component" />
+        <result column="route_name" jdbcType="VARCHAR" property="routeName" />
+        <result column="query" jdbcType="VARCHAR" property="query" />
+        <result column="icon" jdbcType="VARCHAR" property="icon" />
+        <result column="menu_type" jdbcType="VARCHAR" property="menuType" />
+        <result column="status" jdbcType="VARCHAR" property="status" />
+        <result column="permission" jdbcType="VARCHAR" property="permission" />
+        <result column="visible" jdbcType="VARCHAR" property="visible" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <collection property="children" select="selectChildMenu" column="{parentId=id}" javaType="list" />
+    </resultMap>
+
+    <select id="selectTreeList" resultMap="BaseTreeMap">
+        select
+            <include refid="base_column_sql" />
+        from
+            system_menu
+        <where>
+                menu_type = 'M' and del_flag = 0
+            <if test="null != data.menuName and '' != data.menuName">
+                and menu_name like concat('%', #{data.menuName}, '%')
+            </if>
+            <if test="null != data.status and '' != data.status">
+                and status = #{data.status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectChildMenu" resultMap="BaseTreeMap">
+        select
+            <include refid="base_column_sql" />
+        from
+            system_menu
+        <where>
+                and del_flag = 0
+            <if test="null != parentId">
+                and parent_id = #{parentId}
+            </if>
+        </where>
     </select>
 </mapper>

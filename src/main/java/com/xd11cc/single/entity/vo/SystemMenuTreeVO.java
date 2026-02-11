@@ -1,10 +1,11 @@
-package com.xd11cc.single.entity.domain;
+package com.xd11cc.single.entity.vo;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.xd11cc.single.entity.base.BaseDO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Author: xd11cc
@@ -12,8 +13,7 @@ import lombok.Data;
  **/
 @Data
 @ApiModel("菜单")
-@TableName("system_menu")
-public class SystemMenuDO extends BaseDO {
+public class SystemMenuTreeVO {
 
     @ApiModelProperty("主键id")
     private Long id;
@@ -57,4 +57,8 @@ public class SystemMenuDO extends BaseDO {
     @ApiModelProperty("备注")
     private String remark;
 
+    @ApiModelProperty("创建时间")
+    private Date createTime;
+
+    private List<SystemMenuTreeVO> children;
 }
