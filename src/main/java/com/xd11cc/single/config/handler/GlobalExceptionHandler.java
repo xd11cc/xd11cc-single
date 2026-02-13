@@ -110,7 +110,7 @@ public class GlobalExceptionHandler {
         Throwable throwable = e.getCause();
         if (throwable instanceof ServiceException){
             ServiceException serviceException = (ServiceException) throwable;
-            return ResponseVO.fail(serviceException.getErrorCode().getErrorCode(), serviceException.getMessage());
+            return ResponseVO.fail(serviceException.getErrorCode());
         }
         return ResponseVO.fail(SystemErrorEnum.SYSTEM_ERROR);
     }

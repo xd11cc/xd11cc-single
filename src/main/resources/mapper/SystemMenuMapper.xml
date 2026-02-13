@@ -59,6 +59,7 @@
                 and status = #{data.status}
             </if>
         </where>
+        order by sort
     </select>
 
     <select id="selectChildMenu" resultMap="BaseTreeMap">
@@ -72,5 +73,6 @@
                 and parent_id = #{parentId}
             </if>
         </where>
+        order by sort
     </select>
 </mapper>

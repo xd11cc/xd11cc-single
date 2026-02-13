@@ -17,7 +17,6 @@ import javax.validation.constraints.NotNull;
 public class SystemMenuAddVO {
 
     @ApiModelProperty("父菜单id")
-    @NotNull(message = "父菜单不能为空")
     private Long parentId;
 
     @ApiModelProperty("菜单名称")
