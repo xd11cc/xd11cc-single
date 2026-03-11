@@ -10,6 +10,21 @@
         del_flag, remark
     </sql>
 
+
+    <select id="selectPermission" resultType="java.lang.String">
+        select
+            distinct permission
+        from
+            system_menu a
+        join
+            system_role_menu b on a.id = b.menu_id
+        join
+            system_user_role c on b.role_id = c.role_id
+        where
+            a.menu_type = 'B'
+            and c.user_id = #{userId}
+    </select>
+
     <select id="selectRoutes" resultType="com.xd11cc.single.entity.domain.SystemMenuDO">
         select
             a.id, a.parent_id, a.menu_name, a.sort, a.path, a.component, a.route_name
@@ -74,5 +89,8 @@
             </if>
         </where>
         order by sort
+    </select>
+    <select id="selectAllPermission" resultType="java.lang.String">
+        select permission from system_menu where menu_type = 'B'
     </select>
 </mapper>

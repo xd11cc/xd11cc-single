@@ -25,8 +25,12 @@ import java.util.*;
 public class SystemMenuServiceImpl extends ServiceImpl<SystemMenuMapper, SystemMenuDO> implements ISystemMenuService {
 
     @Override
-    public Set<String> getPermissionMenu(SystemUserDO systemUserDO) {
-        return Collections.emptySet();
+    public Set<String> getPermission(Long userId) {
+        boolean admin = SystemUserDO.isAdmin(userId);
+        if (admin) {
+            return baseMapper.selectAllPermission();
+        }
+        return baseMapper.selectPermission(userId);
     }
 
     @Override

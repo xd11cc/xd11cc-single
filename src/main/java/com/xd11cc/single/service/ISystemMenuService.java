@@ -2,7 +2,6 @@ package com.xd11cc.single.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xd11cc.single.entity.domain.SystemMenuDO;
-import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.vo.*;
 
 import javax.validation.Valid;
@@ -17,10 +16,10 @@ public interface ISystemMenuService extends IService<SystemMenuDO> {
 
     /**
      * 获取权限列表
-     * @param systemUserDO
+     * @param userId
      * @return
      */
-    Set<String> getPermissionMenu(SystemUserDO systemUserDO);
+    Set<String> getPermission(Long userId);
 
     /**
      * 获取路由信息

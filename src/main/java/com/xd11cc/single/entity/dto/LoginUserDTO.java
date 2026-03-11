@@ -66,6 +66,11 @@ public class LoginUserDTO implements UserDetails {
     private String os;
 
     /**
+     * 角色id
+     */
+    private Set<Long> roleIds;
+
+    /**
      * 权限列表
      */
     private Set<String> permissions;

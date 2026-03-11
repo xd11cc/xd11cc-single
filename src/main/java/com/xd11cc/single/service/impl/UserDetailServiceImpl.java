@@ -69,7 +69,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
         if (redisCache.hasKey(getPasswordErrorCountKey(userId))) {
             redisCache.removeCacheObject(getPasswordErrorCountKey(userId));
         }
-        // 构建用户信息
-        return new LoginUserDTO(systemMenuService.getPermissionMenu(systemUserDO), systemUserDO);
+        // 构建用户信息 todo
+        return new LoginUserDTO(systemMenuService.getPermission(systemUserDO.getId()), systemUserDO);
     }
 }
