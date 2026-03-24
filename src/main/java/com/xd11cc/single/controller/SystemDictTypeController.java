@@ -12,6 +12,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +34,7 @@ public class SystemDictTypeController {
 
     @ApiOperation("新增字典类型")
     @PostMapping("/add")
+    @PreAuthorize("@ss.hasPermission('system:dictType:add')")
     public ResponseVO<Integer> add(@Valid @RequestBody SystemDictTypeAddVO systemDictTypeAddVO){
         int row = systemDictTypeService.add(systemDictTypeAddVO);
         if (row > 0){
@@ -44,6 +46,7 @@ public class SystemDictTypeController {
 
     @ApiOperation("删除字典类型")
     @GetMapping("/removeByIds/{ids}")
+    @PreAuthorize("@ss.hasPermission('system:dictType:delete')")
     public ResponseVO<Integer> removeByIds(@PathVariable("ids") List<Long> ids){
         int row = systemDictTypeService.deleteByIds(ids);
         if (row > 0){
@@ -55,6 +58,7 @@ public class SystemDictTypeController {
 
     @ApiOperation("更新字典类型")
     @PostMapping("/modifyById")
+    @PreAuthorize("@ss.hasPermission('system:dictType:update')")
     public ResponseVO<Boolean> modifyById(@Valid @RequestBody SystemDictTypeUpdateVO systemDictTypeUpdateVO){
         SystemDictTypeDO systemDictTypeDO = SystemDictTypeConvert.INSTANCE.updateVO2DO(systemDictTypeUpdateVO);
         boolean b = systemDictTypeService.updateById(systemDictTypeDO);
@@ -67,18 +71,21 @@ public class SystemDictTypeController {
 
     @ApiOperation("字典类型分页")
     @PostMapping("/page")
+    @PreAuthorize("@ss.hasPermission('system:dictType:list')")
     public ResponseVO<List<SystemDictTypeDO>> page(@RequestBody SystemDictTypeQueryVO systemDictTypeQueryVO){
         return PageUtils.page(systemDictTypeQueryVO, ()-> systemDictTypeService.getList(systemDictTypeQueryVO));
     }
 
     @ApiOperation("字典类型列表")
     @GetMapping("/list")
+    @PreAuthorize("@ss.hasPermission('system:dictType:list')")
     public ResponseVO<List<SystemDictTypeDO>> list(){
         return ResponseVO.success(systemDictTypeService.list());
     }
 
     @ApiModelProperty("导出")
     @PostMapping("/export")
+    @PreAuthorize("@ss.hasPermission('system:dictType:export')")
     public void export(@RequestBody SystemDictTypeQueryVO systemDictTypeQueryVO){
         List<SystemDictTypeDO> list = systemDictTypeService.getList(systemDictTypeQueryVO);
     }
