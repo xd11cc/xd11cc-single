@@ -8,8 +8,10 @@ import com.xd11cc.single.entity.vo.SystemDictDataUpdateVO;
 import com.xd11cc.single.service.ISystemDictDataService;
 import com.xd11cc.single.utils.PageUtils;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +36,7 @@ public class SystemDictDataController {
 
     @ApiOperation("新增字典数据")
     @PostMapping("/add")
+    @PreAuthorize("@ss.hasPermission('system:dictData:add')")
     public ResponseVO<Integer> add(@Valid @RequestBody SystemDictDataAddVO systemDictDataAddVO){
         int row = systemDictDataService.add(systemDictDataAddVO);
         if (row > 0){
@@ -45,6 +48,7 @@ public class SystemDictDataController {
 
     @ApiOperation("批量删除")
     @GetMapping("/removeByIds/{ids}")
+    @PreAuthorize("@ss.hasPermission('system:dictData:delete')")
     public ResponseVO<Integer> removeByIds(@PathVariable("ids") List<Long> ids){
         int row = systemDictDataService.deleteByIds(ids);
         if (row > 0){
@@ -56,6 +60,7 @@ public class SystemDictDataController {
 
     @ApiOperation("更新字典数据")
     @PostMapping("/modifyById")
+    @PreAuthorize("@ss.hasPermission('system:dictData:update')")
     public ResponseVO<Integer> modifyById(@Valid @RequestBody SystemDictDataUpdateVO systemDictDataUpdateVO){
         int i = systemDictDataService.modifyById(systemDictDataUpdateVO);
         if (i > 0){
@@ -85,5 +90,12 @@ public class SystemDictDataController {
             map.put(d, systemDictDataService.getCache(d));
         });
         return ResponseVO.success(map);
+    }
+
+    @ApiModelProperty("导出")
+    @PostMapping("/export")
+    @PreAuthorize("@ss.hasPermission('system:dictData:export')")
+    public void export(@RequestBody SystemDictDataQueryVO systemDictDataQueryVO){
+        List<SystemDictDataDO> list = systemDictDataService.getList(systemDictDataQueryVO);
     }
 }

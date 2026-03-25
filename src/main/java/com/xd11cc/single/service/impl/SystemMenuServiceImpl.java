@@ -28,7 +28,9 @@ public class SystemMenuServiceImpl extends ServiceImpl<SystemMenuMapper, SystemM
     public Set<String> getPermission(Long userId) {
         boolean admin = SystemUserDO.isAdmin(userId);
         if (admin) {
-            return baseMapper.selectAllPermission();
+            Set<String> allPermission = baseMapper.selectAllPermission();
+            allPermission.add("*:*:*");
+            return allPermission;
         }
         return baseMapper.selectPermission(userId);
     }

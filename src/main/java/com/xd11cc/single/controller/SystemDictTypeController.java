@@ -71,14 +71,12 @@ public class SystemDictTypeController {
 
     @ApiOperation("字典类型分页")
     @PostMapping("/page")
-    @PreAuthorize("@ss.hasPermission('system:dictType:list')")
     public ResponseVO<List<SystemDictTypeDO>> page(@RequestBody SystemDictTypeQueryVO systemDictTypeQueryVO){
         return PageUtils.page(systemDictTypeQueryVO, ()-> systemDictTypeService.getList(systemDictTypeQueryVO));
     }
 
     @ApiOperation("字典类型列表")
     @GetMapping("/list")
-    @PreAuthorize("@ss.hasPermission('system:dictType:list')")
     public ResponseVO<List<SystemDictTypeDO>> list(){
         return ResponseVO.success(systemDictTypeService.list());
     }
