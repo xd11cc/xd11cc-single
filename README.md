@@ -2,7 +2,7 @@
 2、security + Jwt整合安全框架
 3、swagger2整合接口文档
 4、druid整合动态多数据源
-3、redis+redisson整合缓存框架，实现接口限流
+5、redis+redisson整合缓存框架，实现接口限流
 
 // todo
 3、freemarker整合代码生成器模版
