@@ -2,9 +2,9 @@ package com.xd11cc.single.config.handler;
 
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.enums.SystemErrorEnum;
-import com.xd11cc.single.exception.ErrorCode;
-import com.xd11cc.single.exception.RateLimitException;
-import com.xd11cc.single.exception.ServiceException;
+import com.xd11cc.single.config.exception.ErrorCode;
+import com.xd11cc.single.config.exception.RateLimitException;
+import com.xd11cc.single.config.exception.ServiceException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;

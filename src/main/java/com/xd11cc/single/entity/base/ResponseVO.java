@@ -1,6 +1,6 @@
 package com.xd11cc.single.entity.base;
 
-import com.xd11cc.single.exception.ErrorCode;
+import com.xd11cc.single.config.exception.ErrorCode;
 import lombok.Data;
 
 import java.io.Serializable;

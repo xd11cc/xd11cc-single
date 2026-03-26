@@ -1,4 +1,4 @@
-package com.xd11cc.single.exception;
+package com.xd11cc.single.config.exception;
 
 
 import lombok.Data;

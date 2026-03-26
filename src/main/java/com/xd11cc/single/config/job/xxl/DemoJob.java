@@ -1,4 +1,4 @@
-package com.xd11cc.single.job.xxl;
+package com.xd11cc.single.config.job.xxl;
 
 import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;

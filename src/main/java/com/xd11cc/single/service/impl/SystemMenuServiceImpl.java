@@ -9,7 +9,7 @@ import com.xd11cc.single.entity.vo.*;
 import com.xd11cc.single.enums.MenuTypeEnum;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.enums.SystemVisibleEnum;
-import com.xd11cc.single.exception.ServiceException;
+import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.mapper.SystemMenuMapper;
 import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.utils.StringUtils;

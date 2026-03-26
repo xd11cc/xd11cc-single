@@ -1,12 +1,9 @@
-package com.xd11cc.single.mq.config;
+package com.xd11cc.single.config.mq;
 
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**

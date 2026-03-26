@@ -12,7 +12,7 @@ import com.xd11cc.single.entity.vo.SystemDictDataQueryVO;
 import com.xd11cc.single.entity.vo.SystemDictDataUpdateVO;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.enums.SystemStatusEnum;
-import com.xd11cc.single.exception.ServiceException;
+import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.mapper.SystemDictDataMapper;
 import com.xd11cc.single.service.ISystemDictDataService;
 import com.xd11cc.single.service.ISystemDictTypeService;

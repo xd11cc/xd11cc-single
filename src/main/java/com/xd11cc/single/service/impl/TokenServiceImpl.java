@@ -5,7 +5,7 @@ import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.SecurityConstants;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.SystemErrorEnum;
-import com.xd11cc.single.exception.ServiceException;
+import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.service.TokenService;
 import com.xd11cc.single.utils.IdUtils;
 import com.xd11cc.single.utils.JwtUtils;

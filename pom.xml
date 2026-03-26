@@ -33,6 +33,7 @@
         <xxljob.version>2.4.0</xxljob.version>
         <pagehelper.version>1.4.6</pagehelper.version>
         <easyExcel.version>3.3.2</easyExcel.version>
+        <transmittable.version>2.13.2</transmittable.version>
     </properties>
 
     <dependencies>
@@ -205,13 +206,18 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>transmittable-thread-local</artifactId>
-            <version>2.13.2</version>
+            <version>${transmittable.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>easyexcel</artifactId>
             <version>${easyExcel.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
         </dependency>
     </dependencies>
 

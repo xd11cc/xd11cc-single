@@ -1,4 +1,4 @@
-package com.xd11cc.single.annotation;
+package com.xd11cc.single.config.annotation;
 
 import com.xd11cc.single.enums.RateLimitEnum;
 

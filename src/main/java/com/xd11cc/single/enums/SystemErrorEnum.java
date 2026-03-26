@@ -1,6 +1,6 @@
 package com.xd11cc.single.enums;
 
-import com.xd11cc.single.exception.ErrorCode;
+import com.xd11cc.single.config.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

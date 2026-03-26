@@ -1,6 +1,6 @@
-package com.xd11cc.single.aspectj;
+package com.xd11cc.single.config.aspectj;
 
-import com.xd11cc.single.annotation.TenantIgnore;
+import com.xd11cc.single.config.annotation.TenantIgnore;
 import com.xd11cc.single.config.context.TenantContextHolder;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

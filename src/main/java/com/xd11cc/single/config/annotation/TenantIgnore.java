@@ -1,4 +1,4 @@
-package com.xd11cc.single.annotation;
+package com.xd11cc.single.config.annotation;
 
 import java.lang.annotation.*;
 

@@ -1,8 +1,8 @@
-package com.xd11cc.single.aspectj;
+package com.xd11cc.single.config.aspectj;
 
-import com.xd11cc.single.annotation.RateLimit;
+import com.xd11cc.single.config.annotation.RateLimit;
 import com.xd11cc.single.constants.CacheConstants;
-import com.xd11cc.single.exception.RateLimitException;
+import com.xd11cc.single.config.exception.RateLimitException;
 import com.xd11cc.single.utils.IpUtils;
 import com.xd11cc.single.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class RateLimitAspect {
     @Autowired
     private RedissonClient redissonClient;
 
-    @Pointcut("@annotation(com.xd11cc.single.annotation.RateLimit)")
+    @Pointcut("@annotation(com.xd11cc.single.config.annotation.RateLimit)")
     public void pointCut() {}
 
     @Around("pointCut()")

@@ -8,7 +8,7 @@ import com.xd11cc.single.entity.domain.SystemDictTypeDO;
 import com.xd11cc.single.entity.vo.SystemDictTypeAddVO;
 import com.xd11cc.single.entity.vo.SystemDictTypeQueryVO;
 import com.xd11cc.single.enums.SystemErrorEnum;
-import com.xd11cc.single.exception.ServiceException;
+import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.mapper.SystemDictTypeMapper;
 import com.xd11cc.single.service.ISystemDictDataService;
 import com.xd11cc.single.service.ISystemDictTypeService;

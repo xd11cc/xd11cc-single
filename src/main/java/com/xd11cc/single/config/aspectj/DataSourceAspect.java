@@ -1,6 +1,6 @@
-package com.xd11cc.single.aspectj;
+package com.xd11cc.single.config.aspectj;
 
-import com.xd11cc.single.annotation.DataSource;
+import com.xd11cc.single.config.annotation.DataSource;
 import com.xd11cc.single.config.context.DynamicDataSourceContextHolder;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -22,8 +22,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataSourceAspect {
 
-    @Pointcut("@annotation(com.xd11cc.single.annotation.DataSource) ||" +
-            "@within(com.xd11cc.single.annotation.DataSource)")
+    @Pointcut("@annotation(com.xd11cc.single.config.annotation.DataSource) ||" +
+            "@within(com.xd11cc.single.config.annotation.DataSource)")
     public void pointCut(){
 
     }

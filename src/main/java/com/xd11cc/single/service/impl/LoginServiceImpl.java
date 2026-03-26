@@ -8,7 +8,7 @@ import com.xd11cc.single.entity.vo.LoginPasswordVO;
 import com.xd11cc.single.entity.vo.UserLoginInfoVO;
 import com.xd11cc.single.enums.LoginWayEnum;
 import com.xd11cc.single.enums.SystemErrorEnum;
-import com.xd11cc.single.exception.ServiceException;
+import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.service.ISystemUserService;
 import com.xd11cc.single.service.LoginService;
