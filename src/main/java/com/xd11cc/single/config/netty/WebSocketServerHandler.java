@@ -10,9 +10,13 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.*;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.AttributeKey;
+import io.netty.util.concurrent.ScheduledFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -24,6 +28,8 @@ import org.springframework.stereotype.Component;
 @Component
 @ChannelHandler.Sharable
 public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+
+    private static final AttributeKey<ScheduledFuture<?>> CLOSE_TASK_KEY = AttributeKey.valueOf("close_task");
 
     @Autowired
     private TenantChannelManager channelManager;
@@ -43,6 +49,14 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
             try {
                 nettyMessageDTO = JSONObject.parseObject(message, NettyMessageDTO.class);
             } catch (Exception e) {
+                if ("PONG".equals(message)) {
+                    ScheduledFuture<?> closeTask = ctx.channel().attr(CLOSE_TASK_KEY).getAndSet(null);
+                    if (null != closeTask && !closeTask.isDone()) {
+                        // 取消任务，连接保留
+                        closeTask.cancel(false);
+                    }
+                    return;
+                }
                 log.error(" [netty] 消息解析失败，内容:{}", message, e);
                 ctx.writeAndFlush(new TextWebSocketFrame("消息格式错误" + e.getMessage()));
                 return;
@@ -53,7 +67,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                 return;
             }
             WebSocketEnum type = nettyMessageDTO.getWebSocketEnum();
-            switch (type){
+            switch (type) {
                 case USER:
                     channelManager.pushToUser(nettyMessageDTO.getUserId(), nettyMessageDTO.getContent());
                     break;
@@ -79,9 +93,26 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
             IdleState state = ((IdleStateEvent) evt).state();
             Channel channel = ctx.channel();
             if (state == IdleState.READER_IDLE) {
-                log.warn(" [netty] 读空闲，关闭连接：{}", ctx.channel().id());
-                channel.close(); // 关闭连接，出发channelInactive清理
-            }else if (state == IdleState.WRITER_IDLE) {
+                // 发送原生PING帧，等待PONG响应
+                channel.writeAndFlush(new TextWebSocketFrame("PING")).addListener(future -> {
+                    if (!future.isSuccess()) {
+                        log.error(" [netty] 发送检测PING失败，关闭连接");
+                        // 关闭连接，出发channelInactive清理
+                        channel.close();
+                    }
+                    // 5秒内未收到PONG则关闭
+                    ScheduledFuture<?> closeTask = channel.eventLoop().schedule(() -> {
+                        if (channel.isActive()) {
+                            log.warn(" [netty] PING检测无响应，关闭连接:{}", channel.id());
+                            channel.close();
+                        }
+                    }, 5, TimeUnit.SECONDS);
+                    // 将任务绑定到channel，后续收到PONG取消
+                    log.info(" [netty] 检测到PING信息...");
+                    channel.attr(CLOSE_TASK_KEY).set(closeTask);
+                });
+            } else if (state == IdleState.WRITER_IDLE) {
+                // 写空闲发送心跳PING
                 ctx.writeAndFlush(new PingWebSocketFrame()).addListener(future -> {
                     if (!future.isSuccess()) {
                         log.error(" [netty] 发送心跳PING失败", future.cause());
@@ -89,7 +120,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                     }
                 });
             }
-        }else {
+        } else {
             // 透传其他事件
             ctx.fireUserEventTriggered(evt);
         }
@@ -98,12 +129,17 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         log.info(" [netty] 通道关闭:{}", ctx.channel().id());
+        // 连接关闭，取消任务
+        ScheduledFuture<?> closeTask = ctx.channel().attr(CLOSE_TASK_KEY).getAndSet(null);
+        if (closeTask != null) {
+            closeTask.cancel(false);
+        }
         channelManager.removeChannel(ctx.channel());
         super.channelInactive(ctx);
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // 异常处理：清理通道+关闭连接
         log.error(" [netty] 通道异常:{}", ctx.channel().id(), cause);
         channelManager.removeChannel(ctx.channel());
