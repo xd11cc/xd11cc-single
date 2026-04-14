@@ -13,6 +13,7 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.ScheduledFuture;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -113,7 +114,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                 });
             } else if (state == IdleState.WRITER_IDLE) {
                 // 写空闲发送心跳PING
-                ctx.writeAndFlush(new PingWebSocketFrame()).addListener(future -> {
+                ctx.writeAndFlush(new TextWebSocketFrame("PING")).addListener(future -> {
                     if (!future.isSuccess()) {
                         log.error(" [netty] 发送心跳PING失败", future.cause());
                         channel.close();
