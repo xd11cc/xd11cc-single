@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 @Component
-public class TenantChannelManager {
+public class ChannelManager {
 
     // 租户id -> 该租户所有通道（租户广播）
     private final ConcurrentHashMap<Long, ChannelGroup> tenantChannelsGroups = new ConcurrentHashMap<>();

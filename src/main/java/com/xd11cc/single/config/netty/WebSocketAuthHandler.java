@@ -30,7 +30,7 @@ public class WebSocketAuthHandler extends SimpleChannelInboundHandler<FullHttpRe
     @Autowired
     private TokenService tokenService;
     @Autowired
-    private TenantChannelManager tenantChannelManager;
+    private ChannelManager channelManager;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request)  {
@@ -58,7 +58,7 @@ public class WebSocketAuthHandler extends SimpleChannelInboundHandler<FullHttpRe
             return;
         }
 
-        tenantChannelManager.addChannel(ctx.channel(), loginUser);
+        channelManager.addChannel(ctx.channel(), loginUser);
         ctx.channel().attr(LOGIN_USER_KEY).set(loginUser);
         ctx.fireChannelRead(request.retain());
         ctx.pipeline().remove(this);

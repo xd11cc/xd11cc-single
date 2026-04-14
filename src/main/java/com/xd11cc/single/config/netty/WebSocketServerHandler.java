@@ -13,7 +13,6 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.ScheduledFuture;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +32,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
     private static final AttributeKey<ScheduledFuture<?>> CLOSE_TASK_KEY = AttributeKey.valueOf("close_task");
 
     @Autowired
-    private TenantChannelManager channelManager;
+    private ChannelManager channelManager;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) {
