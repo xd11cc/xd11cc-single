@@ -36,6 +36,15 @@ pagehelper:
   helper-dialect: mysql
   reasonable: true
 
+# netty配置
+netty:
+  websocket:
+    port: 12001
+    reader-idle-time: 30
+    writer-idle-time: 60
+    web-socket-path: /ws
+    max-frame-length: 65536
+
 # swagger配置
 swagger:
   title: 后端API

@@ -1,6 +1,5 @@
 package com.xd11cc.single.utils;
 
-import com.xd11cc.single.utils.StringUtils;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;

@@ -16,6 +16,7 @@ public interface TokenService {
      * @return
      */
     LoginUserDTO getLoginUser(HttpServletRequest request);
+    LoginUserDTO getLoginUser(String token);
 
     /**
      * 验证token有效期，刷新令牌

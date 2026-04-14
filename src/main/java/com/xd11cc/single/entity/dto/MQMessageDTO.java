@@ -10,7 +10,7 @@ import java.util.Date;
  * @date 2025-11-27 22:46:10
  */
 @Data
-public class MessageDTO implements Serializable {
+public class MQMessageDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

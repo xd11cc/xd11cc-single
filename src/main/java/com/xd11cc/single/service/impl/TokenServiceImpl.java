@@ -3,12 +3,14 @@ package com.xd11cc.single.service.impl;
 import com.xd11cc.single.config.RedisCache;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.SecurityConstants;
+import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.service.TokenService;
 import com.xd11cc.single.utils.IdUtils;
 import com.xd11cc.single.utils.JwtUtils;
+import com.xd11cc.single.utils.TenantUtils;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
 import com.xd11cc.single.utils.StringUtils;
@@ -54,6 +56,26 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
+    public LoginUserDTO getLoginUser(String token) {
+        if (StringUtils.isNotEmpty(token)) {
+            token = token.replace(SecurityConstants.TOKEN_PREFIX, "");
+            try {
+                Claims claims = JwtUtils.parseToken(token);
+                String uuidToken = (String) claims.get(SecurityConstants.LOGIN_USER_KEY);
+                String loginTokenKey = getLoginTokenKey(uuidToken);
+                Integer tenantId = (Integer) claims.get(SecurityConstants.TENANT_ID);
+                return TenantUtils.execute(Long.valueOf(tenantId), ()->{
+                    return redisCache.getCacheObject(loginTokenKey);
+                });
+            } catch (Exception e) {
+                log.error("获取用户信息异常{}", e.getMessage(), e);
+                throw new ServiceException(SystemErrorEnum.UNAUTHORIZED);
+            }
+        }
+        return null;
+    }
+
+    @Override
     public void verifyToken(LoginUserDTO loginUserDTO) {
         Long expireTime = loginUserDTO.getExpireTime();
         long currentTime = System.currentTimeMillis();
@@ -80,6 +102,7 @@ public class TokenServiceImpl implements TokenService {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put(SecurityConstants.LOGIN_USER_KEY, token);
+        claims.put(SecurityConstants.TENANT_ID, loginUserDTO.getSystemUserDO().getTenantId());
         claims.put(Claims.SUBJECT, loginUserDTO.getUsername());
         return JwtUtils.createToken(claims);
     }
