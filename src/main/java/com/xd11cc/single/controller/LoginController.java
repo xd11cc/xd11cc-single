@@ -1,5 +1,6 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.entity.vo.CaptchaVO;
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
 import com.xd11cc.single.entity.vo.RouteVO;
 import com.xd11cc.single.entity.vo.UserLoginInfoVO;
@@ -38,6 +39,12 @@ public class LoginController {
     @ApiOperation("账号密码登录")
     public ResponseVO<String> loginByPassword(@Valid @RequestBody LoginPasswordVO loginPasswordVO){
         return ResponseVO.success(loginService.loginByPassword(loginPasswordVO));
+    }
+
+    @GetMapping("/getCaptcha")
+    @ApiOperation("获取验证码")
+    public ResponseVO<CaptchaVO> captcha(){
+        return ResponseVO.success(loginService.getCaptcha());
     }
 
     @GetMapping("/getUserInfo")

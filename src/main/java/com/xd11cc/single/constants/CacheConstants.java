@@ -35,4 +35,9 @@ public class CacheConstants {
      * 字典数据key
      */
     public static final String DICT_TYPE_KEY = "dict_type:";
+
+    /**
+     * 验证码key
+     */
+    public static final String CAPTCHA_KEY = "captcha:";
 }

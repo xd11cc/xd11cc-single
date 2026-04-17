@@ -37,6 +37,8 @@ public enum SystemErrorEnum implements ErrorCode {
     DICT_DATA_EXISTS(1001009, "字典数据已存在"),
     DICT_TYPE_NOT_EXISTS(1001010, "字典类型不存在"),
     MENU_HAVE_CHILDREN(1001011, "当前目录或菜单下存在子集"),
+    CAPTCHA_ERROR(1001012, "验证码错误"),
+    CAPTCHA_EXPIRE(1001013, "验证码已过期"),
     ;
 
     private int errorCode;

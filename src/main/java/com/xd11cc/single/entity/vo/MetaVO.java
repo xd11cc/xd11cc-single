@@ -18,7 +18,7 @@ public class MetaVO {
     private String title;
 
     @ApiModelProperty("图标")
-    private String elIcon;
+    private String icon;
 
     @ApiModelProperty("路由参数")
     private String query;

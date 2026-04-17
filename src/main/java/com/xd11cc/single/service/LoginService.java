@@ -1,5 +1,6 @@
 package com.xd11cc.single.service;
 
+import com.xd11cc.single.entity.vo.CaptchaVO;
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
 import com.xd11cc.single.entity.vo.UserLoginInfoVO;
 
@@ -22,5 +23,11 @@ public interface LoginService {
      * @return
      */
     UserLoginInfoVO getUserLoginInfo(Long userId);
+
+    /**
+     * 获取验证码
+     * @return
+     */
+    CaptchaVO getCaptcha();
 
 }

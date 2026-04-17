@@ -1,9 +1,13 @@
 package com.xd11cc.single.service.impl;
 
+import cn.hutool.captcha.*;
+import com.xd11cc.single.config.RedisCache;
+import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.UserConstants;
 import com.xd11cc.single.convert.SystemUserConvert;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
+import com.xd11cc.single.entity.vo.CaptchaVO;
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
 import com.xd11cc.single.entity.vo.UserLoginInfoVO;
 import com.xd11cc.single.enums.LoginWayEnum;
@@ -13,6 +17,8 @@ import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.service.ISystemUserService;
 import com.xd11cc.single.service.LoginService;
 import com.xd11cc.single.service.TokenService;
+import com.xd11cc.single.utils.IdUtils;
+import com.xd11cc.single.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,6 +27,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author: xd11cc
@@ -38,12 +46,19 @@ public class LoginServiceImpl implements LoginService {
     private ISystemUserService systemUserService;
     @Autowired
     private ISystemMenuService systemMenuService;
+    @Autowired
+    private RedisCache redisCache;
+
+
+    private String getCaptchaKey(String uuid){
+        return CacheConstants.CAPTCHA_KEY + uuid;
+    }
 
     @Override
     @Transactional
     public String loginByPassword(LoginPasswordVO loginPasswordVO) {
         // 1、校验验证码
-        checkCaptcha();
+        checkCaptcha(loginPasswordVO.getCaptchaId(), loginPasswordVO.getCaptcha());
         // 2、校验用户信息
         // 校验是否非法登录获取token
         if (LoginWayEnum.PC.getCode() != loginPasswordVO.getWay()) {
@@ -74,7 +89,14 @@ public class LoginServiceImpl implements LoginService {
     /**
      * 校验验证码
      */
-    private void checkCaptcha() {
+    private void checkCaptcha(String captchaId, String captcha) {
+        String captchaValue = redisCache.getCacheObject(getCaptchaKey(captchaId));
+        if (StringUtils.isEmpty(captchaValue)) {
+            throw new ServiceException(SystemErrorEnum.CAPTCHA_EXPIRE);
+        }
+        if (!captcha.equals(captchaValue)) {
+            throw new ServiceException(SystemErrorEnum.CAPTCHA_ERROR);
+        }
     }
 
     @Override
@@ -83,6 +105,17 @@ public class LoginServiceImpl implements LoginService {
         UserLoginInfoVO userLoginInfoVO = SystemUserConvert.INSTANCE.do2vo(systemUserDO);
         userLoginInfoVO.setPermissions(systemMenuService.getPermission(systemUserDO.getId()));
         return userLoginInfoVO;
+    }
+
+    @Override
+    public CaptchaVO getCaptcha() {
+        CaptchaVO captchaVO = new CaptchaVO();
+        GifCaptcha captcha = CaptchaUtil.createGifCaptcha(120, 40);
+        String uuid = IdUtils.fastUUID();
+        redisCache.setCacheObject(getCaptchaKey(uuid), captcha.getCode(), 1, TimeUnit.MINUTES);
+        captchaVO.setCaptchaId(uuid);
+        captchaVO.setImage(captcha.getImageBase64());
+        return captchaVO;
     }
 
     /**

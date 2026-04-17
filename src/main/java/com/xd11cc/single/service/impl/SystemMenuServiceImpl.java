@@ -94,7 +94,7 @@ public class SystemMenuServiceImpl extends ServiceImpl<SystemMenuMapper, SystemM
                 // 构建其他元素
                 MetaVO metaVO = MetaVO.builder()
                         .title(systemMenuDO.getMenuName())
-                        .elIcon(systemMenuDO.getIcon())
+                        .icon(systemMenuDO.getIcon())
                         .query(systemMenuDO.getQuery())
                         .hidden(SystemVisibleEnum.HIDDEN.getCode().equals(systemMenuDO.getVisible()))
                         .permission(systemMenuDO.getPermission())

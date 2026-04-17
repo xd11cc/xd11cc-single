@@ -71,6 +71,7 @@ security:
     - /druid/**
     # 登录相关白名单
     - /login/loginByPassword
+    - /login/getCaptcha
 
 # 需要忽略租户的表
 tenant:

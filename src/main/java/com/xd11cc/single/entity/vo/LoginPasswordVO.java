@@ -25,4 +25,12 @@ public class LoginPasswordVO extends BaseLoginVO {
     @ApiModelProperty("密码")
     private String password;
 
+    @NotBlank(message = "非法请求")
+    @ApiModelProperty("验证码id")
+    private String captchaId;
+
+    @NotBlank(message = "请输入验证码")
+    @ApiModelProperty("验证码")
+    private String captcha;
+
 }
