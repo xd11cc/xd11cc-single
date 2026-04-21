@@ -43,8 +43,6 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
             String message = msg.text();
             // 心跳响应
             if ("PING".equals(message)) {
-                // 只要能接收到PING，清空最大读空闲检测
-                ctx.channel().attr(READ_IDLE_COUNT).set(0);
                 ctx.writeAndFlush(new TextWebSocketFrame("PONG"));
                 return;
             }
