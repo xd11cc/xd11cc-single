@@ -33,10 +33,6 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
     // 最大读空闲次数
     private static final int MAX_READ_IDLE_COUNT = 3;
 
-    private static final AttributeKey<Integer> RESPONSE_COUNT = AttributeKey.valueOf("RESPONSE_COUNT");
-    // 最大响应PONG次数
-    private static final int MAX_RESPONSE_COUNT = 5;
-
     @Autowired
     private ChannelManager channelManager;
 
@@ -45,16 +41,10 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
         try {
             // 处理收到的消息，路由到不同推送维度
             String message = msg.text();
-            log.info("[netty]接收前端消息：{}", message);
             // 心跳响应
             if ("PING".equals(message)) {
-                int count = ctx.channel().attr(RESPONSE_COUNT).get() == null ? 0 : ctx.channel().attr(RESPONSE_COUNT).get();
-                count++;
-                ctx.channel().attr(RESPONSE_COUNT).set(count);
-                // 当前端稳定发送ping，清空读空闲次数
-                if (count >= MAX_RESPONSE_COUNT && null != ctx.channel().attr(READ_IDLE_COUNT).get()) {
-                    ctx.channel().attr(READ_IDLE_COUNT).set(0);
-                }
+                // 只要能接收到PING，清空最大读空闲检测
+                ctx.channel().attr(READ_IDLE_COUNT).set(0);
                 ctx.writeAndFlush(new TextWebSocketFrame("PONG"));
                 return;
             }
