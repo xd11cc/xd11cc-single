@@ -54,12 +54,12 @@ public class ChannelManager {
         Long tenantId = loginUserDTO.getSystemUserDO().getTenantId();
         Long userId = loginUserDTO.getUserId();
         if (StringUtils.isNull(tenantId) || StringUtils.isNull(userId) || StringUtils.isNull(channel)) {
-            log.warn(" [netty] 添加通道失败，参数为空：tenantId={}, userId={}, channel={}", tenantId, userId, channel);
+            log.warn("[netty] 添加通道失败，参数为空：tenantId={}, userId={}, channel={}", tenantId, userId, channel);
             return false;
         }
         // 已存在不重复添加
         if (channelMetadataMap.containsKey(channel)) {
-            log.debug(" [netty] 通道已存在无需添加，channel:{}", channel.id());
+            log.debug("[netty] 通道已存在无需添加，channel:{}", channel.id());
             return false;
         }
         try {
@@ -75,7 +75,7 @@ public class ChannelManager {
             channelMetadataMap.put(channel, new ChannelExtMetadata(tenantId, userId));
             // 连接数 +1
             currentConnCount.incrementAndGet();
-            log.info(" [netty] 通道添加成功，租户：{}，用户：{}，通道：{}，当前连接数：{}", tenantId, userId, channel.id(), currentConnCount.get());
+            log.info("[netty] 通道添加成功，租户：{}，用户：{}，通道：{}，当前连接数：{}", tenantId, userId, channel.id(), currentConnCount.get());
             return true;
         } catch (Exception e) {
             return false;
@@ -91,7 +91,7 @@ public class ChannelManager {
 
         ChannelExtMetadata metadata = channelMetadataMap.remove(channel);
         if (metadata == null) {
-            log.debug(" [netty] 通道无元数据，无需清理：channel:{}", channel.id());
+            log.debug("[netty] 通道无元数据，无需清理：channel:{}", channel.id());
             return;
         }
         try {
@@ -102,7 +102,7 @@ public class ChannelManager {
                 tenantGroup.remove(channel);
                 if (tenantGroup.isEmpty()) {
                     tenantChannelsGroups.remove(tenantId);
-                    log.debug(" [netty] 租户{}通道组为空，已移除", tenantId);
+                    log.debug("[netty] 租户{}通道组为空，已移除", tenantId);
                 }
             }
             Long userId = metadata.getUserId();
@@ -112,7 +112,7 @@ public class ChannelManager {
                 userGroup.remove(channel);
                 if (userGroup.isEmpty()) {
                     userChannelsGroups.remove(userId);
-                    log.debug(" [netty] 用户{}通道组为空，已移除", userId);
+                    log.debug("[netty] 用户{}通道组为空，已移除", userId);
                 }
             }
 
@@ -120,7 +120,7 @@ public class ChannelManager {
             globalChannelGroup.remove(channel);
             // 连接数 -1
             currentConnCount.decrementAndGet();
-            log.info(" [netty] 通道移除成功，租户：{}，用户：{}，通道：{}，当前连接数：{}", tenantId, userId, channel.id(), currentConnCount.get());
+            log.info("[netty] 通道移除成功，租户：{}，用户：{}，通道：{}，当前连接数：{}", tenantId, userId, channel.id(), currentConnCount.get());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -133,12 +133,12 @@ public class ChannelManager {
      */
     public void pushToUser(Long userId, String message){
         if (StringUtils.isNull(userId) || StringUtils.isNull(message)) {
-            log.warn(" [netty] 消息推送失败：参数为空userId={}, message={}", userId, message);
+            log.warn("[netty] 消息推送失败：参数为空userId={}, message={}", userId, message);
             return;
         }
         ChannelGroup userChannels = userChannelsGroups.get(userId);
         if (StringUtils.isNull(userChannels)) {
-            log.debug(" [netty] 用户{}无在线通道，推送失败", userId);
+            log.debug("[netty] 用户{}无在线通道，推送失败", userId);
             return;
         }
         // 构建webSocket帧
@@ -146,9 +146,9 @@ public class ChannelManager {
         // 异步推送+异常处理
         userChannels.writeAndFlush(frame).addListener(future -> {
             if (future.isSuccess()) {
-                log.debug(" [netty] 推送用户{}成功，消息长度{}", userId, message.length());
+                log.debug("[netty] 推送用户{}成功，消息长度{}", userId, message.length());
             }else {
-                log.error(" [netty] 推送用户{}失败", userId, future.cause());
+                log.error("[netty] 推送用户{}失败", userId, future.cause());
             }
         });
     }
@@ -160,20 +160,20 @@ public class ChannelManager {
      */
     public void broadcastToTenant(Long tenantId, String message) {
         if (StringUtils.isNull(tenantId) || StringUtils.isNull(message)) {
-            log.warn(" [netty] 租户广播失败：参数为空tenantId={}, message={}", tenantId, message);
+            log.warn("[netty] 租户广播失败：参数为空tenantId={}, message={}", tenantId, message);
             return;
         }
         ChannelGroup tenantChannels = tenantChannelsGroups.get(tenantId);
         if (StringUtils.isNull(tenantChannels)) {
-            log.debug(" [netty] 租户{}无在线通道，广播失败", tenantId);
+            log.debug("[netty] 租户{}无在线通道，广播失败", tenantId);
             return;
         }
         TextWebSocketFrame frame = new TextWebSocketFrame(message);
         tenantChannels.writeAndFlush(frame).addListener(future -> {
             if (future.isSuccess()) {
-                log.debug(" [netty] 租户{}广播成功，消息长度{}，通道数{}", tenantId, message.length(), tenantChannels.size());
+                log.debug("[netty] 租户{}广播成功，消息长度{}，通道数{}", tenantId, message.length(), tenantChannels.size());
             }else {
-                log.error(" [netty] 租户{}广播失败", tenantId, future.cause());
+                log.error("[netty] 租户{}广播失败", tenantId, future.cause());
             }
         });
     }
@@ -184,19 +184,19 @@ public class ChannelManager {
      */
     public void broadcastToGlobal(String message) {
         if (StringUtils.isNull(message)) {
-            log.warn(" [netty] 全局广播失败：消息为空");
+            log.warn("[netty] 全局广播失败：消息为空");
             return;
         }
         if (globalChannelGroup.isEmpty()) {
-            log.debug(" [netty] 全局无在线通道，广播失败");
+            log.debug("[netty] 全局无在线通道，广播失败");
             return;
         }
         TextWebSocketFrame frame = new TextWebSocketFrame(message);
         globalChannelGroup.writeAndFlush(frame).addListener(future -> {
             if (future.isSuccess()) {
-                log.debug(" [netty] 全局广播成功，消息长度{}，通道数{}", message.length(), globalChannelGroup.size());
+                log.debug("[netty] 全局广播成功，消息长度{}，通道数{}", message.length(), globalChannelGroup.size());
             }else {
-                log.error(" [netty] 全局广播失败", future.cause());
+                log.error("[netty] 全局广播失败", future.cause());
             }
         });
     }

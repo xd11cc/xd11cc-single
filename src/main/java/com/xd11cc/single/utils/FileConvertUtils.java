@@ -2,6 +2,8 @@ package com.xd11cc.single.utils;
 
 import com.spire.pdf.FileFormat;
 import com.spire.pdf.PdfDocument;
+import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.enums.SystemErrorEnum;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -25,8 +27,7 @@ public class FileConvertUtils {
 
             log.info("PDF转换为Word成功，输出路径：" + wordPath);
         } catch (Exception e) {
-            log.error("转换失败：" + e.getMessage());
-            e.printStackTrace();
+            throw new ServiceException(SystemErrorEnum.PDF_TO_WORD_ERROR);
         }
     }
 }
