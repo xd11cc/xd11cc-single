@@ -40,6 +40,8 @@ public enum SystemErrorEnum implements ErrorCode {
     CAPTCHA_ERROR(1001012, "验证码错误"),
     CAPTCHA_EXPIRE(1001013, "验证码已过期"),
     PDF_TO_WORD_ERROR(1001014, "pdf转word失败"),
+    TEMPLATE_LOADING_ERROR(1001015, "模版加载失败"),
+    GENERATE_CODE_ERROR(1001015, "代码生成失败"),
     ;
 
     private int errorCode;

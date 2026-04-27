@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xd11cc.single.mapper.GenerateCodeMapper">
+
+    <select id="selectList" resultType="com.xd11cc.single.entity.vo.TableInfoVO">
+        SELECT
+            table_name, table_comment, create_time
+        FROM
+            information_schema.TABLES
+        WHERE
+            table_schema = ( SELECT DATABASE ())
+            <if test="null != data.tableName and '' != data.tableName">
+                and table_name like concat('%', #{data.tableName}, '%')
+            </if>
+            <if test="null != data.tableComment and '' != data.tableComment">
+                and table_comment like concat('%', #{data.tableComment}, '%')
+            </if>
+        order by create_time desc
+    </select>
+    <select id="selectByTableName" resultType="com.xd11cc.single.entity.vo.ColumnInfoVO">
+        SELECT
+            a.column_name,
+            a.is_nullable,
+            a.data_type,
+            a.column_comment,
+            a.column_key,
+            a.extra,
+            c.table_comment
+        FROM
+            information_schema.COLUMNS a,
+            ( SELECT table_comment FROM information_schema.TABLES b WHERE table_schema = ( SELECT DATABASE ()) AND b.table_name = #{tableName} ) c
+        WHERE
+            table_schema = (SELECT DATABASE())
+            AND a.table_name = #{tableName}
+            and a.column_name not in ('create_user_id', 'create_time', 'update_user_id', 'update_time', 'del_flag', 'tenant_id')
+        order by ordinal_position
+    </select>
+</mapper>
