@@ -37,6 +37,10 @@ public class TokenServiceImpl implements TokenService {
         return CacheConstants.LOGIN_TOKEN_KEY + uuidToken;
     }
 
+    public static String getLoginUserKey(Long userId) {
+        return CacheConstants.LOGIN_USER_KEY + userId;
+    }
+
     @Override
     public LoginUserDTO getLoginUser(HttpServletRequest request) {
         String token = request.getHeader(SecurityConstants.AUTHORIZATION);
@@ -45,8 +49,7 @@ public class TokenServiceImpl implements TokenService {
             try {
                 Claims claims = JwtUtils.parseToken(token);
                 String uuidToken = (String) claims.get(SecurityConstants.LOGIN_USER_KEY);
-                String loginTokenKey = getLoginTokenKey(uuidToken);
-                return redisCache.getCacheObject(loginTokenKey);
+                return redisCache.getCacheObject(getLoginTokenKey(uuidToken));
             } catch (Exception e) {
                 log.error("获取用户信息异常{}", e.getMessage());
                 throw new ServiceException(SystemErrorEnum.UNAUTHORIZED);
@@ -62,10 +65,9 @@ public class TokenServiceImpl implements TokenService {
             try {
                 Claims claims = JwtUtils.parseToken(token);
                 String uuidToken = (String) claims.get(SecurityConstants.LOGIN_USER_KEY);
-                String loginTokenKey = getLoginTokenKey(uuidToken);
                 Integer tenantId = (Integer) claims.get(SecurityConstants.TENANT_ID);
                 return TenantUtils.execute(Long.valueOf(tenantId), ()->{
-                    return redisCache.getCacheObject(loginTokenKey);
+                    return redisCache.getCacheObject(getLoginTokenKey(uuidToken));
                 });
             } catch (Exception e) {
                 log.error("获取用户信息异常{}", e.getMessage(), e);
@@ -86,10 +88,10 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public void removeLoginUser(String token) {
-        if (StringUtils.isNotEmpty(token)) {
-            String loginTokenKey = getLoginTokenKey(token);
-            redisCache.removeCacheObject(loginTokenKey);
+    public void removeLoginUser(LoginUserDTO loginUserDTO) {
+        if (StringUtils.isNotEmpty(loginUserDTO.getToken())) {
+            redisCache.removeCacheObject(getLoginTokenKey(loginUserDTO.getToken()));
+            redisCache.removeCacheObject(getLoginUserKey(loginUserDTO.getUserId()));
         }
     }
 
@@ -109,7 +111,13 @@ public class TokenServiceImpl implements TokenService {
 
     private void refreshToken(LoginUserDTO loginUserDTO) {
         loginUserDTO.setExpireTime(System.currentTimeMillis() + SecurityConstants.EXPIRE_TIME);
-        String loginTokenKey = getLoginTokenKey(loginUserDTO.getToken());
-        redisCache.setCacheObject(loginTokenKey, loginUserDTO, SecurityConstants.EXPIRE_TIME, TimeUnit.MILLISECONDS);
+        String token = redisCache.getCacheObject(getLoginUserKey(loginUserDTO.getUserId()));
+        // 如果是异地登录，将上一个踢下线
+        if (StringUtils.isNotEmpty(token) && !token.equals(loginUserDTO.getToken())) {
+            redisCache.removeCacheObject(getLoginUserKey(loginUserDTO.getUserId()));
+            redisCache.removeCacheObject(getLoginTokenKey(token));
+        }
+        redisCache.setCacheObject(getLoginTokenKey(loginUserDTO.getToken()), loginUserDTO, SecurityConstants.EXPIRE_TIME, TimeUnit.MILLISECONDS);
+        redisCache.setCacheObject(getLoginUserKey(loginUserDTO.getUserId()), loginUserDTO.getToken(), SecurityConstants.EXPIRE_TIME, TimeUnit.MILLISECONDS);
     }
 }

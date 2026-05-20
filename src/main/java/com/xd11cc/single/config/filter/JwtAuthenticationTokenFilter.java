@@ -1,5 +1,6 @@
 package com.xd11cc.single.config.filter;
 
+import com.xd11cc.single.config.context.TenantContextHolder;
 import com.xd11cc.single.constants.SecurityConstants;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.service.TokenService;
@@ -35,7 +36,8 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         Long tenantId = (Long) request.getAttribute(SecurityConstants.TENANT_ID);
-        TenantUtils.executeAndClear(tenantId, ()->{
+        try {
+            TenantContextHolder.setTenantId(tenantId);
             // 1、根据token获取用户信息
             LoginUserDTO loginUserDTO = tokenService.getLoginUser(request);
             if (null != loginUserDTO) {
@@ -49,11 +51,10 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
                 }
             }
-            try {
-                filterChain.doFilter(request, response);
-            } catch (IOException | ServletException e) {
-                throw new RuntimeException(e);
-            }
-        });
+            filterChain.doFilter(request, response);
+        }finally {
+            TenantContextHolder.clear();
+        }
+
     }
 }

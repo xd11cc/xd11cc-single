@@ -63,7 +63,7 @@ public class TenantFilter extends OncePerRequestFilter {
             ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SystemErrorEnum.SYSTEM_ERROR)));
             return;
         }
-        if (new Date().getTime() > tenantDTO.getExpireTime().getTime()){
+        if (System.currentTimeMillis() > tenantDTO.getExpireTime().getTime()){
             log.warn("租户已过期：{}", tenantDTO);
             ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SystemErrorEnum.SYSTEM_ERROR)));
             return;

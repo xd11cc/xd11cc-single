@@ -2,7 +2,10 @@ package com.xd11cc.single.service;
 
 import com.xd11cc.single.entity.vo.CaptchaVO;
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
+import com.xd11cc.single.entity.vo.SocialUserBindVO;
 import com.xd11cc.single.entity.vo.UserLoginInfoVO;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @Author: xd11cc
@@ -30,4 +33,27 @@ public interface LoginService {
      */
     CaptchaVO getCaptcha();
 
+    /**
+     * 第三方授权登录，获取重定向地址
+     * @param source
+     * @return
+     */
+    String getRedirectUri(String source);
+
+    /**
+     * 授权成功，三方回调
+     * @param source
+     * @param code
+     * @param state
+     * @return
+     */
+    void callback(String source, String code, String state, HttpServletResponse response);
+
+    /**
+     * 社交用户绑定
+     * @param socialUserBindVO
+     * @return
+     */
+    String socialUserBind(SocialUserBindVO socialUserBindVO);
 }
+

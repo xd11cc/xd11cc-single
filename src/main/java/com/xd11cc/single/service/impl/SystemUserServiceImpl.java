@@ -29,4 +29,10 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
                 .eq(SystemUserDO::getUsername, username));
     }
 
+    @Override
+    public SystemUserDO getByEmail(String email) {
+        return baseMapper.selectOne(new LambdaQueryWrapper<SystemUserDO>()
+                .eq(SystemUserDO::getEmail, email));
+    }
+
 }

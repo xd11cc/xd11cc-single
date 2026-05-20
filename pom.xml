@@ -27,7 +27,7 @@
         <redisson.version>3.36.0</redisson.version>
         <fastjson2.version>2.0.39</fastjson2.version>
         <hutool.version>5.8.16</hutool.version>
-        <jjwt.version>0.9.1</jjwt.version>
+        <jjwt.version>0.11.5</jjwt.version>
         <druid.version>1.2.24</druid.version>
         <spire.version>3.9.0</spire.version>
         <xxljob.version>2.4.0</xxljob.version>
@@ -83,6 +83,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>com.github.pagehelper</groupId>
             <artifactId>pagehelper-spring-boot-starter</artifactId>
             <version>${pagehelper.version}</version>
@@ -100,6 +105,32 @@
                     <artifactId>jsqlparser</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>com.xkcoding.justauth</groupId>-->
+<!--            <artifactId>justauth-spring-boot-starter</artifactId>-->
+<!--            <version>1.4.0</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>cn.hutool</groupId>-->
+<!--                    <artifactId>hutool-core</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
+
+        <!-- 第三方登录插件 -->
+        <dependency>
+            <groupId>me.zhyd.oauth</groupId>
+            <artifactId>JustAuth</artifactId>
+            <version>1.16.7</version>
+        </dependency>
+
+        <!-- Source: https://mvnrepository.com/artifact/io.minio/minio -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.6.0</version>
         </dependency>
 
         <dependency>
@@ -186,8 +217,20 @@
 
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
-            <artifactId>jjwt</artifactId>
+            <artifactId>jjwt-api</artifactId>
             <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>

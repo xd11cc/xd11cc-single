@@ -16,4 +16,10 @@ public interface ISystemUserService extends IService<SystemUserDO> {
      */
     SystemUserDO getByUsername(String username);
 
+    /**
+     * 根据邮箱查询用户信息
+     * @param email
+     * @return
+     */
+    SystemUserDO getByEmail(String email);
 }

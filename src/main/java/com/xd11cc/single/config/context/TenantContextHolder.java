@@ -1,6 +1,8 @@
 package com.xd11cc.single.config.context;
 
 import com.alibaba.ttl.TransmittableThreadLocal;
+import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.enums.SystemErrorEnum;
 
 /**
  * @author xd11cc
@@ -34,7 +36,7 @@ public class TenantContextHolder {
     public static Long getRequiredTenantId() {
         Long tenantId = getTenantId();
         if (tenantId == null) {
-            throw new NullPointerException("TenantContextHolder 不存在租户编号");
+            throw new ServiceException(SystemErrorEnum.NOT_FOUND_TENANT);
         }
         return tenantId;
     }

@@ -9,12 +9,19 @@ public class CacheConstants {
     /**
      * 自动识别json对象反序列化白名单配置
      */
-    public static final String[] JSON_WHITE_LIST = {"org.springframework", "com.xd11cc.single"};
+    public static final String[] JSON_WHITE_LIST = {
+            "org.springframework", "com.xd11cc.single", "me.zhyd.oauth"
+    };
 
     /**
      * 登录用户令牌
      */
     public static final String LOGIN_TOKEN_KEY = "login_tokens:";
+
+    /**
+     * 登录用户
+     */
+    public static final String LOGIN_USER_KEY = "login_users:";
 
     /**
      * 登录密码错误次数
@@ -40,4 +47,14 @@ public class CacheConstants {
      * 验证码key
      */
     public static final String CAPTCHA_KEY = "captcha:";
+
+    /**
+     * 授权验证key
+     */
+    public static final String AUTH_STATE_KEY = "auth_state:";
+
+    /**
+     * 系统配置key
+     */
+    public static final String SYSTEM_CONFIG_KEY = "system_config:";
 }

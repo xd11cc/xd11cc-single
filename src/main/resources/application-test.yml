@@ -77,3 +77,24 @@ spring:
         max-active: 8
         # 连接池的最大阻塞等待时间（负值代表没有限制）
         max-wait: -1ms
+
+# xxl-job配置
+xxl:
+  job:
+    executor:
+      app-name: ${spring.application.name}
+      log-path: ${spring.application.name}/xxl-job
+      log-retention-days: 30
+    admin:
+      addresses: http://xd11cc-job:8084/xxl-job-admin
+    access-token: default_token
+
+# minio配置
+minio:
+  endpoint: http://xd11cc-minio:9002
+  accessKey: admin
+  secretKey: xd11cc@1216
+  bucketName: xd11cc-bucket
+  connectTimeout: 30000
+  writeTimeout: 3600000
+  readTimeout: 3600000

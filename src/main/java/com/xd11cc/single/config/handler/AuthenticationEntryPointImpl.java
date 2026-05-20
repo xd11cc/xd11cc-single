@@ -1,6 +1,7 @@
 package com.xd11cc.single.config.handler;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.xd11cc.single.config.exception.ErrorCode;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.config.exception.ServiceException;
@@ -25,11 +26,12 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) {
-        log.error("请求地址：{}", request.getRequestURI());
-        Throwable throwable = authException.getCause();
-        if (throwable instanceof ServiceException) {
-            throw (ServiceException) throwable;
+        log.error("认证失败，请求地址：{}", request.getRequestURI());
+        ErrorCode errorCode = SystemErrorEnum.UNAUTHORIZED;
+        Throwable cause = authException.getCause();
+        if (cause instanceof ServiceException) {
+            errorCode = ((ServiceException) cause).getErrorCode();
         }
-        ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(SystemErrorEnum.UNAUTHORIZED)));
+        ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.fail(errorCode)));
     }
 }

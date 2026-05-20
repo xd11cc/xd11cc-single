@@ -29,7 +29,7 @@ public class GenerateCodeServiceImpl implements GenerateCodeService {
     private TenantIgnoreProperties tenantIgnoreProperties;
 
     private static final String AUTHOR = "xd11cc";
-    private static final String BASE_PACKAGE = "com.xd11cc";
+    private static final String BASE_PACKAGE = "com.xd11cc.single";
 
     @Override
     public List<TableInfoVO> list(TableInfoQueryVO tableInfoQueryVO) {

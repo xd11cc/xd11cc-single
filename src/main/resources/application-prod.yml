@@ -88,3 +88,13 @@ xxl:
     admin:
       addresses: http://xd11cc-job:8084/xxl-job-admin
     access-token: default_token
+
+# minio配置
+minio:
+  endpoint: http://xd11cc-minio:9002
+  accessKey: admin
+  secretKey: xd11cc@1216
+  bucketName: xd11cc-bucket
+  connectTimeout: 30000
+  writeTimeout: 3600000
+  readTimeout: 3600000

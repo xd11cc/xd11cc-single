@@ -119,3 +119,19 @@ xxl:
     admin:
       addresses: https://xd11cc.xyz/xxl-job-admin
     access-token: default_token
+
+# minio配置
+minio:
+  endpoint: http://localhost:9002
+  accessKey: admin
+  secretKey: xd11cc@1216
+  bucketName: xd11cc-bucket
+  connectTimeout: 30000
+  writeTimeout: 3600000
+  readTimeout: 3600000
+
+# auth页面配置
+auth:
+  redirect:
+    successUrl: http://localhost:20001/xd11cc/dashboard?token=%s
+    bindUserUrl: http://localhost:20001/xd11cc/login?source=%s&state=%s&need-bind

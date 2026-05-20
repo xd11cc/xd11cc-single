@@ -41,7 +41,19 @@ public enum SystemErrorEnum implements ErrorCode {
     CAPTCHA_EXPIRE(1001013, "验证码已过期"),
     PDF_TO_WORD_ERROR(1001014, "pdf转word失败"),
     TEMPLATE_LOADING_ERROR(1001015, "模版加载失败"),
-    GENERATE_CODE_ERROR(1001015, "代码生成失败"),
+    GENERATE_CODE_ERROR(1001016, "代码生成失败"),
+    INIT_MINIO_ERROR(1001017, "初始化Minio失败"),
+    MINIO_UPLOAD_FILE(1001018, "文件上传失败"),
+    MINIO_GET_FILE_FILE(1001019, "获取预览文件失败"),
+    MINIO_DELETE_FILE_FILE(1001020, "删除文件失败"),
+    MINIO_DOWNLOAD_FILE_FILE(1001021, "文件下载失败"),
+    AUTH_SOURCE_FORBIDDEN(1001022, "{}授权方式以被禁用"),
+    NOT_FOUND_TENANT(1001023, "不存在租户编号"),
+    SOCIAL_USER_BINDEDE(1001024, "该社交账号已绑定其他用户"),
+    SOCIAL_USER_NOT_FOUND(1001025, "社交用户信息不存在"),
+    SOCIAL_AUTH_NOT_SUPPORT(1001025, "社交登录不支持"),
+    CONFIG_KEY_EXISTS(1001026, "配置键已存在"),
+
     ;
 
     private int errorCode;

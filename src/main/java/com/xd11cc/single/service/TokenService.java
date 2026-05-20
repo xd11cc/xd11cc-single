@@ -26,9 +26,9 @@ public interface TokenService {
 
     /**
      * 移除token，移除用户信息
-     * @param token
+     * @param loginUserDTO
      */
-    void removeLoginUser(String token);
+    void removeLoginUser(LoginUserDTO loginUserDTO);
 
     /**
      * 创建用户token信息
