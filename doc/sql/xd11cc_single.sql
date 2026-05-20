@@ -11,11 +11,88 @@
  Target Server Version : 80042 (8.0.42)
  File Encoding         : 65001
 
- Date: 28/04/2026 09:10:34
+ Date: 20/05/2026 16:09:07
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for auth_client_config
+-- ----------------------------
+DROP TABLE IF EXISTS `auth_client_config`;
+CREATE TABLE `auth_client_config` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `source` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '应用类型',
+  `client_id` varchar(255) NOT NULL COMMENT '应用id',
+  `client_secret` varchar(255) NOT NULL COMMENT '应用密钥',
+  `redirect_uri` varchar(255) DEFAULT NULL COMMENT '重定向地址',
+  `name` varchar(255) DEFAULT NULL COMMENT '应用名称',
+  `icon` varchar(255) NOT NULL COMMENT '图标',
+  `status` char(2) DEFAULT '0' COMMENT '状态 system_status',
+  `sort` int DEFAULT NULL COMMENT '排序',
+  `create_user_id` bigint NOT NULL COMMENT '创建人id',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_user_id` bigint NOT NULL COMMENT '更新人id',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
+  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='授权应用配置表';
+
+
+-- ----------------------------
+-- Table structure for auth_social_user
+-- ----------------------------
+DROP TABLE IF EXISTS `auth_social_user`;
+CREATE TABLE `auth_social_user` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `uuid` varchar(100) NOT NULL COMMENT '第三方系统唯一id',
+  `user_id` bigint DEFAULT NULL COMMENT '用户id',
+  `source` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '应用类型',
+  `open_id` varchar(64) DEFAULT NULL COMMENT '社交openId',
+  `token` varchar(255) NOT NULL COMMENT '社交token',
+  `row_token_info` varchar(1024) NOT NULL COMMENT '社交token原始信息',
+  `nickname` varchar(32) DEFAULT NULL COMMENT '社交昵称',
+  `avatar` varchar(255) NOT NULL COMMENT '社交头像',
+  `row_user_info` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '社交用户原始信息',
+  `code` varchar(32) NOT NULL COMMENT '最后一次认证code',
+  `state` varchar(32) NOT NULL COMMENT '最后一次认证state',
+  `bind_time` datetime NOT NULL COMMENT '绑定时间',
+  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
+  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `tenant_id` bigint NOT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='社交用户表';
+
+
+-- ----------------------------
+-- Table structure for system_config
+-- ----------------------------
+DROP TABLE IF EXISTS `system_config`;
+CREATE TABLE `system_config` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `config_key` varchar(100) NOT NULL COMMENT '配置键',
+  `config_value` varchar(500) NOT NULL COMMENT '配置值',
+  `config_name` varchar(32) NOT NULL COMMENT '配置名称',
+  `create_user_id` bigint NOT NULL COMMENT '创建人id',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_user_id` bigint NOT NULL COMMENT '更新人id',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_key_tenant` (`config_key`,`tenant_id`) COMMENT '同一租户下 key 唯一'
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统配置';
+
+-- ----------------------------
+-- Records of system_config
+-- ----------------------------
+BEGIN;
+INSERT INTO `system_config` (`id`, `config_key`, `config_value`, `config_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, 'minio-domain', 'https://xd11cc.xyz/minio-api', 'minio域名', 1, '2026-05-20 15:44:42', 1, '2026-05-20 15:44:47', 0, NULL, 1);
+COMMIT;
 
 -- ----------------------------
 -- Table structure for system_dept
@@ -335,7 +412,7 @@ CREATE TABLE `system_user` (
   `dept_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '部门名称',
   `post_id` bigint NOT NULL COMMENT '岗位id',
   `post_name` varchar(20) NOT NULL COMMENT '岗位名称',
-  `status` char(2) NOT NULL COMMENT '账号状态，字典类型system_enable_status',
+  `status` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '账号状态，字典类型system_status',
   `head_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '头像路径',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
