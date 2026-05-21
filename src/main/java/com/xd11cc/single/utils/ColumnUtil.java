@@ -1,6 +1,5 @@
 package com.xd11cc.single.utils;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
@@ -14,17 +13,14 @@ public class ColumnUtil {
 
     private static final char SEPARATOR = '_';
 
-    /**
-     * 获取配置信息
-     * @return
-     */
-    public static PropertiesConfiguration getConfig(){
+    private static final PropertiesConfiguration CONFIG;
+
+    static {
         try {
-            return new PropertiesConfiguration("generator.properties");
+            CONFIG = new PropertiesConfiguration("generator.properties");
         } catch (ConfigurationException e) {
-            e.printStackTrace();
+            throw new RuntimeException("加载generator.properties失败", e);
         }
-        return null;
     }
 
     /**
@@ -33,9 +29,7 @@ public class ColumnUtil {
      * @return
      */
     public static String cloToJava(String type){
-        Configuration config = getConfig();
-        assert config != null;
-        return config.getString(type, null);
+        return CONFIG.getString(type, "String");
     }
 
     /**

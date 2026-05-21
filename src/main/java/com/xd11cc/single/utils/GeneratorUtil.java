@@ -32,114 +32,58 @@ public class GeneratorUtil {
     private static final String PRI = "PRI";
     private static final String EXTRA = "auto_increment";
 
-    public static List<PreviewCodeVO> generatorCode(List<ColumnInfoVO> columnInfos, GenerateConfigDTO generateConfigDTO) {
-        List<PreviewCodeVO> previewCodeVOS = new ArrayList<>();
-        try {
-            // 初始化freemarker配置
-            Configuration configuration = new Configuration(Configuration.VERSION_2_3_23);
-            configuration.setClassForTemplateLoading(GeneratorUtil.class, "/template");
-            configuration.setDefaultEncoding(StandardCharsets.UTF_8.name());
+    private static final Configuration CONFIGURATION;
 
-            // 封装模版参数
+    static {
+        CONFIGURATION = new Configuration(Configuration.VERSION_2_3_23);
+        CONFIGURATION.setClassForTemplateLoading(GeneratorUtil.class, "/template");
+        CONFIGURATION.setDefaultEncoding(StandardCharsets.UTF_8.name());
+    }
+
+    private static final String[][] TEMPLATES = {
+            {"entity.ftl", "%s.java"},
+            {"controller.ftl", "%sController.java"},
+            {"service.ftl", "I%sService.java"},
+            {"serviceImpl.ftl", "%sServiceImpl.java"},
+            {"mapper.ftl", "%sMapper.java"},
+            {"mapperXml.ftl", "%sMapper.xml"},
+    };
+
+    /**
+     * 生成代码
+     * @param columnInfos
+     * @param generateConfigDTO
+     * @return
+     */
+    public static List<PreviewCodeVO> generatorCode(List<ColumnInfoVO> columnInfos, GenerateConfigDTO generateConfigDTO) {
+        if (columnInfos == null || columnInfos.isEmpty()) {
+            throw new ServiceException(SystemErrorEnum.GENERATE_CODE_ERROR);
+        }
+        try {
             Map<String, Object> map = buildTemplateParams(columnInfos, generateConfigDTO);
             String className = ColumnUtil.toCapitalizeCamlCase(generateConfigDTO.getTableName());
 
-            // 渲染所有模版，返回代码
-            previewCodeVOS.add(genEntity(configuration, className, map));
-            previewCodeVOS.add(genController(configuration, className, map));
-            previewCodeVOS.add(genService(configuration, className, map));
-            previewCodeVOS.add(genServiceImpl(configuration, className, map));
-            previewCodeVOS.add(genMapper(configuration, className, map));
-            previewCodeVOS.add(genMapperXml(configuration, className, map));
+            List<PreviewCodeVO> previewCodeVOS = new ArrayList<>();
+            for (String[] tpl : TEMPLATES) {
+                String code = renderTemplate(tpl[0], map);
+                previewCodeVOS.add(new PreviewCodeVO(String.format(tpl[1], className), code));
+            }
             return previewCodeVOS;
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage(), e);
             throw new ServiceException(SystemErrorEnum.GENERATE_CODE_ERROR);
         }
     }
 
     /**
-     * 生成mapperXml代码
-     * @param configuration
-     * @param className
-     * @param map
-     * @return
-     */
-    private static PreviewCodeVO genMapperXml(Configuration configuration, String className, Map<String, Object> map) {
-        String code = renderTemplate(configuration, "mapperXml.ftl", map);
-        return new PreviewCodeVO(String.format("%sMapper.xml", className), code);
-    }
-
-    /**
-     * 生成mapper代码
-     * @param configuration
-     * @param className
-     * @param map
-     * @return
-     */
-    private static PreviewCodeVO genMapper(Configuration configuration, String className, Map<String, Object> map) {
-        String code = renderTemplate(configuration, "mapper.ftl", map);
-        return new PreviewCodeVO(String.format("%sMapper.java", className), code);
-    }
-
-    /**
-     * 生成serviceImpl代码
-     * @param configuration
-     * @param className
-     * @param map
-     * @return
-     */
-    private static PreviewCodeVO genServiceImpl(Configuration configuration, String className, Map<String, Object> map) {
-        String code = renderTemplate(configuration, "serviceImpl.ftl", map);
-        return new PreviewCodeVO(String.format("%sServiceImpl.java", className), code);
-    }
-
-    /**
-     * 生成service代码
-     * @param configuration
-     * @param className
-     * @param map
-     * @return
-     */
-    private static PreviewCodeVO genService(Configuration configuration, String className, Map<String, Object> map) {
-        String code = renderTemplate(configuration, "service.ftl", map);
-        return new PreviewCodeVO(String.format("I%sService.java", className), code);
-    }
-
-    /**
-     * 生成controller代码
-     * @param configuration
-     * @param className
-     * @param map
-     * @return
-     */
-    private static PreviewCodeVO genController(Configuration configuration, String className, Map<String, Object> map) {
-        String code = renderTemplate(configuration, "controller.ftl", map);
-        return new PreviewCodeVO(String.format("%sController.java", className), code);
-    }
-
-    /**
-     * 生成实体代码
-     * @param configuration
-     * @param className
-     * @param map
-     * @return
-     */
-    private static PreviewCodeVO genEntity(Configuration configuration, String className, Map<String, Object> map) {
-        String code = renderTemplate(configuration, "entity.ftl", map);
-        return new PreviewCodeVO(className + ".java", code);
-    }
-
-    /**
      * 渲染模版通用方法
-     * @param configuration
      * @param templateName
      * @param params
      * @return
      */
-    private static String renderTemplate(Configuration configuration, String templateName, Map<String, Object> params) {
+    private static String renderTemplate(String templateName, Map<String, Object> params) {
         try (StringWriter writer = new StringWriter()){
-            Template template = configuration.getTemplate(templateName);
+            Template template = CONFIGURATION.getTemplate(templateName);
             template.process(params, writer);
             return writer.toString();
         } catch (IOException | TemplateException e) {
