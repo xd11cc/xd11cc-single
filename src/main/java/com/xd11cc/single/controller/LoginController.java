@@ -7,7 +7,6 @@ import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.service.LoginService;
 import com.xd11cc.single.utils.SecurityUtils;
-import com.xd11cc.single.utils.TenantUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -84,18 +83,16 @@ public class LoginController {
 
     /**
      * @param source 认证来源
-     * @param tenantId 授权租户
      * @param code
      * @return
      */
-    @GetMapping("/callback/{source}/{tenantId}")
+    @GetMapping("/callback/{source}")
     @ApiOperation("社交授权认证回调")
     public void oauth(@PathVariable("source") String source,
-                                          @PathVariable("tenantId") Long tenantId,
                                           @RequestParam("code") String code,
                                           @RequestParam("state") String state,
                                           HttpServletResponse response) {
-        TenantUtils.execute(tenantId, () ->loginService.callback(source, code, state, response));
+        loginService.callback(source, code, state, response);
     }
 
     @PostMapping("/social-user/info/{state}")

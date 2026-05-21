@@ -91,7 +91,7 @@ xxl:
 
 # minio配置
 minio:
-  endpoint: http://xd11cc-minio:9002
+  endpoint: http://xd11cc-minio:9000
   accessKey: admin
   secretKey: xd11cc@1216
   bucketName: xd11cc-bucket

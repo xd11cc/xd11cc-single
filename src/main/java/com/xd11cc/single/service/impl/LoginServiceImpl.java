@@ -38,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -63,12 +62,8 @@ public class LoginServiceImpl implements LoginService {
     private AuthRequestFactory authRequestFactory;
     @Autowired
     private IAuthSocialUserService authSocialUserService;
-
-    @Value("${auth.redirect.successUrl}")
-    private String successUrl;
-    @Value("${auth.redirect.bindUserUrl}")
-    private String bindUserUrl;
-
+    @Autowired
+    private ISystemConfigService systemConfigService;
 
     private String getCaptchaKey(String uuid){
         return CacheConstants.CAPTCHA_KEY + uuid;
@@ -157,7 +152,6 @@ public class LoginServiceImpl implements LoginService {
         AuthResponse<AuthUser> authResponse = authRequest.login(authCallback);
         if (!authResponse.ok()){
             log.error("{}授权登录失败，原因:{}", source, authResponse.getMsg());
-            response.sendRedirect("");
             return;
         }
 
@@ -170,6 +164,7 @@ public class LoginServiceImpl implements LoginService {
 
         SystemUserDO systemUserDO;
 
+        String successUrl = systemConfigService.getConfig("auth-redirect-successUrl");
         // 1、判断是否社交绑定
         AuthSocialUserDO authSocialUserDO = authSocialUserService.getBySourceAndUuid(sourceType, uuid);
         if (null != authSocialUserDO) {
@@ -205,8 +200,9 @@ public class LoginServiceImpl implements LoginService {
             response.sendRedirect(String.format(successUrl, token));
             return;
         }
-        // 3、不匹配，前端跳转到绑定页面（注册系统用户）todo
+        // 3、不匹配，前端跳转到绑定页面（注册系统用户）
         redisCache.setCacheObject(getAuthStateKey(state), authUser, 500, TimeUnit.MINUTES);
+        String bindUserUrl = systemConfigService.getConfig("auth-redirect-bindUserUrl");
         response.sendRedirect(String.format(bindUserUrl, source, state));
     }
 

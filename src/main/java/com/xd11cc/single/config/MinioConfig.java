@@ -58,6 +58,7 @@ public class MinioConfig {
                 log.info("Minio Bucket Exists, name: {}", bucketName);
             }
         } catch (Exception e) {
+            log.error("Minio Bucket Error, name: {}", bucketName, e);
             throw new ServiceException(SystemErrorEnum.INIT_MINIO_ERROR);
         }
     }

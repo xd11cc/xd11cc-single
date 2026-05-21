@@ -90,7 +90,7 @@ public class AuthRequestFactory {
         return AuthConfig.builder()
                 .clientId(authClientConfigDO.getClientId())
                 .clientSecret(authClientConfigDO.getClientSecret())
-                .redirectUri(String.format(authClientConfigDO.getRedirectUri(), authClientConfigDO.getTenantId()))
+                .redirectUri(authClientConfigDO.getRedirectUri())
                 .build();
     }
 

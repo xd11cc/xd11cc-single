@@ -129,9 +129,3 @@ minio:
   connectTimeout: 30000
   writeTimeout: 3600000
   readTimeout: 3600000
-
-# auth页面配置
-auth:
-  redirect:
-    successUrl: http://localhost:20001/xd11cc/dashboard?token=%s
-    bindUserUrl: http://localhost:20001/xd11cc/login?source=%s&state=%s&need-bind
