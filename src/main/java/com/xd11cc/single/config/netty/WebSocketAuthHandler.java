@@ -82,8 +82,8 @@ public class WebSocketAuthHandler extends SimpleChannelInboundHandler<FullHttpRe
                 .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
 
         ctx.writeAndFlush(response).addListener(future -> {
-            if (future.isSuccess()) {
-                log.warn("[netty] 发送认证消息失败:{},消息:{}", status, msg);
+            if (!future.isSuccess()) {
+                log.warn("[netty] 认证错误响应发送失败:{},消息:{}", status, msg, future.cause());
             }
             ctx.close();
         });

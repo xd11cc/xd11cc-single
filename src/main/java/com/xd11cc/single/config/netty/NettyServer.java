@@ -30,7 +30,7 @@ public class NettyServer {
     // 处理连接请求，线程固定1
     private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
     // 处理读写请求，线程数默认CPU核心数 * 2
-    private EventLoopGroup workerGroup = new NioEventLoopGroup(Runtime.getRuntime().availableProcessors());
+    private EventLoopGroup workerGroup = new NioEventLoopGroup();
 
     @Autowired
     private WebSocketChannelInitializer webSocketChannelInitializer;

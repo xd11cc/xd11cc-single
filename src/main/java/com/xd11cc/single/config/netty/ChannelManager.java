@@ -94,36 +94,25 @@ public class ChannelManager {
             log.debug("[netty] 通道无元数据，无需清理：channel:{}", channel.id());
             return;
         }
-        try {
-            Long tenantId = metadata.getTenantId();
-            // 清理租户通道组
-            ChannelGroup tenantGroup = tenantChannelsGroups.get(tenantId);
-            if (StringUtils.isNotNull(tenantGroup)) {
-                tenantGroup.remove(channel);
-                if (tenantGroup.isEmpty()) {
-                    tenantChannelsGroups.remove(tenantId);
-                    log.debug("[netty] 租户{}通道组为空，已移除", tenantId);
-                }
-            }
-            Long userId = metadata.getUserId();
-            // 清理用户通道组
-            ChannelGroup userGroup = userChannelsGroups.get(userId);
-            if (StringUtils.isNotNull(userGroup)) {
-                userGroup.remove(channel);
-                if (userGroup.isEmpty()) {
-                    userChannelsGroups.remove(userId);
-                    log.debug("[netty] 用户{}通道组为空，已移除", userId);
-                }
-            }
+        Long tenantId = metadata.getTenantId();
+        // 清理租户通道组（原子操作避免竞态）
+        tenantChannelsGroups.computeIfPresent(tenantId, (k, group) -> {
+            group.remove(channel);
+            return group.isEmpty() ? null : group;
+        });
 
-            // 清理全局通道组
-            globalChannelGroup.remove(channel);
-            // 连接数 -1
-            currentConnCount.decrementAndGet();
-            log.info("[netty] 通道移除成功，租户：{}，用户：{}，通道：{}，当前连接数：{}", tenantId, userId, channel.id(), currentConnCount.get());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Long userId = metadata.getUserId();
+        // 清理用户通道组（原子操作避免竞态）
+        userChannelsGroups.computeIfPresent(userId, (k, group) -> {
+            group.remove(channel);
+            return group.isEmpty() ? null : group;
+        });
+
+        // 清理全局通道组
+        globalChannelGroup.remove(channel);
+        // 连接数 -1
+        currentConnCount.decrementAndGet();
+        log.info("[netty] 通道移除成功，租户：{}，用户：{}，通道：{}，当前连接数：{}", tenantId, userId, channel.id(), currentConnCount.get());
     }
 
     /**
@@ -143,12 +132,10 @@ public class ChannelManager {
         }
         // 构建webSocket帧
         TextWebSocketFrame frame = new TextWebSocketFrame(message);
-        // 异步推送+异常处理
+        // 异步推送
         userChannels.writeAndFlush(frame).addListener(future -> {
-            if (future.isSuccess()) {
-                log.debug("[netty] 推送用户{}成功，消息长度{}", userId, message.length());
-            }else {
-                log.error("[netty] 推送用户{}失败", userId, future.cause());
+            if (!future.isSuccess()) {
+                log.warn("[netty] 推送用户{}部分通道失败", userId, future.cause());
             }
         });
     }
@@ -170,10 +157,8 @@ public class ChannelManager {
         }
         TextWebSocketFrame frame = new TextWebSocketFrame(message);
         tenantChannels.writeAndFlush(frame).addListener(future -> {
-            if (future.isSuccess()) {
-                log.debug("[netty] 租户{}广播成功，消息长度{}，通道数{}", tenantId, message.length(), tenantChannels.size());
-            }else {
-                log.error("[netty] 租户{}广播失败", tenantId, future.cause());
+            if (!future.isSuccess()) {
+                log.warn("[netty] 租户{}广播部分通道失败", tenantId, future.cause());
             }
         });
     }
@@ -193,10 +178,8 @@ public class ChannelManager {
         }
         TextWebSocketFrame frame = new TextWebSocketFrame(message);
         globalChannelGroup.writeAndFlush(frame).addListener(future -> {
-            if (future.isSuccess()) {
-                log.debug("[netty] 全局广播成功，消息长度{}，通道数{}", message.length(), globalChannelGroup.size());
-            }else {
-                log.error("[netty] 全局广播失败", future.cause());
+            if (!future.isSuccess()) {
+                log.warn("[netty] 全局广播部分通道失败", future.cause());
             }
         });
     }
