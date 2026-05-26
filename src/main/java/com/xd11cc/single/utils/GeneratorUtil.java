@@ -41,7 +41,7 @@ public class GeneratorUtil {
     }
 
     private static final String[][] TEMPLATES = {
-            {"entity.ftl", "%s.java"},
+            {"entity.ftl", "%sDO.java"},
             {"controller.ftl", "%sController.java"},
             {"service.ftl", "I%sService.java"},
             {"serviceImpl.ftl", "%sServiceImpl.java"},

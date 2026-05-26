@@ -77,7 +77,7 @@ security:
     - /login/loginByPassword
     - /login/getCaptcha
     - /login/authorize/**
-    - /login/callback/**/*
+    - /login/callback/**
     - /login/social-user/bind
     - /auth/client/config/list
     # 匿名上传文件
