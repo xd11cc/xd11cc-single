@@ -42,6 +42,7 @@ public @interface RateLimit {
 
     /**
      * 限流类型
+     * 注意：USER 类型不能用于未登录的接口
      * @return
      */
     RateLimitEnum type() default RateLimitEnum.DEFAULT;

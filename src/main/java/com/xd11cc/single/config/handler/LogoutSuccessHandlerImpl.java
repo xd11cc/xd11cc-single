@@ -1,6 +1,8 @@
 package com.xd11cc.single.config.handler;
 
 import com.alibaba.fastjson2.JSONObject;
+import com.xd11cc.single.config.context.TenantContextHolder;
+import com.xd11cc.single.constants.SecurityConstants;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.service.TokenService;
@@ -29,9 +31,15 @@ public class LogoutSuccessHandlerImpl implements LogoutSuccessHandler {
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        LoginUserDTO loginUser = tokenService.getLoginUser(request);
-        if (null != loginUser) {
-            tokenService.removeLoginUser(loginUser);
+        Long tenantId = (Long) request.getAttribute(SecurityConstants.TENANT_ID);
+        try {
+            TenantContextHolder.setTenantId(tenantId);
+            LoginUserDTO loginUser = tokenService.getLoginUser(request);
+            if (null != loginUser) {
+                tokenService.removeLoginUser(loginUser);
+            }
+        } finally {
+            TenantContextHolder.clear();
         }
         ServletUtils.renderString(response, JSONObject.toJSONString(ResponseVO.success()));
     }

@@ -41,22 +41,12 @@ public class RateLimitAspect {
             return joinPoint.proceed();
         }
 
-        // 1、校验参数的合法性
         validateRateLimitParams(rateLimit);
 
-        // 2、构建Key时传入参数
         String rateLimitKey = buildRateLimitKey(method, rateLimit);
 
-        // 3、获取或创建限流器
-        RRateLimiter rateLimiter = getLimiter(rateLimitKey, rateLimit);
-        rateLimiter.trySetRate(
-                RateType.OVERALL,
-                rateLimit.count(),
-                rateLimit.time(),
-                converToRateIntervalUnit(rateLimit.timeUnit())
-        );
+        RRateLimiter rateLimiter = getOrCreateLimiter(rateLimitKey, rateLimit);
 
-        // 4. 尝试获取令牌，显式指定获取1个，语义更清晰
         if (rateLimiter.tryAcquire(1)) {
             log.debug("限流放行 -> key:{}，接口:{}.{}", rateLimitKey, method.getDeclaringClass().getName(), method.getName());
             return joinPoint.proceed();
@@ -68,20 +58,18 @@ public class RateLimitAspect {
         }
     }
 
-    private RRateLimiter getLimiter(String key, RateLimit rateLimit) {
-        // 直接从Redisson获取，依赖Redisson的本地缓存
+    private RRateLimiter getOrCreateLimiter(String key, RateLimit rateLimit) {
         RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
-
-        // 原子性地设置速率（Redisson保证线程安全）
         if (rateLimiter.trySetRate(
                 RateType.OVERALL,
                 rateLimit.count(),
                 rateLimit.time(),
                 converToRateIntervalUnit(rateLimit.timeUnit())
         )) {
+            // 首次创建时设置过期时间，防止动态 key 残留
+            rateLimiter.expire(java.time.Duration.ofSeconds(rateLimit.time() * 2L));
             log.debug("Rate limiter initialized: {}", key);
         }
-
         return rateLimiter;
     }
 
@@ -93,8 +81,8 @@ public class RateLimitAspect {
                 sb.append("ip:").append(IpUtils.getIpAddr());
                 break;
             case USER:
-                Long userId = SecurityUtils.getUserId();
-                sb.append("user:").append(userId != null ? userId : "anonymous");
+                // 注意：USER 类型不能用于未登录的接口，否则会抛出未授权异常
+                sb.append("user:").append(SecurityUtils.getUserId());
                 break;
             default:
                 sb.append("method:")
@@ -106,11 +94,6 @@ public class RateLimitAspect {
         return sb.toString();
     }
 
-    /**
-     * 构建限制器单位
-     * @param timeUnit
-     * @return
-     */
     private RateIntervalUnit converToRateIntervalUnit(TimeUnit timeUnit) {
         switch (timeUnit) {
             case MINUTES: return RateIntervalUnit.MINUTES;
@@ -120,9 +103,6 @@ public class RateLimitAspect {
         }
     }
 
-    /**
-     * 校验限流注解参数合法性，启动时暴露配置错误
-     */
     private void validateRateLimitParams(RateLimit rateLimit) {
         if (rateLimit.count() <= 0) {
             throw new IllegalArgumentException("限流配置错误：count必须大于0");
