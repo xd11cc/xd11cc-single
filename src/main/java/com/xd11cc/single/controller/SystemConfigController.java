@@ -68,7 +68,6 @@ public class SystemConfigController {
 
     @ApiOperation("分页查询配置")
     @PostMapping("/page")
-    @PreAuthorize("@ss.hasPermission('system:config:list')")
     public ResponseVO<List<SystemConfigDO>> page(@Valid @RequestBody SystemConfigQueryVO systemConfigQueryVO) {
         return PageUtils.page(systemConfigQueryVO, () -> systemConfigService.getList(systemConfigQueryVO));
     }

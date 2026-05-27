@@ -46,6 +46,6 @@ public class BaseDO implements Serializable {
      */
     @TableLogic(value = "0", delval = "NULL")
     @TableField(fill = FieldFill.INSERT)
-    private boolean delFlag;
+    private Boolean delFlag;
 
 }

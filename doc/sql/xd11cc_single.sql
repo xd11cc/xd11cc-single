@@ -11,7 +11,7 @@
  Target Server Version : 80042 (8.0.42)
  File Encoding         : 65001
 
- Date: 20/05/2026 16:09:07
+ Date: 26/05/2026 16:45:44
 */
 
 SET NAMES utf8mb4;
@@ -23,24 +23,31 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS `auth_client_config`;
 CREATE TABLE `auth_client_config` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
-  `source` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '应用类型',
+  `source` varchar(32) NOT NULL COMMENT '应用类型',
   `client_id` varchar(255) NOT NULL COMMENT '应用id',
   `client_secret` varchar(255) NOT NULL COMMENT '应用密钥',
   `redirect_uri` varchar(255) DEFAULT NULL COMMENT '重定向地址',
   `name` varchar(255) DEFAULT NULL COMMENT '应用名称',
   `icon` varchar(255) NOT NULL COMMENT '图标',
-  `status` char(2) DEFAULT '0' COMMENT '状态 system_status',
-  `sort` int DEFAULT NULL COMMENT '排序',
+  `status` char(2) NOT NULL DEFAULT '0' COMMENT '状态，字典类型system_status',
+  `sort` int NOT NULL COMMENT '排序',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_source_tenant` (`source`,`tenant_id`,`del_flag`),
+  KEY `idx_tenant_id` (`tenant_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='授权应用配置表';
 
+-- ----------------------------
+-- Records of auth_client_config
+-- ----------------------------
+BEGIN;
+COMMIT;
 
 -- ----------------------------
 -- Table structure for auth_social_user
@@ -50,22 +57,29 @@ CREATE TABLE `auth_social_user` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `uuid` varchar(100) NOT NULL COMMENT '第三方系统唯一id',
   `user_id` bigint DEFAULT NULL COMMENT '用户id',
-  `source` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '应用类型',
+  `source` varchar(32) NOT NULL COMMENT '应用类型',
   `open_id` varchar(64) DEFAULT NULL COMMENT '社交openId',
   `token` varchar(255) NOT NULL COMMENT '社交token',
   `row_token_info` varchar(1024) NOT NULL COMMENT '社交token原始信息',
   `nickname` varchar(32) DEFAULT NULL COMMENT '社交昵称',
   `avatar` varchar(255) NOT NULL COMMENT '社交头像',
-  `row_user_info` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '社交用户原始信息',
+  `row_user_info` varchar(2048) NOT NULL COMMENT '社交用户原始信息',
   `code` varchar(32) NOT NULL COMMENT '最后一次认证code',
   `state` varchar(32) NOT NULL COMMENT '最后一次认证state',
   `bind_time` datetime NOT NULL COMMENT '绑定时间',
-  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
-  `tenant_id` bigint NOT NULL COMMENT '租户id',
-  PRIMARY KEY (`id`)
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_uuid_source` (`uuid`,`source`,`del_flag`),
+  KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='社交用户表';
 
+-- ----------------------------
+-- Records of auth_social_user
+-- ----------------------------
+BEGIN;
+COMMIT;
 
 -- ----------------------------
 -- Table structure for system_config
@@ -80,18 +94,17 @@ CREATE TABLE `system_config` (
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_key_tenant` (`config_key`,`tenant_id`) COMMENT '同一租户下 key 唯一'
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统配置';
+  UNIQUE KEY `uk_key_tenant` (`config_key`,`tenant_id`,`del_flag`) COMMENT '同一租户下 key 唯一'
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统配置';
 
 -- ----------------------------
 -- Records of system_config
 -- ----------------------------
 BEGIN;
-INSERT INTO `system_config` (`id`, `config_key`, `config_value`, `config_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, 'minio-domain', 'https://xd11cc.xyz/minio-api', 'minio域名', 1, '2026-05-20 15:44:42', 1, '2026-05-20 15:44:47', 0, NULL, 1);
 COMMIT;
 
 -- ----------------------------
@@ -100,20 +113,22 @@ COMMIT;
 DROP TABLE IF EXISTS `system_dept`;
 CREATE TABLE `system_dept` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
-  `parent_id` bigint NOT NULL DEFAULT '0' COMMENT '父部门id',
+  `parent_id` bigint DEFAULT NULL COMMENT '父部门id',
   `dept_code` varchar(20) NOT NULL COMMENT '部门编码',
   `dept_name` varchar(20) NOT NULL COMMENT '部门名称',
   `leader_id` bigint NOT NULL COMMENT '部门负责人',
   `sort` int NOT NULL COMMENT '排序',
-  `status` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '部门状态，字典类型system_status',
+  `status` char(2) NOT NULL COMMENT '部门状态，字典类型system_status',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
-  PRIMARY KEY (`id`) USING BTREE
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `uk_dept_code_tenant` (`dept_code`,`tenant_id`,`del_flag`),
+  KEY `idx_parent_id` (`parent_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='部门表';
 
 -- ----------------------------
@@ -134,10 +149,12 @@ CREATE TABLE `system_dept_post` (
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_dept_id` (`dept_id`),
+  KEY `idx_post_id` (`post_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='部门岗位表';
 
 -- ----------------------------
@@ -152,22 +169,22 @@ COMMIT;
 DROP TABLE IF EXISTS `system_dict_data`;
 CREATE TABLE `system_dict_data` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
-  `dict_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '字典类型',
+  `dict_type` varchar(20) NOT NULL COMMENT '字典类型',
   `label` varchar(20) NOT NULL COMMENT '标签',
   `value` varchar(20) NOT NULL COMMENT '键值',
-  `css_class` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '键值颜色',
-  `list_class` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '背景颜色',
+  `css_class` varchar(100) DEFAULT NULL COMMENT '键值颜色',
+  `list_class` varchar(100) DEFAULT NULL COMMENT '背景颜色',
   `sort` int NOT NULL COMMENT '排序',
-  `status` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '状态，字典system_status',
+  `status` char(2) DEFAULT NULL COMMENT '状态，字典类型system_status',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `label` (`dict_type`,`label`,`del_flag`) USING BTREE
+  UNIQUE KEY `uk_type_label_tenant` (`dict_type`,`label`,`tenant_id`,`del_flag`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='字典数据表';
 
 -- ----------------------------
@@ -195,14 +212,14 @@ COMMIT;
 DROP TABLE IF EXISTS `system_dict_type`;
 CREATE TABLE `system_dict_type` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
-  `dict_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '字典类型',
-  `dict_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '字典名称',
+  `dict_type` varchar(20) NOT NULL COMMENT '字典类型',
+  `dict_name` varchar(20) NOT NULL COMMENT '字典名称',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
-  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`),
   UNIQUE KEY `type` (`dict_type`,`del_flag`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='字典类型表';
@@ -223,22 +240,22 @@ COMMIT;
 DROP TABLE IF EXISTS `system_job`;
 CREATE TABLE `system_job` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
-  `job_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务名称',
-  `job_group` char(2) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务组名',
-  `invoke_target` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '调度目标字符串',
-  `cron_expression` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'cron执行表达式',
-  `execution_policy` char(2) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '执行策略',
-  `CONCURRENT` char(2) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '是否允许并发执行',
-  `STATUS` char(2) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '状态',
+  `job_name` varchar(50) NOT NULL COMMENT '任务名称',
+  `job_group` char(2) NOT NULL COMMENT '任务组名',
+  `invoke_target` varchar(255) NOT NULL COMMENT '调度目标字符串',
+  `cron_expression` varchar(50) NOT NULL COMMENT 'cron执行表达式',
+  `execution_policy` char(2) NOT NULL COMMENT '执行策略',
+  `concurrent` char(2) NOT NULL COMMENT '是否允许并发执行',
+  `status` char(2) NOT NULL COMMENT '状态',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统任务表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统任务表';
 
 -- ----------------------------
 -- Records of system_job
@@ -253,20 +270,22 @@ DROP TABLE IF EXISTS `system_job_log`;
 CREATE TABLE `system_job_log` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `job_id` bigint NOT NULL COMMENT '任务id',
-  `job_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务名称',
-  `job_group` char(2) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务组名',
-  `invoke_target` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '调度目标字符串',
-  `job_message` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '日志信息',
-  `STATUS` char(2) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '执行状态',
+  `job_name` varchar(50) NOT NULL COMMENT '任务名称',
+  `job_group` char(2) NOT NULL COMMENT '任务组名',
+  `invoke_target` varchar(255) NOT NULL COMMENT '调度目标字符串',
+  `job_message` varchar(500) DEFAULT NULL COMMENT '日志信息',
+  `status` char(2) DEFAULT NULL COMMENT '执行状态',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统任务日志表';
+  PRIMARY KEY (`id`),
+  KEY `idx_job_id` (`job_id`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统任务日志表';
 
 -- ----------------------------
 -- Records of system_job_log
@@ -283,42 +302,48 @@ CREATE TABLE `system_menu` (
   `parent_id` bigint DEFAULT NULL COMMENT '父菜单id',
   `menu_name` varchar(20) NOT NULL COMMENT '菜单名称',
   `sort` int NOT NULL COMMENT '显示排序',
-  `path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '路由路径（如/user/list）',
-  `component` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '组件路径',
-  `route_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '路由名称',
-  `query` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '路由参数',
-  `icon` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '菜单图标',
-  `menu_type` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '菜单类型，字典类型system_menu_type',
-  `status` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '菜单状态，字典类型system_status',
+  `path` varchar(255) DEFAULT NULL COMMENT '路由路径（如/user/list）',
+  `component` varchar(255) DEFAULT NULL COMMENT '组件路径',
+  `route_name` varchar(255) DEFAULT NULL COMMENT '路由名称',
+  `query` varchar(255) DEFAULT NULL COMMENT '路由参数',
+  `icon` varchar(255) DEFAULT NULL COMMENT '菜单图标',
+  `menu_type` char(2) NOT NULL COMMENT '菜单类型，字典类型system_menu_type',
+  `status` char(2) NOT NULL COMMENT '菜单状态，字典类型system_status',
   `permission` varchar(255) DEFAULT NULL COMMENT '权限字符',
   `visible` tinyint NOT NULL DEFAULT '0' COMMENT '是否隐藏，0-否 1-是',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `path` (`path`,`del_flag`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';
+  UNIQUE KEY `uk_path` (`path`,`del_flag`) USING BTREE,
+  KEY `idx_parent_id` (`parent_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';
 
 -- ----------------------------
 -- Records of system_menu
 -- ----------------------------
 BEGIN;
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (1, NULL, '系统管理', 1, 'system', 'Layout', 'System', NULL, 'Setting', 'M', '0', NULL, 0, 1, '2026-01-20 18:03:15', 1, '2026-01-20 18:03:21', 0, NULL);
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (2, 1, '菜单管理', 1, 'menu', 'system/menu/index', 'Menu', NULL, 'Menu', 'C', '0', NULL, 0, 1, '2026-01-20 22:46:41', 1, '2026-01-20 22:46:46', 0, NULL);
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (3, 1, '字典管理', 2, 'dict', 'system/dict/index', 'Dict', NULL, 'Notebook', 'C', '0', NULL, 0, 1, '2026-01-22 10:28:08', 1, '2026-01-22 10:28:14', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (1, NULL, '系统管理', 1, 'system', 'Layout', 'System', NULL, 'ep:setting', 'M', '0', NULL, 0, 1, '2026-01-20 18:03:15', 1, '2026-05-21 14:26:19', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (2, 1, '菜单管理', 2, 'menu', 'system/menu/index', 'Menu', NULL, 'ep:menu', 'C', '0', NULL, 0, 1, '2026-01-20 22:46:41', 1, '2026-05-21 15:28:45', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (3, 1, '字典管理', 2, 'dict', 'system/dict/index', 'Dict', NULL, 'ep:notebook', 'C', '0', NULL, 0, 1, '2026-01-22 10:28:08', 1, '2026-05-21 14:39:08', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (4, 1, '字典数据', 3, 'dict-data', 'system/dict/data', 'DictData', NULL, NULL, 'C', '0', NULL, 1, 1, '2026-01-28 17:26:27', 1, '2026-01-28 17:26:33', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (5, 3, '字典查询', 4, NULL, NULL, NULL, NULL, NULL, 'B', '0', 'system:dictType:list', 0, 1, '2026-02-11 11:07:38', 1, '2026-03-17 10:27:57', 0, NULL);
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (6, NULL, '系统监控', 3, 'monitor', 'Layout', 'Monitor', NULL, 'Monitor', 'M', '0', NULL, 0, 1, '2026-02-12 14:31:43', 1, '2026-04-20 15:02:06', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (6, NULL, '系统监控', 3, 'monitor', 'Layout', 'Monitor', NULL, 'ep:monitor', 'M', '0', NULL, 0, 1, '2026-02-12 14:31:43', 1, '2026-05-21 14:39:39', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (7, 3, '字典新增', 1, NULL, NULL, NULL, NULL, NULL, 'B', '0', 'system:dictType:add', 0, 1, '2026-02-12 14:45:05', 1, '2026-03-17 10:28:17', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (8, 3, '字典修改', 3, NULL, NULL, NULL, NULL, NULL, 'B', '0', 'systm:dictType:update', 0, 1, '2026-02-12 14:45:38', 1, '2026-03-17 10:28:05', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (9, 3, '字典删除', 2, NULL, NULL, NULL, NULL, NULL, 'B', '0', 'system:dictType:delete', 0, 1, '2026-02-12 14:46:05', 1, '2026-03-17 10:28:10', 0, NULL);
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (10, 6, '数据管理', 1, 'druid', 'monitor/druid/index', 'Druid', NULL, 'DataLine', 'C', '0', NULL, 0, 1, '2026-02-13 09:30:16', 1, '2026-02-13 09:30:16', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (10, 6, '数据管理', 1, 'druid', 'monitor/druid/index', 'Druid', NULL, 'ep:data-line', 'C', '0', NULL, 0, 1, '2026-02-13 09:30:16', 1, '2026-05-21 14:39:48', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (11, 3, '字典导出', 5, NULL, NULL, NULL, NULL, NULL, 'B', '0', 'system:dictType:export', 0, 1, '2026-03-17 10:47:57', 1, '2026-03-17 10:47:57', 0, NULL);
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (12, NULL, '系统工具', 2, 'tool', 'Layout', 'Tool', NULL, 'ShoppingBag', 'M', '0', NULL, 0, 1, '2026-04-20 15:01:32', 1, '2026-04-20 15:17:35', 0, NULL);
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (13, 12, '代码生成', 1, 'generateCode', 'tool/generateCode/index', 'GenerateCode', NULL, 'Connection', 'C', '0', NULL, 0, 1, '2026-04-20 15:04:39', 1, '2026-04-21 16:24:30', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (12, NULL, '系统工具', 2, 'tool', 'Layout', 'Tool', NULL, 'ep:shopping-bag', 'M', '0', NULL, 0, 1, '2026-04-20 15:01:32', 1, '2026-05-21 14:39:23', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (13, 12, '代码生成', 1, 'generateCode', 'tool/generateCode/index', 'GenerateCode', NULL, 'ep:connection', 'C', '0', NULL, 0, 1, '2026-04-20 15:04:39', 1, '2026-05-21 14:39:32', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (14, 1, '系统配置', 4, 'config', 'system/config/index', 'Config', NULL, 'ep:operation', 'C', '0', NULL, 0, 1, '2026-05-21 15:09:44', 1, '2026-05-21 15:18:14', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (15, 1, '用户管理', 1, 'user', 'system/user/index', 'User', NULL, 'ep:user', 'C', '0', NULL, 0, 1, '2026-05-21 15:28:34', 1, '2026-05-21 15:28:34', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (16, 1, '部门管理', 5, 'dept', 'system/dept/index', 'Dept', NULL, 'lucide:network', 'C', '0', NULL, 0, 1, '2026-05-26 16:24:33', 1, '2026-05-26 16:38:01', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (17, 1, '岗位管理', 4, 'post', 'system/post/index', 'Post', NULL, 'lucide:badge-check', 'C', '0', NULL, 0, 1, '2026-05-26 16:31:34', 1, '2026-05-26 16:37:32', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (18, 1, '角色管理', 4, 'role', 'system/role/index', 'Role', NULL, 'lucide:shield-check', 'C', '0', NULL, 0, 1, '2026-05-26 16:36:15', 1, '2026-05-26 16:37:51', 0, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -329,15 +354,16 @@ CREATE TABLE `system_post` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `post_code` varchar(20) NOT NULL COMMENT '岗位编码',
   `post_name` varchar(20) NOT NULL COMMENT '岗位名称',
-  `status` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '岗位状态，字典类型system_status',
+  `status` char(2) NOT NULL COMMENT '岗位状态，字典类型system_status',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_post_code_tenant` (`post_code`,`tenant_id`,`del_flag`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='岗位表';
 
 -- ----------------------------
@@ -354,15 +380,16 @@ CREATE TABLE `system_role` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `role_code` varchar(20) NOT NULL COMMENT '角色编码',
   `role_name` varchar(20) NOT NULL COMMENT '角色名称',
-  `status` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '角色状态，字典类型system_status',
+  `status` char(2) NOT NULL COMMENT '角色状态，字典类型system_status',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_role_code_tenant` (`role_code`,`tenant_id`,`del_flag`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色表';
 
 -- ----------------------------
@@ -383,10 +410,12 @@ CREATE TABLE `system_role_menu` (
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-  `remark` varchar(255) NOT NULL COMMENT '备注',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_role_id` (`role_id`),
+  KEY `idx_menu_id` (`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色菜单表';
 
 -- ----------------------------
@@ -405,23 +434,25 @@ CREATE TABLE `system_user` (
   `password` varchar(64) NOT NULL COMMENT '密码',
   `nickname` varchar(20) NOT NULL COMMENT '昵称',
   `id_card` varchar(18) DEFAULT NULL COMMENT '身份证号码',
-  `sex` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '性别，字典类型system_logic_status',
+  `sex` char(2) NOT NULL COMMENT '性别，字典类型system_user_sex',
   `phone` varchar(11) DEFAULT NULL COMMENT '手机号码',
   `email` varchar(20) DEFAULT NULL COMMENT '邮箱',
   `dept_id` bigint NOT NULL COMMENT '部门id',
-  `dept_name` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '部门名称',
+  `dept_name` varchar(20) NOT NULL COMMENT '部门名称',
   `post_id` bigint NOT NULL COMMENT '岗位id',
   `post_name` varchar(20) NOT NULL COMMENT '岗位名称',
-  `status` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '账号状态，字典类型system_status',
-  `head_url` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '头像路径',
+  `status` char(2) NOT NULL COMMENT '账号状态，字典类型system_status',
+  `head_url` varchar(255) DEFAULT NULL COMMENT '头像路径',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-  `remark` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '备注',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_username_tenant` (`username`,`tenant_id`,`del_flag`),
+  KEY `idx_dept_id` (`dept_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
 
 -- ----------------------------
@@ -443,10 +474,12 @@ CREATE TABLE `system_user_role` (
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_user_id` bigint NOT NULL COMMENT '更新人id',
   `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint NOT NULL DEFAULT '0' COMMENT '删除标识 0-未删除 1-已删除',
-  `remark` varchar(255) NOT NULL COMMENT '备注',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_role_id` (`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色表';
 
 -- ----------------------------

@@ -53,6 +53,15 @@ public enum SystemErrorEnum implements ErrorCode {
     SOCIAL_USER_NOT_FOUND(1001025, "社交用户信息不存在"),
     SOCIAL_AUTH_NOT_SUPPORT(1001025, "社交登录不支持"),
     CONFIG_KEY_EXISTS(1001026, "配置键已存在"),
+    USERNAME_EXISTS(1001027, "用户名已存在"),
+    ADMIN_NOT_ALLOW_DELETE(1001028, "管理员账号不允许删除"),
+    DEPT_CODE_EXISTS(1001029, "部门编码已存在"),
+    DEPT_HAVE_CHILDREN(1001030, "当前部门下存在子部门"),
+    DEPT_PARENT_CANNOT_SELF(1001031, "父部门不能为自身"),
+    ROLE_CODE_EXISTS(1001032, "角色编码已存在"),
+    ROLE_BINDEDE_USER(1001033, "角色已分配用户，不允许删除"),
+    POST_CODE_EXISTS(1001034, "岗位编码已存在"),
+    AUTH_SOURCE_EXISTS(1001035, "该应用类型已存在"),
 
     ;
 

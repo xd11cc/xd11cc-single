@@ -13,6 +13,7 @@ import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.mapper.SystemMenuMapper;
 import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.utils.StringUtils;
+import com.xd11cc.single.utils.TreeUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -44,7 +45,38 @@ public class SystemMenuServiceImpl extends ServiceImpl<SystemMenuMapper, SystemM
         }else {
             systemMenuDOS = baseMapper.selectRoutes(userId);
         }
-        return buildTreeMenu(systemMenuDOS, null);
+        // 转换为RouteVO
+        List<RouteVO> routeVOList = new ArrayList<>();
+        for (SystemMenuDO systemMenuDO : systemMenuDOS) {
+            RouteVO routeVO = new RouteVO();
+            routeVO.setId(systemMenuDO.getId());
+            routeVO.setParentId(systemMenuDO.getParentId());
+            routeVO.setName(systemMenuDO.getRouteName());
+            routeVO.setPath(systemMenuDO.getPath());
+            routeVO.setComponent(systemMenuDO.getComponent());
+            routeVO.setSort(systemMenuDO.getSort());
+            MetaVO metaVO = MetaVO.builder()
+                    .title(systemMenuDO.getMenuName())
+                    .icon(systemMenuDO.getIcon())
+                    .query(systemMenuDO.getQuery())
+                    .hidden(SystemVisibleEnum.HIDDEN.getCode().equals(systemMenuDO.getVisible()))
+                    .permission(systemMenuDO.getPermission())
+                    .build();
+            if (MenuTypeEnum.DIR.getCode().equals(systemMenuDO.getMenuType())) {
+                routeVO.setRedirect("noRedirect");
+                routeVO.setPath("/" + systemMenuDO.getPath());
+                metaVO.setAlwaysShow(true);
+            }
+            routeVO.setMeta(metaVO);
+            routeVOList.add(routeVO);
+        }
+        // 构建树形结构
+        return TreeUtils.buildTree(routeVOList,
+                RouteVO::getId,
+                RouteVO::getParentId,
+                RouteVO::setChildren,
+                RouteVO::getSort,
+                null);
     }
 
     @Override
@@ -73,45 +105,5 @@ public class SystemMenuServiceImpl extends ServiceImpl<SystemMenuMapper, SystemM
     @Override
     public List<SystemMenuTreeVO> getTreeList(SystemMenuQueryVO systemMenuQueryVO) {
         return baseMapper.selectTreeList(systemMenuQueryVO);
-    }
-
-    /**
-     * 构建菜单树形结构
-     * @param systemMenuDOS
-     * @return
-     */
-    private static List<RouteVO> buildTreeMenu(List<SystemMenuDO> systemMenuDOS, Long rootId) {
-        List<RouteVO> routeVOS = new ArrayList<>();
-        systemMenuDOS.forEach(systemMenuDO -> {
-            if (Objects.equals(rootId, systemMenuDO.getParentId())) {
-                RouteVO routeVO = new RouteVO();
-                routeVO.setId(systemMenuDO.getId());
-                routeVO.setParentId(systemMenuDO.getParentId());
-                routeVO.setName(systemMenuDO.getRouteName());
-                routeVO.setPath(systemMenuDO.getPath());
-                routeVO.setComponent(systemMenuDO.getComponent());
-                routeVO.setSort(systemMenuDO.getSort());
-                // 构建其他元素
-                MetaVO metaVO = MetaVO.builder()
-                        .title(systemMenuDO.getMenuName())
-                        .icon(systemMenuDO.getIcon())
-                        .query(systemMenuDO.getQuery())
-                        .hidden(SystemVisibleEnum.HIDDEN.getCode().equals(systemMenuDO.getVisible()))
-                        .permission(systemMenuDO.getPermission())
-                        .build();
-                if (MenuTypeEnum.DIR.getCode().equals(systemMenuDO.getMenuType())) {
-                    routeVO.setRedirect("noRedirect");
-                    routeVO.setPath("/" + systemMenuDO.getPath());
-                    metaVO.setAlwaysShow(true);
-                }
-                routeVO.setMeta(metaVO);
-                routeVO.setChildren(buildTreeMenu(systemMenuDOS, systemMenuDO.getId()));
-                routeVOS.add(routeVO);
-            }
-        });
-        // 排序
-        routeVOS.sort(Comparator.comparing(RouteVO::getSort));
-        routeVOS.forEach(t ->t.getChildren().sort(Comparator.comparing(RouteVO::getSort)));
-        return routeVOS;
     }
 }
