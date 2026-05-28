@@ -590,4 +590,25 @@ CREATE TABLE `system_operate_log` (
   KEY `idx_create_user_id` (`create_user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='操作日志表';
 
+-- ----------------------------
+-- Table structure for system_login_log
+-- ----------------------------
+DROP TABLE IF EXISTS `system_login_log`;
+CREATE TABLE `system_login_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `username` varchar(50) NOT NULL COMMENT '登录账号',
+  `login_type` char(2) NOT NULL COMMENT '登录类型 1-密码登录 2-社交登录 3-退出登录',
+  `status` char(2) NOT NULL DEFAULT '0' COMMENT '登录状态 0-成功 1-失败',
+  `login_ip` varchar(50) DEFAULT NULL COMMENT '登录IP',
+  `browser` varchar(50) DEFAULT NULL COMMENT '浏览器',
+  `os` varchar(50) DEFAULT NULL COMMENT '操作系统',
+  `msg` varchar(500) DEFAULT NULL COMMENT '提示消息',
+  `login_time` datetime NOT NULL COMMENT '登录时间',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`),
+  KEY `idx_username` (`username`),
+  KEY `idx_login_time` (`login_time`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='登录日志表';
+
 SET FOREIGN_KEY_CHECKS = 1;

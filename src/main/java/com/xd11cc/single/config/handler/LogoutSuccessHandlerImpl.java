@@ -5,6 +5,9 @@ import com.xd11cc.single.config.context.TenantContextHolder;
 import com.xd11cc.single.constants.SecurityConstants;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.entity.base.ResponseVO;
+import com.xd11cc.single.enums.OperateStatusEnum;
+import com.xd11cc.single.enums.LoginTypeEnum;
+import com.xd11cc.single.service.ISystemLoginLogService;
 import com.xd11cc.single.service.TokenService;
 import com.xd11cc.single.utils.ServletUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +31,8 @@ public class LogoutSuccessHandlerImpl implements LogoutSuccessHandler {
 
     @Autowired
     private TokenService tokenService;
+    @Autowired
+    private ISystemLoginLogService systemLoginLogService;
 
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -36,6 +41,7 @@ public class LogoutSuccessHandlerImpl implements LogoutSuccessHandler {
             TenantContextHolder.setTenantId(tenantId);
             LoginUserDTO loginUser = tokenService.getLoginUser(request);
             if (null != loginUser) {
+                systemLoginLogService.recordLoginLog(loginUser.getUsername(), LoginTypeEnum.LOGOUT, OperateStatusEnum.SUCCESS, "退出成功");
                 tokenService.removeLoginUser(loginUser);
             }
         } finally {

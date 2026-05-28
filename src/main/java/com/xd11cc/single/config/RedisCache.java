@@ -422,4 +422,23 @@ public class RedisCache {
         return redisTemplate;
     }
 
+    /**
+     * 获取匹配的key集合
+     * @param prefix key前缀
+     * @return
+     */
+    public Set<String> keys(String prefix) {
+        return keys(prefix, true);
+    }
+
+    public Set<String> keys(String prefix, boolean isTenant) {
+        String pattern;
+        if (isTenant) {
+            pattern = prefix + "*:" + TenantContextHolder.getTenantId();
+        } else {
+            pattern = prefix + "*";
+        }
+        return redisTemplate.keys(pattern);
+    }
+
 }

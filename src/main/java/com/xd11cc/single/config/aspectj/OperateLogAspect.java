@@ -3,6 +3,7 @@ package com.xd11cc.single.config.aspectj;
 import com.alibaba.fastjson2.JSON;
 import com.xd11cc.single.config.annotation.OperateLog;
 import com.xd11cc.single.entity.domain.SystemOperateLogDO;
+import com.xd11cc.single.enums.OperateStatusEnum;
 import com.xd11cc.single.service.ISystemOperateLogService;
 import com.xd11cc.single.utils.IpUtils;
 import com.xd11cc.single.utils.ServletUtils;
@@ -91,10 +92,10 @@ public class OperateLogAspect {
             }
 
             if (error != null) {
-                logDO.setStatus("1");
+                logDO.setStatus(OperateStatusEnum.FAIL.getCode());
                 logDO.setErrorMsg(truncate(error.getMessage(), 2000));
             } else {
-                logDO.setStatus("0");
+                logDO.setStatus(OperateStatusEnum.SUCCESS.getCode());
                 if (operateLog.saveResponseResult() && result != null) {
                     logDO.setResponseResult(truncate(JSON.toJSONString(result), 2000));
                 }

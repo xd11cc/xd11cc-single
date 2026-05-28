@@ -1,5 +1,7 @@
 package com.xd11cc.single.service.impl;
 
+import cn.hutool.http.useragent.UserAgent;
+import cn.hutool.http.useragent.UserAgentUtil;
 import com.xd11cc.single.config.RedisCache;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.SecurityConstants;
@@ -21,6 +23,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import com.xd11cc.single.utils.IpUtils;
+import com.xd11cc.single.utils.ServletUtils;
 
 /**
  * @Author: xd11cc
@@ -100,6 +105,7 @@ public class TokenServiceImpl implements TokenService {
         String token = IdUtils.fastUUID();
         loginUserDTO.setToken(token);
         loginUserDTO.setLoginTime(System.currentTimeMillis());
+        setUserAgent(loginUserDTO);
         refreshToken(loginUserDTO);
 
         Map<String, Object> claims = new HashMap<>();
@@ -107,6 +113,20 @@ public class TokenServiceImpl implements TokenService {
         claims.put(SecurityConstants.TENANT_ID, loginUserDTO.getSystemUserDO().getTenantId());
         claims.put(Claims.SUBJECT, loginUserDTO.getUsername());
         return JwtUtils.createToken(claims);
+    }
+
+    private void setUserAgent(LoginUserDTO loginUserDTO) {
+        try {
+            HttpServletRequest request = ServletUtils.getRequest();
+            loginUserDTO.setIpAddr(IpUtils.getIpAddr(request));
+            String userAgentStr = request.getHeader("User-Agent");
+            UserAgent userAgent = UserAgentUtil.parse(userAgentStr);
+            if (userAgent != null) {
+                loginUserDTO.setBrowser(userAgent.getBrowser().getName());
+                loginUserDTO.setOs(userAgent.getOs().getName());
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     private void refreshToken(LoginUserDTO loginUserDTO) {

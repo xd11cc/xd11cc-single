@@ -14,6 +14,8 @@ import com.xd11cc.single.entity.vo.CaptchaVO;
 import com.xd11cc.single.entity.vo.LoginPasswordVO;
 import com.xd11cc.single.entity.vo.SocialUserBindVO;
 import com.xd11cc.single.entity.vo.UserLoginInfoVO;
+import com.xd11cc.single.enums.OperateStatusEnum;
+import com.xd11cc.single.enums.LoginTypeEnum;
 import com.xd11cc.single.enums.LoginWayEnum;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.config.exception.ServiceException;
@@ -30,7 +32,6 @@ import me.zhyd.oauth.model.AuthUser;
 import me.zhyd.oauth.request.AuthRequest;
 import me.zhyd.oauth.utils.AuthStateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -72,6 +73,8 @@ public class LoginServiceImpl implements LoginService {
     private ISystemUserRoleService systemUserRoleService;
     @Autowired
     private ISystemRoleService systemRoleService;
+    @Autowired
+    private ISystemLoginLogService systemLoginLogService;
 
     private String getCaptchaKey(String uuid){
         return CacheConstants.CAPTCHA_KEY + uuid;
@@ -104,12 +107,17 @@ public class LoginServiceImpl implements LoginService {
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             // 该方法会去调用UserDetailsServiceImpl.loadUserByUsername
             authentication = authenticationManager.authenticate(authenticationToken);
+        } catch (Exception e) {
+            systemLoginLogService.recordLoginLog(loginPasswordVO.getUsername(), LoginTypeEnum.PASSWORD, OperateStatusEnum.FAIL, e.getMessage());
+            throw e;
         } finally {
             SecurityContextHolder.clearContext();
         }
         // 4、创建token信息
         LoginUserDTO loginUserDTO = (LoginUserDTO) authentication.getPrincipal();
-        return tokenService.createToken(loginUserDTO);
+        String token = tokenService.createToken(loginUserDTO);
+        systemLoginLogService.recordLoginLog(loginPasswordVO.getUsername(), LoginTypeEnum.PASSWORD, OperateStatusEnum.SUCCESS, "登录成功");
+        return token;
     }
 
     /**
@@ -199,6 +207,7 @@ public class LoginServiceImpl implements LoginService {
             authSocialUserService.updateById(authSocialUserDO);
             systemUserDO = systemUserService.getById(authSocialUserDO.getUserId());
             String token = tokenService.createToken(new LoginUserDTO(systemMenuService.getPermission(systemUserDO.getId()), systemUserDO));
+            systemLoginLogService.recordLoginLog(systemUserDO.getUsername(), LoginTypeEnum.SOCIAL, OperateStatusEnum.SUCCESS, "登录成功");
             response.sendRedirect(String.format(successUrl, token));
             return;
         }
@@ -221,6 +230,7 @@ public class LoginServiceImpl implements LoginService {
             authSocialUserDO.setState(state);
             authSocialUserService.save(authSocialUserDO);
             String token = tokenService.createToken(new LoginUserDTO(systemMenuService.getPermission(systemUserDO.getId()), systemUserDO));
+            systemLoginLogService.recordLoginLog(systemUserDO.getUsername(), LoginTypeEnum.SOCIAL, OperateStatusEnum.SUCCESS, "登录成功");
             response.sendRedirect(String.format(successUrl, token));
             return;
         }
