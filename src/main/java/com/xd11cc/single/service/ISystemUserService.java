@@ -71,4 +71,13 @@ public interface ISystemUserService extends IService<SystemUserDO> {
      * @return
      */
     SystemUserDetailVO getDetailById(Long userId);
+
+    /**
+     * 修改密码
+     * @param userId
+     * @param oldPassword
+     * @param newPassword
+     * @return
+     */
+    int changePassword(Long userId, String oldPassword, String newPassword);
 }

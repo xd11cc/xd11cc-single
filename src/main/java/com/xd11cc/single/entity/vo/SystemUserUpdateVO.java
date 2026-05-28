@@ -40,8 +40,14 @@ public class SystemUserUpdateVO {
     @ApiModelProperty("部门id")
     private Long deptId;
 
+    @ApiModelProperty("部门名称")
+    private String deptName;
+
     @ApiModelProperty("岗位id")
     private Long postId;
+
+    @ApiModelProperty("岗位名称")
+    private String postName;
 
     @ApiModelProperty("角色id列表")
     @NotNull(message = "角色不能为空")

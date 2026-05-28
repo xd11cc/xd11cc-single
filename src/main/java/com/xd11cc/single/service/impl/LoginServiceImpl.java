@@ -20,6 +20,8 @@ import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.service.*;
 import com.xd11cc.single.utils.IdUtils;
 import com.xd11cc.single.utils.StringUtils;
+import com.xd11cc.single.entity.domain.SystemUserRoleDO;
+import com.xd11cc.single.entity.domain.SystemRoleDO;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import me.zhyd.oauth.model.AuthCallback;
@@ -37,8 +39,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
 /**
  * @Author: xd11cc
@@ -64,6 +68,10 @@ public class LoginServiceImpl implements LoginService {
     private IAuthSocialUserService authSocialUserService;
     @Autowired
     private ISystemConfigService systemConfigService;
+    @Autowired
+    private ISystemUserRoleService systemUserRoleService;
+    @Autowired
+    private ISystemRoleService systemRoleService;
 
     private String getCaptchaKey(String uuid){
         return CacheConstants.CAPTCHA_KEY + uuid;
@@ -121,6 +129,22 @@ public class LoginServiceImpl implements LoginService {
     public UserLoginInfoVO getUserLoginInfo(Long userId) {
         SystemUserDO systemUserDO = systemUserService.getById(userId);
         UserLoginInfoVO userLoginInfoVO = SystemUserConvert.INSTANCE.do2vo(systemUserDO);
+        // 查询角色信息
+        List<SystemUserRoleDO> userRoles = systemUserRoleService.list(new LambdaQueryWrapper<SystemUserRoleDO>()
+                .eq(SystemUserRoleDO::getUserId, userId));
+        if (!userRoles.isEmpty()) {
+            Set<Long> roleIds = userRoles.stream()
+                    .map(SystemUserRoleDO::getRoleId)
+                    .collect(Collectors.toSet());
+            userLoginInfoVO.setRoleIds(roleIds);
+            List<SystemRoleDO> roles = systemRoleService.listByIds(roleIds);
+            userLoginInfoVO.setRoles(roles.stream()
+                    .map(SystemRoleDO::getRoleCode)
+                    .collect(Collectors.toSet()));
+            userLoginInfoVO.setRoleNames(roles.stream()
+                    .map(SystemRoleDO::getRoleName)
+                    .collect(Collectors.toSet()));
+        }
         userLoginInfoVO.setPermissions(systemMenuService.getPermission(systemUserDO.getId()));
         return userLoginInfoVO;
     }

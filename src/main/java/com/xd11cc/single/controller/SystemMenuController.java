@@ -9,6 +9,7 @@ import com.xd11cc.single.service.ISystemMenuService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +31,7 @@ public class SystemMenuController {
 
     @ApiOperation("新增菜单")
     @PostMapping("/add")
+    @PreAuthorize("@ss.hasPermission('system:menu:add')")
     public ResponseVO<Integer> add(@Valid @RequestBody SystemMenuAddVO systemMenuAddVO){
         int i = systemMenuService.add(systemMenuAddVO);
         return ResponseVO.success(i, "新增成功");
@@ -37,6 +39,7 @@ public class SystemMenuController {
 
     @ApiOperation("删除菜单")
     @GetMapping("/removeById/{id}")
+    @PreAuthorize("@ss.hasPermission('system:menu:delete')")
     public ResponseVO<Integer> removeById(@PathVariable("id") Long id){
         int i = systemMenuService.deleteById(id);
         return ResponseVO.success(i, "删除成功");
@@ -44,6 +47,7 @@ public class SystemMenuController {
 
     @ApiOperation("修改菜单")
     @PostMapping("/modifyById")
+    @PreAuthorize("@ss.hasPermission('system:menu:update')")
     public ResponseVO<Integer> modifyById(@RequestBody SystemMenuUpdateVO systemMenuUpdateVO){
         int i = systemMenuService.modifyById(systemMenuUpdateVO);
         return ResponseVO.success(i, "修改成功");

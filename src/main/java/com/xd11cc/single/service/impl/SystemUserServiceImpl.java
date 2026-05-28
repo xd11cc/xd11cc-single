@@ -14,6 +14,7 @@ import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.mapper.SystemUserMapper;
 import com.xd11cc.single.service.ISystemUserRoleService;
 import com.xd11cc.single.service.ISystemUserService;
+import com.xd11cc.single.utils.SecurityUtils;
 import com.xd11cc.single.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,6 +143,18 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
                 .collect(Collectors.toList());
         detailVO.setRoleIds(roleIds);
         return detailVO;
+    }
+
+    @Override
+    public int changePassword(Long userId, String oldPassword, String newPassword) {
+        SystemUserDO systemUserDO = baseMapper.selectById(userId);
+        if (!SecurityUtils.matchPassword(oldPassword, systemUserDO.getPassword())) {
+            throw new ServiceException(SystemErrorEnum.OLD_PASSWORD_ERROR);
+        }
+        SystemUserDO updateUser = new SystemUserDO();
+        updateUser.setId(userId);
+        updateUser.setPassword(passwordEncoder.encode(newPassword));
+        return baseMapper.updateById(updateUser);
     }
 
     private void saveUserRoles(Long userId, List<Long> roleIds) {

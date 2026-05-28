@@ -27,16 +27,16 @@
 
     <select id="selectRoutes" resultType="com.xd11cc.single.entity.domain.SystemMenuDO">
         select
-            a.id, a.parent_id, a.menu_name, a.sort, a.path, a.component, a.route_name
+            a.id, a.parent_id, a.menu_name, a.sort, a.path, a.component, a.route_name,
             a.menu_type, a.visible, a.icon
         from
             system_menu a
         left join
-            system_role_menu b on a.id = b.menu_id
+            system_role_menu b on a.id = b.menu_id and b.del_flag = 0
         left join
-            system_role c on b.role_id = c.id
+            system_role c on b.role_id = c.id and c.del_flag = 0
         left join
-            system_user_role d on c.id = d.role_id
+            system_user_role d on c.id = d.role_id and d.del_flag = 0
         where
             d.user_id = #{userId} and a.status = 0 and a.menu_type in ('C', 'M') and a.del_flag = 0
     </select>

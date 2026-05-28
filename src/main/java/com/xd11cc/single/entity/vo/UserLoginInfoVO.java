@@ -10,8 +10,7 @@ import java.util.Set;
  * @date 2025-12-18 11:29:47
  */
 @Data
-public class
-UserLoginInfoVO {
+public class UserLoginInfoVO {
 
     @ApiModelProperty("主键id")
     private Long id;
@@ -37,11 +36,26 @@ UserLoginInfoVO {
     @ApiModelProperty("头像路径")
     private String headUrl;
 
+    @ApiModelProperty("部门id")
+    private Long deptId;
+
+    @ApiModelProperty("部门名称")
+    private String deptName;
+
+    @ApiModelProperty("岗位id")
+    private Long postId;
+
+    @ApiModelProperty("岗位名称")
+    private String postName;
+
     @ApiModelProperty("角色标识")
     private Set<String> roles;
 
     @ApiModelProperty("角色id")
     private Set<Long> roleIds;
+
+    @ApiModelProperty("角色名称")
+    private Set<String> roleNames;
 
     @ApiModelProperty("菜单权限标识")
     private Set<String> permissions;

@@ -3,11 +3,13 @@ package com.xd11cc.single.controller;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.vo.SystemUserAddVO;
+import com.xd11cc.single.entity.vo.SystemUserChangePasswordVO;
 import com.xd11cc.single.entity.vo.SystemUserDetailVO;
 import com.xd11cc.single.entity.vo.SystemUserQueryVO;
 import com.xd11cc.single.entity.vo.SystemUserUpdateVO;
 import com.xd11cc.single.service.ISystemUserService;
 import com.xd11cc.single.utils.PageUtils;
+import com.xd11cc.single.utils.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,6 +96,18 @@ public class SystemUserController {
             return ResponseVO.success(row, "重置成功");
         } else {
             return ResponseVO.fail("重置失败");
+        }
+    }
+
+    @PostMapping("/changePassword")
+    @ApiOperation("修改密码")
+    public ResponseVO<Integer> changePassword(@Valid @RequestBody SystemUserChangePasswordVO changePasswordVO) {
+        int row = systemUserService.changePassword(SecurityUtils.getUserId(),
+                changePasswordVO.getOldPassword(), changePasswordVO.getNewPassword());
+        if (row > 0) {
+            return ResponseVO.success(row, "修改成功");
+        } else {
+            return ResponseVO.fail("修改失败");
         }
     }
 }
