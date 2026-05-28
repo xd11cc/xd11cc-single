@@ -611,4 +611,26 @@ CREATE TABLE `system_login_log` (
   KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='登录日志表';
 
+-- ----------------------------
+-- Table structure for system_tenant
+-- ----------------------------
+DROP TABLE IF EXISTS `system_tenant`;
+CREATE TABLE `system_tenant` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '租户id',
+  `name` varchar(50) NOT NULL COMMENT '租户名称',
+  `domain` varchar(100) NOT NULL COMMENT '绑定域名',
+  `contact_name` varchar(50) DEFAULT NULL COMMENT '联系人',
+  `contact_phone` varchar(20) DEFAULT NULL COMMENT '联系电话',
+  `account_count` int NOT NULL DEFAULT 0 COMMENT '账号额度（0=不限）',
+  `status` char(2) NOT NULL DEFAULT '0' COMMENT '状态 0-正常 1-停用',
+  `expire_time` datetime NOT NULL COMMENT '过期时间',
+  `create_user_id` bigint NOT NULL COMMENT '创建人id',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_user_id` bigint NOT NULL COMMENT '更新人id',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT 0 COMMENT '删除标识 0-未删除 null-已删除',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_domain` (`domain`, `del_flag`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='租户表';
+
 SET FOREIGN_KEY_CHECKS = 1;

@@ -63,6 +63,7 @@ public enum SystemErrorEnum implements ErrorCode {
     POST_CODE_EXISTS(1001034, "岗位编码已存在"),
     AUTH_SOURCE_EXISTS(1001035, "该应用类型已存在"),
     OLD_PASSWORD_ERROR(1001036, "旧密码错误"),
+    TENANT_DOMAIN_EXISTS(1001037, "租户域名已存在"),
 
     ;
 
