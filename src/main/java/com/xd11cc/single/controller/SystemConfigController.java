@@ -1,10 +1,12 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.config.annotation.OperateLog;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemConfigDO;
 import com.xd11cc.single.entity.vo.SystemConfigAddVO;
 import com.xd11cc.single.entity.vo.SystemConfigQueryVO;
 import com.xd11cc.single.entity.vo.SystemConfigUpdateVO;
+import com.xd11cc.single.enums.OperateTypeEnum;
 import com.xd11cc.single.service.ISystemConfigService;
 import com.xd11cc.single.utils.PageUtils;
 import io.swagger.annotations.Api;
@@ -33,6 +35,7 @@ public class SystemConfigController {
     @ApiOperation("新增配置")
     @PostMapping("/add")
     @PreAuthorize("@ss.hasPermission('system:config:add')")
+    @OperateLog(module = "系统配置", operateType = OperateTypeEnum.ADD)
     public ResponseVO<Integer> add(@Valid @RequestBody SystemConfigAddVO systemConfigAddVO) {
         int row = systemConfigService.add(systemConfigAddVO);
         if (row > 0) {
@@ -45,6 +48,7 @@ public class SystemConfigController {
     @ApiOperation("批量删除")
     @GetMapping("/removeByIds/{ids}")
     @PreAuthorize("@ss.hasPermission('system:config:delete')")
+    @OperateLog(module = "系统配置", operateType = OperateTypeEnum.DELETE)
     public ResponseVO<Integer> removeByIds(@PathVariable("ids") List<Long> ids) {
         int row = systemConfigService.deleteByIds(ids);
         if (row > 0) {
@@ -57,6 +61,7 @@ public class SystemConfigController {
     @ApiOperation("更新配置")
     @PostMapping("/modifyById")
     @PreAuthorize("@ss.hasPermission('system:config:update')")
+    @OperateLog(module = "系统配置", operateType = OperateTypeEnum.UPDATE)
     public ResponseVO<Integer> modifyById(@Valid @RequestBody SystemConfigUpdateVO systemConfigUpdateVO) {
         int row = systemConfigService.modifyById(systemConfigUpdateVO);
         if (row > 0) {

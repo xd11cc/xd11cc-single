@@ -559,4 +559,35 @@ INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `c
 INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (14, 1, 1, 1, '2026-05-28 10:24:09', 1, '2026-05-28 10:24:09', 0, NULL, 1);
 COMMIT;
 
+-- ----------------------------
+-- Table structure for system_operate_log
+-- ----------------------------
+DROP TABLE IF EXISTS `system_operate_log`;
+CREATE TABLE `system_operate_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `module` varchar(50) NOT NULL COMMENT '操作模块',
+  `operate_type` char(2) NOT NULL COMMENT '操作类型 1-新增 2-修改 3-删除 4-导出 5-其他',
+  `operate_desc` varchar(100) DEFAULT NULL COMMENT '操作描述',
+  `method` varchar(200) NOT NULL COMMENT '请求方法（类名.方法名）',
+  `request_method` varchar(10) NOT NULL COMMENT '请求方式（GET/POST）',
+  `request_url` varchar(255) NOT NULL COMMENT '请求URL',
+  `request_param` text DEFAULT NULL COMMENT '请求参数',
+  `response_result` text DEFAULT NULL COMMENT '响应结果',
+  `status` char(2) NOT NULL DEFAULT '0' COMMENT '操作状态 0-成功 1-失败',
+  `error_msg` varchar(2000) DEFAULT NULL COMMENT '错误信息',
+  `operate_ip` varchar(50) DEFAULT NULL COMMENT '操作IP',
+  `cost_time` bigint DEFAULT NULL COMMENT '耗时（毫秒）',
+  `create_user_id` bigint NOT NULL COMMENT '操作人id',
+  `create_time` datetime NOT NULL COMMENT '操作时间',
+  `update_user_id` bigint NOT NULL COMMENT '更新人id',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`),
+  KEY `idx_module` (`module`),
+  KEY `idx_operate_type` (`operate_type`),
+  KEY `idx_create_time` (`create_time`),
+  KEY `idx_create_user_id` (`create_user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='操作日志表';
+
 SET FOREIGN_KEY_CHECKS = 1;

@@ -1,10 +1,12 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.config.annotation.OperateLog;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemRoleDO;
 import com.xd11cc.single.entity.vo.SystemRoleAddVO;
 import com.xd11cc.single.entity.vo.SystemRoleQueryVO;
 import com.xd11cc.single.entity.vo.SystemRoleUpdateVO;
+import com.xd11cc.single.enums.OperateTypeEnum;
 import com.xd11cc.single.service.ISystemRoleService;
 import com.xd11cc.single.utils.PageUtils;
 import io.swagger.annotations.Api;
@@ -33,6 +35,7 @@ public class SystemRoleController {
     @ApiOperation("新增角色")
     @PostMapping("/add")
     @PreAuthorize("@ss.hasPermission('system:role:add')")
+    @OperateLog(module = "角色管理", operateType = OperateTypeEnum.ADD)
     public ResponseVO<Integer> add(@Valid @RequestBody SystemRoleAddVO systemRoleAddVO) {
         int row = systemRoleService.add(systemRoleAddVO);
         if (row > 0) {
@@ -45,6 +48,7 @@ public class SystemRoleController {
     @ApiOperation("删除角色")
     @GetMapping("/removeByIds/{ids}")
     @PreAuthorize("@ss.hasPermission('system:role:delete')")
+    @OperateLog(module = "角色管理", operateType = OperateTypeEnum.DELETE)
     public ResponseVO<Integer> removeByIds(@PathVariable("ids") List<Long> ids) {
         int row = systemRoleService.deleteByIds(ids);
         if (row > 0) {
@@ -57,6 +61,7 @@ public class SystemRoleController {
     @ApiOperation("修改角色")
     @PostMapping("/modifyById")
     @PreAuthorize("@ss.hasPermission('system:role:update')")
+    @OperateLog(module = "角色管理", operateType = OperateTypeEnum.UPDATE)
     public ResponseVO<Integer> modifyById(@Valid @RequestBody SystemRoleUpdateVO systemRoleUpdateVO) {
         int row = systemRoleService.modifyById(systemRoleUpdateVO);
         if (row > 0) {

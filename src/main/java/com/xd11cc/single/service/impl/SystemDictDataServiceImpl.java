@@ -62,7 +62,7 @@ public class SystemDictDataServiceImpl extends ServiceImpl<SystemDictDataMapper,
         }
         if (row > 0) {
             log.info("dictType:{}, tenantId:{}", systemDictDataDO.getDictType(), systemDictDataDO.getTenantId());
-//            removeCache(systemDictDataDO.getDictType(), systemDictDataDO.getTenantId());
+            redisCache.removeCacheObject(getDictTypeKey(systemDictDataDO.getDictType()));
         }
         return row;
     }
@@ -127,7 +127,7 @@ public class SystemDictDataServiceImpl extends ServiceImpl<SystemDictDataMapper,
         });
         // 5、将全局字典缓存到租户字典，空数组也保存，防止缓存穿透
         if (CollectionUtils.isEmpty(globalist)) {
-            setDictCache(dictType, globalist, 10, TimeUnit.MINUTES);
+            redisCache.setCacheObject(getDictTypeKey(dictType), globalCacheList, 10, TimeUnit.MINUTES);
         }else {
             setDictCache(dictType, globalist);
         }
@@ -163,14 +163,5 @@ public class SystemDictDataServiceImpl extends ServiceImpl<SystemDictDataMapper,
      */
     private void setDictCache(String dictType, List<SystemDictDataDO> globalCacheList) {
         redisCache.setCacheObject(getDictTypeKey(dictType), globalCacheList);
-    }
-
-    /**
-     * 设置字典缓存
-     * @param dictType
-     * @param globalCacheList
-     */
-    private void setDictCache(String dictType, List<SystemDictDataDO> globalCacheList, Integer expire, TimeUnit timeUnit) {
-        redisCache.setCacheObject(getDictTypeKey(dictType), globalCacheList, expire, timeUnit);
     }
 }

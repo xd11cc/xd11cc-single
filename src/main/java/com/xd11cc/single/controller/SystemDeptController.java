@@ -1,11 +1,13 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.config.annotation.OperateLog;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemDeptDO;
 import com.xd11cc.single.entity.vo.SystemDeptAddVO;
 import com.xd11cc.single.entity.vo.SystemDeptQueryVO;
 import com.xd11cc.single.entity.vo.SystemDeptTreeVO;
 import com.xd11cc.single.entity.vo.SystemDeptUpdateVO;
+import com.xd11cc.single.enums.OperateTypeEnum;
 import com.xd11cc.single.service.ISystemDeptService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -33,6 +35,7 @@ public class SystemDeptController {
     @ApiOperation("新增部门")
     @PostMapping("/add")
     @PreAuthorize("@ss.hasPermission('system:dept:add')")
+    @OperateLog(module = "部门管理", operateType = OperateTypeEnum.ADD)
     public ResponseVO<Integer> add(@Valid @RequestBody SystemDeptAddVO systemDeptAddVO) {
         int row = systemDeptService.add(systemDeptAddVO);
         if (row > 0) {
@@ -45,6 +48,7 @@ public class SystemDeptController {
     @ApiOperation("删除部门")
     @GetMapping("/removeById/{id}")
     @PreAuthorize("@ss.hasPermission('system:dept:delete')")
+    @OperateLog(module = "部门管理", operateType = OperateTypeEnum.DELETE)
     public ResponseVO<Integer> removeById(@PathVariable("id") Long id) {
         int row = systemDeptService.deleteById(id);
         if (row > 0) {
@@ -57,6 +61,7 @@ public class SystemDeptController {
     @ApiOperation("修改部门")
     @PostMapping("/modifyById")
     @PreAuthorize("@ss.hasPermission('system:dept:update')")
+    @OperateLog(module = "部门管理", operateType = OperateTypeEnum.UPDATE)
     public ResponseVO<Integer> modifyById(@Valid @RequestBody SystemDeptUpdateVO systemDeptUpdateVO) {
         int row = systemDeptService.modifyById(systemDeptUpdateVO);
         if (row > 0) {

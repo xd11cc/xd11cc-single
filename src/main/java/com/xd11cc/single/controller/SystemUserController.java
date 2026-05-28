@@ -1,5 +1,6 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.config.annotation.OperateLog;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.vo.SystemUserAddVO;
@@ -7,6 +8,7 @@ import com.xd11cc.single.entity.vo.SystemUserChangePasswordVO;
 import com.xd11cc.single.entity.vo.SystemUserDetailVO;
 import com.xd11cc.single.entity.vo.SystemUserQueryVO;
 import com.xd11cc.single.entity.vo.SystemUserUpdateVO;
+import com.xd11cc.single.enums.OperateTypeEnum;
 import com.xd11cc.single.service.ISystemUserService;
 import com.xd11cc.single.utils.PageUtils;
 import com.xd11cc.single.utils.SecurityUtils;
@@ -36,6 +38,7 @@ public class SystemUserController {
     @PostMapping("/add")
     @ApiOperation("新增用户")
     @PreAuthorize("@ss.hasPermission('system:user:add')")
+    @OperateLog(module = "用户管理", operateType = OperateTypeEnum.ADD)
     public ResponseVO<Integer> add(@Valid @RequestBody SystemUserAddVO systemUserAddVO) {
         int row = systemUserService.add(systemUserAddVO);
         if (row > 0) {
@@ -48,6 +51,7 @@ public class SystemUserController {
     @GetMapping("/removeByIds/{ids}")
     @ApiOperation("删除用户")
     @PreAuthorize("@ss.hasPermission('system:user:delete')")
+    @OperateLog(module = "用户管理", operateType = OperateTypeEnum.DELETE)
     public ResponseVO<Integer> removeByIds(@PathVariable("ids") List<Long> ids) {
         int row = systemUserService.deleteByIds(ids);
         if (row > 0) {
@@ -60,6 +64,7 @@ public class SystemUserController {
     @PostMapping("/modifyById")
     @ApiOperation("修改用户")
     @PreAuthorize("@ss.hasPermission('system:user:update')")
+    @OperateLog(module = "用户管理", operateType = OperateTypeEnum.UPDATE)
     public ResponseVO<Integer> modifyById(@Valid @RequestBody SystemUserUpdateVO systemUserUpdateVO) {
         int row = systemUserService.modifyById(systemUserUpdateVO);
         if (row > 0) {
@@ -90,6 +95,7 @@ public class SystemUserController {
     @PostMapping("/resetPassword/{id}")
     @ApiOperation("重置密码")
     @PreAuthorize("@ss.hasPermission('system:user:resetPassword')")
+    @OperateLog(module = "用户管理", operateType = OperateTypeEnum.UPDATE, operateDesc = "重置密码")
     public ResponseVO<Integer> resetPassword(@PathVariable("id") Long id, @RequestParam("newPassword") String newPassword) {
         int row = systemUserService.resetPassword(id, newPassword);
         if (row > 0) {
@@ -101,6 +107,7 @@ public class SystemUserController {
 
     @PostMapping("/changePassword")
     @ApiOperation("修改密码")
+    @OperateLog(module = "用户管理", operateType = OperateTypeEnum.UPDATE, operateDesc = "修改密码", saveRequestParam = false)
     public ResponseVO<Integer> changePassword(@Valid @RequestBody SystemUserChangePasswordVO changePasswordVO) {
         int row = systemUserService.changePassword(SecurityUtils.getUserId(),
                 changePasswordVO.getOldPassword(), changePasswordVO.getNewPassword());

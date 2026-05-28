@@ -1,10 +1,12 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.config.annotation.OperateLog;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemPostDO;
 import com.xd11cc.single.entity.vo.SystemPostAddVO;
 import com.xd11cc.single.entity.vo.SystemPostQueryVO;
 import com.xd11cc.single.entity.vo.SystemPostUpdateVO;
+import com.xd11cc.single.enums.OperateTypeEnum;
 import com.xd11cc.single.service.ISystemPostService;
 import com.xd11cc.single.utils.PageUtils;
 import io.swagger.annotations.Api;
@@ -33,6 +35,7 @@ public class SystemPostController {
     @ApiOperation("新增岗位")
     @PostMapping("/add")
     @PreAuthorize("@ss.hasPermission('system:post:add')")
+    @OperateLog(module = "岗位管理", operateType = OperateTypeEnum.ADD)
     public ResponseVO<Integer> add(@Valid @RequestBody SystemPostAddVO systemPostAddVO) {
         int row = systemPostService.add(systemPostAddVO);
         if (row > 0) {
@@ -45,6 +48,7 @@ public class SystemPostController {
     @ApiOperation("删除岗位")
     @GetMapping("/removeByIds/{ids}")
     @PreAuthorize("@ss.hasPermission('system:post:delete')")
+    @OperateLog(module = "岗位管理", operateType = OperateTypeEnum.DELETE)
     public ResponseVO<Integer> removeByIds(@PathVariable("ids") List<Long> ids) {
         int row = systemPostService.deleteByIds(ids);
         if (row > 0) {
@@ -57,6 +61,7 @@ public class SystemPostController {
     @ApiOperation("修改岗位")
     @PostMapping("/modifyById")
     @PreAuthorize("@ss.hasPermission('system:post:update')")
+    @OperateLog(module = "岗位管理", operateType = OperateTypeEnum.UPDATE)
     public ResponseVO<Integer> modifyById(@Valid @RequestBody SystemPostUpdateVO systemPostUpdateVO) {
         int row = systemPostService.modifyById(systemPostUpdateVO);
         if (row > 0) {

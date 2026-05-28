@@ -1,10 +1,12 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.config.annotation.OperateLog;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.vo.SystemMenuAddVO;
 import com.xd11cc.single.entity.vo.SystemMenuQueryVO;
 import com.xd11cc.single.entity.vo.SystemMenuTreeVO;
 import com.xd11cc.single.entity.vo.SystemMenuUpdateVO;
+import com.xd11cc.single.enums.OperateTypeEnum;
 import com.xd11cc.single.service.ISystemMenuService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,6 +34,7 @@ public class SystemMenuController {
     @ApiOperation("新增菜单")
     @PostMapping("/add")
     @PreAuthorize("@ss.hasPermission('system:menu:add')")
+    @OperateLog(module = "菜单管理", operateType = OperateTypeEnum.ADD)
     public ResponseVO<Integer> add(@Valid @RequestBody SystemMenuAddVO systemMenuAddVO){
         int i = systemMenuService.add(systemMenuAddVO);
         return ResponseVO.success(i, "新增成功");
@@ -40,6 +43,7 @@ public class SystemMenuController {
     @ApiOperation("删除菜单")
     @GetMapping("/removeById/{id}")
     @PreAuthorize("@ss.hasPermission('system:menu:delete')")
+    @OperateLog(module = "菜单管理", operateType = OperateTypeEnum.DELETE)
     public ResponseVO<Integer> removeById(@PathVariable("id") Long id){
         int i = systemMenuService.deleteById(id);
         return ResponseVO.success(i, "删除成功");
@@ -48,6 +52,7 @@ public class SystemMenuController {
     @ApiOperation("修改菜单")
     @PostMapping("/modifyById")
     @PreAuthorize("@ss.hasPermission('system:menu:update')")
+    @OperateLog(module = "菜单管理", operateType = OperateTypeEnum.UPDATE)
     public ResponseVO<Integer> modifyById(@RequestBody SystemMenuUpdateVO systemMenuUpdateVO){
         int i = systemMenuService.modifyById(systemMenuUpdateVO);
         return ResponseVO.success(i, "修改成功");

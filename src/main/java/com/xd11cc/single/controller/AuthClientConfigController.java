@@ -1,5 +1,6 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.config.annotation.OperateLog;
 import com.xd11cc.single.convert.AuthClientConfigConvert;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.AuthClientConfigDO;
@@ -7,6 +8,7 @@ import com.xd11cc.single.entity.vo.AuthClientConfigAddVO;
 import com.xd11cc.single.entity.vo.AuthClientConfigListVO;
 import com.xd11cc.single.entity.vo.AuthClientConfigQueryVO;
 import com.xd11cc.single.entity.vo.AuthClientConfigUpdateVO;
+import com.xd11cc.single.enums.OperateTypeEnum;
 import com.xd11cc.single.service.IAuthClientConfigService;
 import com.xd11cc.single.utils.PageUtils;
 import io.swagger.annotations.Api;
@@ -45,6 +47,7 @@ public class AuthClientConfigController {
     @ApiOperation("新增授权应用")
     @PostMapping("/add")
     @PreAuthorize("@ss.hasPermission('auth:clientConfig:add')")
+    @OperateLog(module = "授权应用配置", operateType = OperateTypeEnum.ADD)
     public ResponseVO<Integer> add(@Valid @RequestBody AuthClientConfigAddVO authClientConfigAddVO) {
         int row = authClientConfigService.add(authClientConfigAddVO);
         if (row > 0) {
@@ -57,6 +60,7 @@ public class AuthClientConfigController {
     @ApiOperation("删除授权应用")
     @GetMapping("/removeByIds/{ids}")
     @PreAuthorize("@ss.hasPermission('auth:clientConfig:delete')")
+    @OperateLog(module = "授权应用配置", operateType = OperateTypeEnum.DELETE)
     public ResponseVO<Integer> removeByIds(@PathVariable("ids") List<Long> ids) {
         int row = authClientConfigService.deleteByIds(ids);
         if (row > 0) {
@@ -69,6 +73,7 @@ public class AuthClientConfigController {
     @ApiOperation("修改授权应用")
     @PostMapping("/modifyById")
     @PreAuthorize("@ss.hasPermission('auth:clientConfig:update')")
+    @OperateLog(module = "授权应用配置", operateType = OperateTypeEnum.UPDATE)
     public ResponseVO<Integer> modifyById(@Valid @RequestBody AuthClientConfigUpdateVO authClientConfigUpdateVO) {
         int row = authClientConfigService.modifyById(authClientConfigUpdateVO);
         if (row > 0) {
