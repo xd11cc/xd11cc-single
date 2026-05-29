@@ -421,6 +421,7 @@ CREATE TABLE `system_role` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `role_code` varchar(20) NOT NULL COMMENT '角色编码',
   `role_name` varchar(20) NOT NULL COMMENT '角色名称',
+  `data_scope` char(2) NOT NULL DEFAULT '1' COMMENT '数据范围 1-全部 2-本部门及下级 3-本部门 4-仅本人 5-自定义',
   `status` char(2) NOT NULL COMMENT '角色状态，字典类型system_status',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
@@ -437,8 +438,26 @@ CREATE TABLE `system_role` (
 -- Records of system_role
 -- ----------------------------
 BEGIN;
-INSERT INTO `system_role` (`id`, `role_code`, `role_name`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, 'super_admin', '超级管理员', '0', 1, '2026-05-27 10:59:35', 1, '2026-05-28 14:20:43', 0, NULL, 1);
+INSERT INTO `system_role` (`id`, `role_code`, `role_name`, `data_scope`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, 'super_admin', '超级管理员', '1', '0', 1, '2026-05-27 10:59:35', 1, '2026-05-28 14:20:43', 0, NULL, 1);
 COMMIT;
+
+-- ----------------------------
+-- Table structure for system_role_dept
+-- ----------------------------
+DROP TABLE IF EXISTS `system_role_dept`;
+CREATE TABLE `system_role_dept` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `role_id` bigint NOT NULL COMMENT '角色id',
+  `dept_id` bigint NOT NULL COMMENT '部门id',
+  `create_user_id` bigint NOT NULL COMMENT '创建人id',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_user_id` bigint NOT NULL COMMENT '更新人id',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`),
+  KEY `idx_role_id` (`role_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色-部门关联表（自定义数据权限）';
 
 -- ----------------------------
 -- Table structure for system_role_menu

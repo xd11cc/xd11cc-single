@@ -38,6 +38,12 @@ public class SystemRoleUpdateVO {
     @NotNull(message = "菜单权限不能为空")
     private List<Long> menuIds;
 
+    @ApiModelProperty("数据范围 1-全部 2-本部门及下级 3-本部门 4-仅本人 5-自定义")
+    private String dataScope;
+
+    @ApiModelProperty("自定义数据权限部门id列表（dataScope=5时使用）")
+    private List<Long> deptIds;
+
     @ApiModelProperty("备注")
     private String remark;
 }

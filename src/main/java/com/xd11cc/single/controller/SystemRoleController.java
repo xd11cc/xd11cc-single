@@ -7,6 +7,7 @@ import com.xd11cc.single.entity.vo.SystemRoleAddVO;
 import com.xd11cc.single.entity.vo.SystemRoleQueryVO;
 import com.xd11cc.single.entity.vo.SystemRoleUpdateVO;
 import com.xd11cc.single.enums.OperateTypeEnum;
+import com.xd11cc.single.service.ISystemRoleDeptService;
 import com.xd11cc.single.service.ISystemRoleService;
 import com.xd11cc.single.utils.PageUtils;
 import io.swagger.annotations.Api;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author xd11cc
@@ -31,6 +33,9 @@ public class SystemRoleController {
 
     @Autowired
     private ISystemRoleService systemRoleService;
+
+    @Autowired
+    private ISystemRoleDeptService systemRoleDeptService;
 
     @ApiOperation("新增角色")
     @PostMapping("/add")
@@ -87,5 +92,11 @@ public class SystemRoleController {
     @GetMapping("/menuIds/{roleId}")
     public ResponseVO<List<Long>> getMenuIds(@PathVariable("roleId") Long roleId) {
         return ResponseVO.success(systemRoleService.getMenuIdsByRoleId(roleId));
+    }
+
+    @ApiOperation("查询角色已分配的部门id列表")
+    @GetMapping("/deptIds/{roleId}")
+    public ResponseVO<Set<Long>> getDeptIds(@PathVariable("roleId") Long roleId) {
+        return ResponseVO.success(systemRoleDeptService.getDeptIdsByRoleId(roleId));
     }
 }

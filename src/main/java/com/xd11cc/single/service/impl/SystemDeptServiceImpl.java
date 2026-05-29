@@ -19,6 +19,10 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -87,5 +91,24 @@ public class SystemDeptServiceImpl extends ServiceImpl<SystemDeptMapper, SystemD
                 SystemDeptTreeVO::setChildren,
                 SystemDeptTreeVO::getSort,
                 null);
+    }
+
+    @Override
+    public Set<Long> getSubDeptIds(Long deptId) {
+        List<SystemDeptDO> allDepts = baseMapper.selectList(new LambdaQueryWrapper<>());
+        Set<Long> result = new HashSet<>();
+        result.add(deptId);
+        Queue<Long> queue = new LinkedList<>();
+        queue.add(deptId);
+        while (!queue.isEmpty()) {
+            Long parentId = queue.poll();
+            for (SystemDeptDO dept : allDepts) {
+                if (parentId.equals(dept.getParentId())) {
+                    result.add(dept.getId());
+                    queue.add(dept.getId());
+                }
+            }
+        }
+        return result;
     }
 }

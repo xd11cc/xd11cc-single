@@ -117,6 +117,8 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
                 SystemUserDO::getCreateTime, systemUserQueryVO.getBeginTime());
         wrapper.le(systemUserQueryVO.getEndTime() != null,
                 SystemUserDO::getCreateTime, systemUserQueryVO.getEndTime());
+        wrapper.apply(StringUtils.isNotEmpty(systemUserQueryVO.getDataScope()),
+                systemUserQueryVO.getDataScope());
         wrapper.orderByDesc(SystemUserDO::getId);
         return baseMapper.selectList(wrapper);
     }

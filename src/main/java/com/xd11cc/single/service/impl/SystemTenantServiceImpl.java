@@ -109,7 +109,9 @@ public class SystemTenantServiceImpl extends ServiceImpl<SystemTenantMapper, Sys
             dto.setDomain(tenant.getDomain());
             dto.setExpireTime(tenant.getExpireTime());
             dto.setAccountCount(tenant.getAccountCount());
-            tenantMap.put(tenant.getDomain(), dto);
+            for (String domain : tenant.getDomain().split(",")) {
+                tenantMap.put(domain, dto);
+            }
         }
         if (!tenantMap.isEmpty()) {
             redisCache.setCacheMap(CacheConstants.TENANT_DOMAIN_KEY, tenantMap, false);

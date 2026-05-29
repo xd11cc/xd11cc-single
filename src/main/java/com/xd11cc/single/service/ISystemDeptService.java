@@ -8,6 +8,7 @@ import com.xd11cc.single.entity.vo.SystemDeptTreeVO;
 import com.xd11cc.single.entity.vo.SystemDeptUpdateVO;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author xd11cc
@@ -49,4 +50,11 @@ public interface ISystemDeptService extends IService<SystemDeptDO> {
      * @return
      */
     List<SystemDeptTreeVO> getTreeList(SystemDeptQueryVO systemDeptQueryVO);
+
+    /**
+     * 获取指定部门及所有下级部门ID
+     * @param deptId
+     * @return
+     */
+    Set<Long> getSubDeptIds(Long deptId);
 }

@@ -10,6 +10,7 @@ import com.xd11cc.single.enums.SystemStatusEnum;
 import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.service.ISystemUserService;
+import com.xd11cc.single.service.DataScopeService;
 import com.xd11cc.single.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,8 @@ public class UserDetailServiceImpl implements UserDetailsService {
     private ISystemMenuService systemMenuService;
     @Autowired
     private RedisCache redisCache;
+    @Autowired
+    private DataScopeService dataScopeService;
     
     private static String getPasswordErrorCountKey(Long userId){
         return CacheConstants.PASSWORD_ERROR_COUNT_KEY + userId;
@@ -70,6 +73,8 @@ public class UserDetailServiceImpl implements UserDetailsService {
             redisCache.removeCacheObject(getPasswordErrorCountKey(userId));
         }
         // 构建用户信息
-        return new LoginUserDTO(systemMenuService.getPermission(systemUserDO.getId()), systemUserDO);
+        LoginUserDTO loginUserDTO = new LoginUserDTO(systemMenuService.getPermission(systemUserDO.getId()), systemUserDO);
+        dataScopeService.resolveDataScope(loginUserDTO);
+        return loginUserDTO;
     }
 }

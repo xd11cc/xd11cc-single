@@ -75,6 +75,8 @@ public class LoginServiceImpl implements LoginService {
     private ISystemRoleService systemRoleService;
     @Autowired
     private ISystemLoginLogService systemLoginLogService;
+    @Autowired
+    private DataScopeService dataScopeService;
 
     private String getCaptchaKey(String uuid){
         return CacheConstants.CAPTCHA_KEY + uuid;
@@ -182,62 +184,71 @@ public class LoginServiceImpl implements LoginService {
                 .code(code).build();
         AuthRequest authRequest = authRequestFactory.get(source);
         AuthResponse<AuthUser> authResponse = authRequest.login(authCallback);
-        if (!authResponse.ok()){
+        if (!authResponse.ok()) {
             log.error("{}授权登录失败，原因:{}", source, authResponse.getMsg());
             return;
         }
 
         AuthUser authUser = authResponse.getData();
-
         log.info("authUser:{}", JSON.toJSONString(authUser));
 
         String sourceType = authUser.getSource().toLowerCase();
         String uuid = authUser.getUuid();
-
-        SystemUserDO systemUserDO;
-
         String successUrl = systemConfigService.getConfig("auth-redirect-successUrl");
+
         // 1、判断是否社交绑定
         AuthSocialUserDO authSocialUserDO = authSocialUserService.getBySourceAndUuid(sourceType, uuid);
         if (null != authSocialUserDO) {
-            // 已绑定
-            authSocialUserDO.setToken(authUser.getToken().getAccessToken());
-            authSocialUserDO.setOpenId(authUser.getToken().getOpenId());
-            authSocialUserDO.setRowTokenInfo(JSON.toJSONString(authUser.getToken()));
-            authSocialUserService.updateById(authSocialUserDO);
-            systemUserDO = systemUserService.getById(authSocialUserDO.getUserId());
-            String token = tokenService.createToken(new LoginUserDTO(systemMenuService.getPermission(systemUserDO.getId()), systemUserDO));
-            systemLoginLogService.recordLoginLog(systemUserDO.getUsername(), LoginTypeEnum.SOCIAL, OperateStatusEnum.SUCCESS, "登录成功");
-            response.sendRedirect(String.format(successUrl, token));
+            updateSocialToken(authSocialUserDO, authUser);
+            SystemUserDO systemUserDO = systemUserService.getById(authSocialUserDO.getUserId());
+            socialLoginAndRedirect(systemUserDO, successUrl, response);
             return;
         }
 
         // 2、未绑定，判断邮箱匹配系统用户
-        systemUserDO = systemUserService.getByEmail(authUser.getEmail());
+        SystemUserDO systemUserDO = systemUserService.getByEmail(authUser.getEmail());
         if (null != systemUserDO) {
-            // 匹配，绑定系统用户
-            authSocialUserDO = new AuthSocialUserDO();
-            authSocialUserDO.setUuid(uuid);
-            authSocialUserDO.setUserId(systemUserDO.getId());
-            authSocialUserDO.setSource(sourceType);
-            authSocialUserDO.setOpenId(authUser.getToken().getOpenId());
-            authSocialUserDO.setToken(authUser.getToken().getAccessToken());
-            authSocialUserDO.setRowTokenInfo(JSON.toJSONString(authUser.getToken()));
-            authSocialUserDO.setNickname(authUser.getNickname());
-            authSocialUserDO.setAvatar(authUser.getAvatar());
-            authSocialUserDO.setRowUserInfo(authUser.getRawUserInfo().toString());
-            authSocialUserDO.setCode(code);
-            authSocialUserDO.setState(state);
-            authSocialUserService.save(authSocialUserDO);
-            String token = tokenService.createToken(new LoginUserDTO(systemMenuService.getPermission(systemUserDO.getId()), systemUserDO));
-            systemLoginLogService.recordLoginLog(systemUserDO.getUsername(), LoginTypeEnum.SOCIAL, OperateStatusEnum.SUCCESS, "登录成功");
-            response.sendRedirect(String.format(successUrl, token));
+            AuthSocialUserDO socialUser = buildSocialUser(authUser, systemUserDO.getId(), code, state);
+            authSocialUserService.save(socialUser);
+            socialLoginAndRedirect(systemUserDO, successUrl, response);
             return;
         }
-        // 3、不匹配，前端跳转到绑定页面（注册系统用户）
+
+        // 3、不匹配，前端跳转到绑定页面
         redisCache.setCacheObject(getAuthStateKey(state), authUser, 500, TimeUnit.MINUTES);
         String bindUserUrl = systemConfigService.getConfig("auth-redirect-bindUserUrl");
         response.sendRedirect(String.format(bindUserUrl, source, state));
+    }
+
+    private void socialLoginAndRedirect(SystemUserDO systemUserDO, String successUrl, HttpServletResponse response) throws Exception {
+        LoginUserDTO loginUser = new LoginUserDTO(systemMenuService.getPermission(systemUserDO.getId()), systemUserDO);
+        dataScopeService.resolveDataScope(loginUser);
+        String token = tokenService.createToken(loginUser);
+        systemLoginLogService.recordLoginLog(systemUserDO.getUsername(), LoginTypeEnum.SOCIAL, OperateStatusEnum.SUCCESS, "登录成功");
+        response.sendRedirect(String.format(successUrl, token));
+    }
+
+    private void updateSocialToken(AuthSocialUserDO socialUserDO, AuthUser authUser) {
+        socialUserDO.setToken(authUser.getToken().getAccessToken());
+        socialUserDO.setOpenId(authUser.getToken().getOpenId());
+        socialUserDO.setRowTokenInfo(JSON.toJSONString(authUser.getToken()));
+        authSocialUserService.updateById(socialUserDO);
+    }
+
+    private AuthSocialUserDO buildSocialUser(AuthUser authUser, Long userId, String code, String state) {
+        AuthSocialUserDO socialUser = new AuthSocialUserDO();
+        socialUser.setUuid(authUser.getUuid());
+        socialUser.setUserId(userId);
+        socialUser.setSource(authUser.getSource().toLowerCase());
+        socialUser.setOpenId(authUser.getToken().getOpenId());
+        socialUser.setToken(authUser.getToken().getAccessToken());
+        socialUser.setRowTokenInfo(JSON.toJSONString(authUser.getToken()));
+        socialUser.setNickname(authUser.getNickname());
+        socialUser.setAvatar(authUser.getAvatar());
+        socialUser.setRowUserInfo(authUser.getRawUserInfo().toString());
+        socialUser.setCode(code);
+        socialUser.setState(state);
+        return socialUser;
     }
 
     @Override

@@ -32,6 +32,9 @@ public class SystemRoleDO extends BaseTenantDO implements Serializable {
     @ApiModelProperty(value = "角色状态，字典类型system_status", required = true)
     private String status;
 
+    @ApiModelProperty(value = "数据范围 1-全部 2-本部门及下级 3-本部门 4-仅本人 5-自定义", required = true)
+    private String dataScope;
+
     @ApiModelProperty(value = "备注", required = false)
     private String remark;
 

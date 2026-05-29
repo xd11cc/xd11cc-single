@@ -76,6 +76,16 @@ public class LoginUserDTO implements UserDetails {
     private Set<String> permissions;
 
     /**
+     * 数据权限范围
+     */
+    private String dataScope;
+
+    /**
+     * 数据权限可见部门ID集合
+     */
+    private Set<Long> dataScopeDeptIds;
+
+    /**
      * 用户信息
      */
     private SystemUserDO systemUserDO;

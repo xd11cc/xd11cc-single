@@ -15,6 +15,8 @@ import com.xd11cc.single.mapper.SystemRoleMapper;
 import com.xd11cc.single.service.ISystemRoleMenuService;
 import com.xd11cc.single.service.ISystemRoleService;
 import com.xd11cc.single.service.ISystemUserRoleService;
+import com.xd11cc.single.service.ISystemRoleDeptService;
+import com.xd11cc.single.enums.DataScopeEnum;
 import com.xd11cc.single.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,8 @@ public class SystemRoleServiceImpl extends ServiceImpl<SystemRoleMapper, SystemR
     private ISystemRoleMenuService systemRoleMenuService;
     @Autowired
     private ISystemUserRoleService systemUserRoleService;
+    @Autowired
+    private ISystemRoleDeptService systemRoleDeptService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -50,6 +54,7 @@ public class SystemRoleServiceImpl extends ServiceImpl<SystemRoleMapper, SystemR
         }
         if (row > 0) {
             saveRoleMenus(systemRoleDO.getId(), systemRoleAddVO.getMenuIds());
+            saveRoleDepts(systemRoleDO.getId(), systemRoleAddVO.getDataScope(), systemRoleAddVO.getDeptIds());
         }
         return row;
     }
@@ -68,6 +73,8 @@ public class SystemRoleServiceImpl extends ServiceImpl<SystemRoleMapper, SystemR
             // 清理角色菜单关联
             systemRoleMenuService.remove(new LambdaQueryWrapper<SystemRoleMenuDO>()
                     .in(SystemRoleMenuDO::getRoleId, ids));
+            // 清理角色部门关联
+            systemRoleDeptService.removeByRoleIds(ids);
         }
         return row;
     }
@@ -87,6 +94,8 @@ public class SystemRoleServiceImpl extends ServiceImpl<SystemRoleMapper, SystemR
             systemRoleMenuService.remove(new LambdaQueryWrapper<SystemRoleMenuDO>()
                     .eq(SystemRoleMenuDO::getRoleId, systemRoleUpdateVO.getId()));
             saveRoleMenus(systemRoleUpdateVO.getId(), systemRoleUpdateVO.getMenuIds());
+            // 更新角色部门关联
+            saveRoleDepts(systemRoleUpdateVO.getId(), systemRoleUpdateVO.getDataScope(), systemRoleUpdateVO.getDeptIds());
         }
         return row;
     }
@@ -128,5 +137,12 @@ public class SystemRoleServiceImpl extends ServiceImpl<SystemRoleMapper, SystemR
             return roleMenu;
         }).collect(Collectors.toList());
         systemRoleMenuService.saveBatch(roleMenus);
+    }
+
+    private void saveRoleDepts(Long roleId, String dataScope, List<Long> deptIds) {
+        systemRoleDeptService.removeByRoleId(roleId);
+        if (DataScopeEnum.CUSTOM.getCode().equals(dataScope)) {
+            systemRoleDeptService.saveRoleDepts(roleId, deptIds);
+        }
     }
 }
