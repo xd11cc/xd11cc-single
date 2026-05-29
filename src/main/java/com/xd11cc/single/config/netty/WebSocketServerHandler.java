@@ -1,17 +1,18 @@
 package com.xd11cc.single.config.netty;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.xd11cc.single.entity.dto.NettyMessageDTO;
+import com.xd11cc.single.entity.dto.WsPushMessage;
 import com.xd11cc.single.enums.WebSocketEnum;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.handler.codec.http.websocketx.*;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
-import io.netty.util.concurrent.ScheduledFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,13 +40,20 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) {
         try {
-            // 处理收到的消息，路由到不同推送维度
             String message = msg.text();
-            // 心跳响应
+
+            // 心跳响应：客户端发 PING，回复 PONG
             if ("PING".equals(message)) {
                 ctx.writeAndFlush(new TextWebSocketFrame("PONG"));
                 return;
             }
+            // 心跳确认：客户端回复 PONG（证明连接存活，但不重置读空闲计数）
+            if ("PONG".equals(message)) {
+                return;
+            }
+
+            // 收到业务消息才重置读空闲计数
+            ctx.channel().attr(READ_IDLE_COUNT).set(0);
             // 解析消息
             NettyMessageDTO nettyMessageDTO = null;
             try {
@@ -61,15 +69,16 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                 return;
             }
             WebSocketEnum type = nettyMessageDTO.getWebSocketEnum();
+            String pushMessage = JSON.toJSONString(WsPushMessage.of("BUSINESS", nettyMessageDTO));
             switch (type) {
                 case USER:
-                    channelManager.pushToUser(nettyMessageDTO.getUserId(), nettyMessageDTO.getContent());
+                    channelManager.pushToUser(nettyMessageDTO.getUserId(), pushMessage);
                     break;
                 case TENANT:
-                    channelManager.broadcastToTenant(nettyMessageDTO.getTenantId(), nettyMessageDTO.getContent());
+                    channelManager.broadcastToTenant(nettyMessageDTO.getTenantId(), pushMessage);
                     break;
                 case GLOBAL:
-                    channelManager.broadcastToGlobal(nettyMessageDTO.getContent());
+                    channelManager.broadcastToGlobal(pushMessage);
                     break;
                 default:
                     ctx.writeAndFlush(new TextWebSocketFrame("不支持的消息类型" + type));
@@ -98,13 +107,11 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<TextWebS
                     channel.close();
                 }
             } else if (state == IdleState.WRITER_IDLE) {
-                // 写空闲发送心跳PING
-                ctx.writeAndFlush(new PingWebSocketFrame()).addListener(future -> {
+                // 写空闲发送文本心跳PING
+                ctx.writeAndFlush(new TextWebSocketFrame("PING")).addListener(future -> {
                     if (!future.isSuccess()) {
                         log.error("[netty] 发送心跳PING失败", future.cause());
                         channel.close();
-                    }else {
-                        log.info("[netty] 发送心跳成功");
                     }
                 });
             }

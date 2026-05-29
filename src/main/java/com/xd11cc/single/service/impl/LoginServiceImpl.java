@@ -88,7 +88,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public String loginByPassword(LoginPasswordVO loginPasswordVO) {
         // 1、校验验证码
         checkCaptcha(loginPasswordVO.getCaptchaId(), loginPasswordVO.getCaptcha());
@@ -178,6 +178,7 @@ public class LoginServiceImpl implements LoginService {
 
     @SneakyThrows
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void callback(String source, String code, String state, HttpServletResponse response) {
         AuthCallback authCallback = AuthCallback.builder()
                 .state(state)
@@ -252,7 +253,7 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public String socialUserBind(SocialUserBindVO socialUserBindVO) {
         // 1、从 Redis 获取授权用户信息
         AuthUser authUser = redisCache.getCacheObject(getAuthStateKey(socialUserBindVO.getState()));

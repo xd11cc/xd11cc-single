@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +40,7 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int add(SystemConfigAddVO systemConfigAddVO) {
         SystemConfigDO systemConfigDO = SystemConfigConvert.INSTANCE.addVO2DO(systemConfigAddVO);
         int row;
@@ -54,6 +56,7 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteByIds(List<Long> ids) {
         List<SystemConfigDO> configList = baseMapper.selectBatchIds(ids);
         int row = baseMapper.deleteBatchIds(ids);
@@ -64,6 +67,7 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int modifyById(SystemConfigUpdateVO systemConfigUpdateVO) {
         SystemConfigDO systemConfigDO = SystemConfigConvert.INSTANCE.updateVO2DO(systemConfigUpdateVO);
         int row;

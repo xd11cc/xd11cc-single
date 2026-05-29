@@ -57,4 +57,9 @@ public class CacheConstants {
      * 系统配置key
      */
     public static final String SYSTEM_CONFIG_KEY = "system_config:";
+
+    /**
+     * 通知未读数key
+     */
+    public static final String NOTICE_UNREAD_COUNT_KEY = "notice_unread_count:";
 }

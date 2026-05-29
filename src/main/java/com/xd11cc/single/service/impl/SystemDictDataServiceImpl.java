@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -47,7 +48,7 @@ public class SystemDictDataServiceImpl extends ServiceImpl<SystemDictDataMapper,
     }
 
     @Override
-
+    @Transactional(rollbackFor = Exception.class)
     public int add(SystemDictDataAddVO systemDictDataAddVO) {
         SystemDictTypeDO systemDictTypeDO = systemDictTypeService.getByDictType(systemDictDataAddVO.getDictType());
         if (systemDictTypeDO == null) {
@@ -68,6 +69,7 @@ public class SystemDictDataServiceImpl extends ServiceImpl<SystemDictDataMapper,
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteByIds(List<Long> ids) {
         int i = baseMapper.deleteBatchIds(ids);
         if (i > 0){
@@ -77,6 +79,7 @@ public class SystemDictDataServiceImpl extends ServiceImpl<SystemDictDataMapper,
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int modifyById(SystemDictDataUpdateVO systemDictDataUpdateVO) {
         SystemDictDataDO systemDictDataDO = SystemDictDataConvert.INSTANCE.updateVO2DO(systemDictDataUpdateVO);
         int i = baseMapper.updateById(systemDictDataDO);

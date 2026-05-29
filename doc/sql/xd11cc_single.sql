@@ -652,4 +652,55 @@ CREATE TABLE `system_tenant` (
   UNIQUE KEY `uk_domain` (`domain`, `del_flag`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='租户表';
 
+-- ----------------------------
+-- Table structure for system_notice
+-- ----------------------------
+DROP TABLE IF EXISTS `system_notice`;
+CREATE TABLE `system_notice` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `title` varchar(100) NOT NULL COMMENT '标题',
+  `content` text COMMENT '内容',
+  `type` tinyint NOT NULL COMMENT '类型 1-通知 2-消息 3-待办',
+  `scope` tinyint NOT NULL DEFAULT 1 COMMENT '范围 1-全部 2-指定部门 3-指定用户',
+  `scope_dept_ids` varchar(1024) DEFAULT NULL COMMENT '范围部门id列表，逗号分隔',
+  `scope_user_ids` varchar(1024) DEFAULT NULL COMMENT '范围用户id列表，逗号分隔',
+  `sender_id` bigint NOT NULL COMMENT '发送人id',
+  `sender_name` varchar(32) DEFAULT NULL COMMENT '发送人姓名',
+  `status` tinyint NOT NULL DEFAULT 0 COMMENT '状态 0-草稿 1-已发布 2-已撤回',
+  `publish_time` datetime DEFAULT NULL COMMENT '发布时间',
+  `create_user_id` bigint DEFAULT NULL COMMENT '创建人id',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_user_id` bigint DEFAULT NULL COMMENT '更新人id',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT 0 COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`),
+  KEY `idx_tenant_type_status` (`tenant_id`, `type`, `status`),
+  KEY `idx_sender_id` (`sender_id`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统通知表';
+
+-- ----------------------------
+-- Table structure for system_notice_user
+-- ----------------------------
+DROP TABLE IF EXISTS `system_notice_user`;
+CREATE TABLE `system_notice_user` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `notice_id` bigint NOT NULL COMMENT '通知id',
+  `user_id` bigint NOT NULL COMMENT '用户id',
+  `read_status` tinyint NOT NULL DEFAULT 0 COMMENT '已读状态 0-未读 1-已读',
+  `read_time` datetime DEFAULT NULL COMMENT '已读时间',
+  `create_user_id` bigint DEFAULT NULL COMMENT '创建人id',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_user_id` bigint DEFAULT NULL COMMENT '更新人id',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT 0 COMMENT '删除标识 0-未删除 null-已删除',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_notice_user` (`notice_id`, `user_id`, `del_flag`),
+  KEY `idx_user_read` (`user_id`, `read_status`),
+  KEY `idx_notice_id` (`notice_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统通知用户关联表';
+
 SET FOREIGN_KEY_CHECKS = 1;

@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -191,5 +192,31 @@ public class ChannelManager {
      */
     public ChannelExtMetadata getChannelMetadata(Channel channel) {
         return channelMetadataMap.get(channel);
+    }
+
+    /**
+     * 判断用户是否在线
+     * @param userId
+     * @return
+     */
+    public boolean isUserOnline(Long userId) {
+        ChannelGroup group = userChannelsGroups.get(userId);
+        return group != null && !group.isEmpty();
+    }
+
+    /**
+     * 获取当前在线连接数
+     * @return
+     */
+    public int getOnlineCount() {
+        return currentConnCount.get();
+    }
+
+    /**
+     * 获取所有在线用户id
+     * @return
+     */
+    public Set<Long> getOnlineUserIds() {
+        return userChannelsGroups.keySet();
     }
 }

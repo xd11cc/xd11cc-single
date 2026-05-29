@@ -62,12 +62,14 @@ public class NettyServer {
                     log.info("netty webSocket server 已关闭");
                 });
             } catch (InterruptedException e) {
-                log.error("netty webSocket server 启动失败", e);
+                log.error("netty webSocket server 启动失败，端口: {}", nettyProperties.getPort(), e);
                 Thread.currentThread().interrupt();
                 shutdownGracefully();
+                throw new RuntimeException("WebSocket 服务启动失败", e);
             } catch (Exception e) {
-                log.error("netty webSocket server 启动异常", e);
+                log.error("netty webSocket server 启动异常，端口 {} 可能被占用", nettyProperties.getPort(), e);
                 shutdownGracefully();
+                throw new RuntimeException("WebSocket 服务启动失败", e);
             }
         });
     }

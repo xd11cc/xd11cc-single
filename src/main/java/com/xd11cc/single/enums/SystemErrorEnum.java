@@ -64,6 +64,9 @@ public enum SystemErrorEnum implements ErrorCode {
     AUTH_SOURCE_EXISTS(1001035, "该应用类型已存在"),
     OLD_PASSWORD_ERROR(1001036, "旧密码错误"),
     TENANT_DOMAIN_EXISTS(1001037, "租户域名已存在"),
+    NOTICE_NOT_FOUND(1001038, "通知不存在"),
+    NOTICE_ALREADY_PUBLISHED(1001039, "通知已发布，不允许修改"),
+    NOTICE_NOT_PUBLISHED(1001040, "通知未发布，不允许撤回"),
 
     ;
 

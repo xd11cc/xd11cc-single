@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +38,7 @@ public class SystemTenantServiceImpl extends ServiceImpl<SystemTenantMapper, Sys
     private RedisCache redisCache;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int add(SystemTenantAddVO vo) {
         SystemTenantDO tenantDO = SystemTenantConvert.INSTANCE.addVO2DO(vo);
         int row;
@@ -52,6 +54,7 @@ public class SystemTenantServiceImpl extends ServiceImpl<SystemTenantMapper, Sys
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int deleteByIds(List<Long> ids) {
         int row = baseMapper.deleteBatchIds(ids);
         if (row > 0) {
@@ -61,6 +64,7 @@ public class SystemTenantServiceImpl extends ServiceImpl<SystemTenantMapper, Sys
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int modifyById(SystemTenantUpdateVO vo) {
         SystemTenantDO tenantDO = SystemTenantConvert.INSTANCE.updateVO2DO(vo);
         int row;

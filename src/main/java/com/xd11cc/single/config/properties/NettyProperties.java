@@ -22,14 +22,14 @@ public class NettyProperties {
     private int port;
 
     /**
-     * 读空闲时间
+     * 读空闲时间（超过此时间无任何数据接收，触发读空闲事件）
      */
-    private int readerIdleTime = 30;
+    private int readerIdleTime = 60;
 
     /**
-     * 写空闲时间
+     * 写空闲时间（超过此时间无写出，主动发送PING探活）
      */
-    private int writerIdleTime = 60;
+    private int writerIdleTime = 25;
 
     /**
      * WebSocket路径

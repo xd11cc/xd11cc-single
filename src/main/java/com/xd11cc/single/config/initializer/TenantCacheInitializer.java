@@ -1,4 +1,4 @@
-package com.xd11cc.single.config;
+package com.xd11cc.single.config.initializer;
 
 import com.xd11cc.single.service.ISystemTenantService;
 import lombok.extern.slf4j.Slf4j;

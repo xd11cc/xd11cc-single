@@ -114,7 +114,7 @@ xxl:
   job:
     executor:
       app-name: ${spring.application.name}
-      log-path: src/${spring.application.name}/xxl-job
+      log-path: src/xxl-job-log
       log-retention-days: 30
     admin:
       addresses: https://xd11cc.xyz/xxl-job-admin
