@@ -2,6 +2,7 @@ package com.xd11cc.single.controller;
 
 import com.xd11cc.single.config.annotation.OperateLog;
 import com.xd11cc.single.convert.AuthClientConfigConvert;
+import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.AuthClientConfigDO;
 import com.xd11cc.single.entity.vo.AuthClientConfigAddVO;
@@ -85,7 +86,7 @@ public class AuthClientConfigController {
 
     @ApiOperation("授权应用分页")
     @PostMapping("/page")
-    public ResponseVO<List<AuthClientConfigDO>> page(@Valid @RequestBody AuthClientConfigQueryVO authClientConfigQueryVO) {
+    public ResponseVO<PageResult<AuthClientConfigDO>> page(@Valid @RequestBody AuthClientConfigQueryVO authClientConfigQueryVO) {
         return PageUtils.page(authClientConfigQueryVO, () -> authClientConfigService.getPageList(authClientConfigQueryVO));
     }
 }

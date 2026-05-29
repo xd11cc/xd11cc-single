@@ -1,7 +1,6 @@
 package com.xd11cc.single.config.netty;
 
 import com.xd11cc.single.entity.dto.LoginUserDTO;
-import com.xd11cc.single.utils.StringUtils;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -54,7 +53,7 @@ public class ChannelManager {
     public boolean addChannel(Channel channel, LoginUserDTO loginUserDTO) {
         Long tenantId = loginUserDTO.getSystemUserDO().getTenantId();
         Long userId = loginUserDTO.getUserId();
-        if (StringUtils.isNull(tenantId) || StringUtils.isNull(userId) || StringUtils.isNull(channel)) {
+        if (tenantId == null || userId == null || channel == null) {
             log.warn("[netty] 添加通道失败，参数为空：tenantId={}, userId={}, channel={}", tenantId, userId, channel);
             return false;
         }
@@ -88,7 +87,7 @@ public class ChannelManager {
      * @param channel
      */
     public void removeChannel(Channel channel) {
-        if (StringUtils.isNull(channel)) return;
+        if (channel == null) return;
 
         ChannelExtMetadata metadata = channelMetadataMap.remove(channel);
         if (metadata == null) {
@@ -122,12 +121,12 @@ public class ChannelManager {
      * @param message
      */
     public void pushToUser(Long userId, String message){
-        if (StringUtils.isNull(userId) || StringUtils.isNull(message)) {
+        if (userId == null || message == null) {
             log.warn("[netty] 消息推送失败：参数为空userId={}, message={}", userId, message);
             return;
         }
         ChannelGroup userChannels = userChannelsGroups.get(userId);
-        if (StringUtils.isNull(userChannels)) {
+        if (userChannels == null) {
             log.debug("[netty] 用户{}无在线通道，推送失败", userId);
             return;
         }
@@ -147,12 +146,12 @@ public class ChannelManager {
      * @param message
      */
     public void broadcastToTenant(Long tenantId, String message) {
-        if (StringUtils.isNull(tenantId) || StringUtils.isNull(message)) {
+        if (tenantId == null || message == null) {
             log.warn("[netty] 租户广播失败：参数为空tenantId={}, message={}", tenantId, message);
             return;
         }
         ChannelGroup tenantChannels = tenantChannelsGroups.get(tenantId);
-        if (StringUtils.isNull(tenantChannels)) {
+        if (tenantChannels == null) {
             log.debug("[netty] 租户{}无在线通道，广播失败", tenantId);
             return;
         }
@@ -169,7 +168,7 @@ public class ChannelManager {
      * @param message
      */
     public void broadcastToGlobal(String message) {
-        if (StringUtils.isNull(message)) {
+        if (message == null) {
             log.warn("[netty] 全局广播失败：消息为空");
             return;
         }

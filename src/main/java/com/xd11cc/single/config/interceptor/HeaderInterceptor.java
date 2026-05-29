@@ -2,7 +2,6 @@ package com.xd11cc.single.config.interceptor;
 
 import com.xd11cc.single.config.context.TenantContextHolder;
 import com.xd11cc.single.constants.SecurityConstants;
-import com.xd11cc.single.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
@@ -27,7 +26,7 @@ public class HeaderInterceptor implements AsyncHandlerInterceptor {
         }
         // 处理租户id
         Long tenantId = (Long) request.getAttribute(SecurityConstants.TENANT_ID);
-        if (StringUtils.isNotNull(tenantId)) {
+        if (tenantId != null) {
             TenantContextHolder.setTenantId(tenantId);
         }
 

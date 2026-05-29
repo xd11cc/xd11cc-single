@@ -1,6 +1,7 @@
 package com.xd11cc.single.controller;
 
 import com.xd11cc.single.config.annotation.OperateLog;
+import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemConfigDO;
 import com.xd11cc.single.entity.vo.SystemConfigAddVO;
@@ -73,7 +74,7 @@ public class SystemConfigController {
 
     @ApiOperation("分页查询配置")
     @PostMapping("/page")
-    public ResponseVO<List<SystemConfigDO>> page(@Valid @RequestBody SystemConfigQueryVO systemConfigQueryVO) {
+    public ResponseVO<PageResult<SystemConfigDO>> page(@Valid @RequestBody SystemConfigQueryVO systemConfigQueryVO) {
         return PageUtils.page(systemConfigQueryVO, () -> systemConfigService.getList(systemConfigQueryVO));
     }
 

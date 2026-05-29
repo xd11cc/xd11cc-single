@@ -1,5 +1,6 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemLoginLogDO;
 import com.xd11cc.single.entity.vo.SystemLoginLogQueryVO;
@@ -29,7 +30,7 @@ public class SystemLoginLogController {
 
     @PostMapping("/page")
     @ApiOperation("登录日志分页")
-    public ResponseVO<List<SystemLoginLogDO>> page(@RequestBody SystemLoginLogQueryVO queryVO) {
+    public ResponseVO<PageResult<SystemLoginLogDO>> page(@RequestBody SystemLoginLogQueryVO queryVO) {
         return PageUtils.page(queryVO, () -> systemLoginLogService.getList(queryVO));
     }
 

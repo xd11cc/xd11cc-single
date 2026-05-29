@@ -20,7 +20,7 @@ import com.xd11cc.single.enums.LoginWayEnum;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.service.*;
-import com.xd11cc.single.utils.IdUtils;
+import cn.hutool.core.util.IdUtil;
 import com.xd11cc.single.utils.StringUtils;
 import com.xd11cc.single.entity.domain.SystemUserRoleDO;
 import com.xd11cc.single.entity.domain.SystemRoleDO;
@@ -163,7 +163,7 @@ public class LoginServiceImpl implements LoginService {
     public CaptchaVO getCaptcha() {
         CaptchaVO captchaVO = new CaptchaVO();
         GifCaptcha captcha = CaptchaUtil.createGifCaptcha(120, 40);
-        String uuid = IdUtils.fastUUID();
+        String uuid = IdUtil.fastUUID();
         redisCache.setCacheObject(getCaptchaKey(uuid), captcha.getCode(), 1, TimeUnit.MINUTES);
         captchaVO.setCaptchaId(uuid);
         captchaVO.setImage(captcha.getImageBase64());

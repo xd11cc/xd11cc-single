@@ -1,6 +1,7 @@
 package com.xd11cc.single.controller;
 
 import com.xd11cc.single.config.annotation.OperateLog;
+import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemPostDO;
 import com.xd11cc.single.entity.vo.SystemPostAddVO;
@@ -73,7 +74,7 @@ public class SystemPostController {
 
     @ApiOperation("岗位分页")
     @PostMapping("/page")
-    public ResponseVO<List<SystemPostDO>> page(@Valid @RequestBody SystemPostQueryVO systemPostQueryVO) {
+    public ResponseVO<PageResult<SystemPostDO>> page(@Valid @RequestBody SystemPostQueryVO systemPostQueryVO) {
         return PageUtils.page(systemPostQueryVO, () -> systemPostService.getList(systemPostQueryVO));
     }
 

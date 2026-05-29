@@ -1,6 +1,7 @@
 package com.xd11cc.single.controller;
 
 import com.xd11cc.single.config.annotation.OperateLog;
+import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemNoticeDO;
 import com.xd11cc.single.entity.vo.SystemNoticeAddVO;
@@ -73,7 +74,7 @@ public class SystemNoticeController {
 
     @PostMapping("/page")
     @ApiOperation("通知分页")
-    public ResponseVO<List<SystemNoticeDO>> page(@Valid @RequestBody SystemNoticeQueryVO queryVO) {
+    public ResponseVO<PageResult<SystemNoticeDO>> page(@Valid @RequestBody SystemNoticeQueryVO queryVO) {
         return PageUtils.page(queryVO, () -> systemNoticeService.getList(queryVO));
     }
 

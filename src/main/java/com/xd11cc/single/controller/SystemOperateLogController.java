@@ -1,5 +1,6 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemOperateLogDO;
 import com.xd11cc.single.entity.vo.SystemOperateLogQueryVO;
@@ -29,7 +30,7 @@ public class SystemOperateLogController {
 
     @PostMapping("/page")
     @ApiOperation("操作日志分页")
-    public ResponseVO<List<SystemOperateLogDO>> page(@RequestBody SystemOperateLogQueryVO queryVO) {
+    public ResponseVO<PageResult<SystemOperateLogDO>> page(@RequestBody SystemOperateLogQueryVO queryVO) {
         return PageUtils.page(queryVO, () -> systemOperateLogService.getList(queryVO));
     }
 

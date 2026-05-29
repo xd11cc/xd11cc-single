@@ -1,6 +1,7 @@
 package com.xd11cc.single.controller;
 
 import com.xd11cc.single.config.annotation.OperateLog;
+import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemRoleDO;
 import com.xd11cc.single.entity.vo.SystemRoleAddVO;
@@ -78,7 +79,7 @@ public class SystemRoleController {
 
     @ApiOperation("角色分页")
     @PostMapping("/page")
-    public ResponseVO<List<SystemRoleDO>> page(@Valid @RequestBody SystemRoleQueryVO systemRoleQueryVO) {
+    public ResponseVO<PageResult<SystemRoleDO>> page(@Valid @RequestBody SystemRoleQueryVO systemRoleQueryVO) {
         return PageUtils.page(systemRoleQueryVO, () -> systemRoleService.getList(systemRoleQueryVO));
     }
 

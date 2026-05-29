@@ -2,6 +2,7 @@ package com.xd11cc.single.controller;
 
 import com.xd11cc.single.config.annotation.OperateLog;
 import com.xd11cc.single.config.annotation.DataScope;
+import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.vo.SystemUserAddVO;
@@ -78,7 +79,7 @@ public class SystemUserController {
     @PostMapping("/page")
     @ApiOperation("用户分页")
     @DataScope
-    public ResponseVO<List<SystemUserDO>> page(@Valid @RequestBody SystemUserQueryVO systemUserQueryVO) {
+    public ResponseVO<PageResult<SystemUserDO>> page(@Valid @RequestBody SystemUserQueryVO systemUserQueryVO) {
         return PageUtils.page(systemUserQueryVO, () -> systemUserService.getList(systemUserQueryVO));
     }
 

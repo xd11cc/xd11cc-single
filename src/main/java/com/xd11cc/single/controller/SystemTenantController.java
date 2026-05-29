@@ -1,6 +1,7 @@
 package com.xd11cc.single.controller;
 
 import com.xd11cc.single.config.annotation.OperateLog;
+import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemTenantDO;
 import com.xd11cc.single.entity.vo.SystemTenantAddVO;
@@ -79,7 +80,7 @@ public class SystemTenantController {
 
     @ApiOperation("分页查询租户")
     @PostMapping("/page")
-    public ResponseVO<List<SystemTenantDO>> page(@Valid @RequestBody SystemTenantQueryVO queryVO) {
+    public ResponseVO<PageResult<SystemTenantDO>> page(@Valid @RequestBody SystemTenantQueryVO queryVO) {
         return PageUtils.page(queryVO, () -> systemTenantService.getList(queryVO));
     }
 

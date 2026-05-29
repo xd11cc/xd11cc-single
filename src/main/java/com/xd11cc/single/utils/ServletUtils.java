@@ -1,5 +1,6 @@
 package com.xd11cc.single.utils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -17,10 +18,6 @@ import java.util.Map;
  **/
 public class ServletUtils {
 
-    /**
-     * 获取request
-     * @return
-     */
     public static HttpServletRequest getRequest() {
         return getRequestAttributes().getRequest();
     }
@@ -29,12 +26,6 @@ public class ServletUtils {
         return (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
     }
 
-    /**
-     * 将字符串渲染到客户端
-     * @param response
-     * @param content
-     * @return
-     */
     public static String renderString(HttpServletResponse response, String content) {
         try {
             response.setContentType("application/json; charset=utf-8");
@@ -46,16 +37,11 @@ public class ServletUtils {
         return null;
     }
 
-    /**
-     * 获取请求头
-     * @param request
-     * @return
-     */
     public static Map<String, String> getHeaders(HttpServletRequest request) {
         Map<String, String> map = new LinkedCaseInsensitiveMap<>();
         Enumeration<String> enumeration = request.getHeaderNames();
-        if (null != enumeration){
-            while (enumeration.hasMoreElements()){
+        if (null != enumeration) {
+            while (enumeration.hasMoreElements()) {
                 String key = enumeration.nextElement();
                 String value = request.getHeader(key);
                 map.put(key, value);
@@ -72,11 +58,6 @@ public class ServletUtils {
         return urlDecode(value);
     }
 
-    /**
-     * 内容解码
-     * @param str
-     * @return
-     */
     private static String urlDecode(String str) {
         try {
             return URLDecoder.decode(str, "utf-8");

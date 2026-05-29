@@ -1,5 +1,6 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.vo.PreviewCodeVO;
 import com.xd11cc.single.entity.vo.TableInfoQueryVO;
@@ -28,7 +29,7 @@ public class GenerateCodeController {
 
     @ApiOperation("表信息列表")
     @PostMapping("/page")
-    public ResponseVO<List<TableInfoVO>> page(@RequestBody TableInfoQueryVO tableInfoQueryVO){
+    public ResponseVO<PageResult<TableInfoVO>> page(@RequestBody TableInfoQueryVO tableInfoQueryVO){
         return PageUtils.page(tableInfoQueryVO, ()->generateCodeService.list(tableInfoQueryVO));
     }
 

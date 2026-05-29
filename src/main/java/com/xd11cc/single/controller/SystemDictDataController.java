@@ -1,6 +1,7 @@
 package com.xd11cc.single.controller;
 
 import com.xd11cc.single.config.annotation.OperateLog;
+import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemDictDataDO;
 import com.xd11cc.single.entity.vo.SystemDictDataAddVO;
@@ -77,7 +78,7 @@ public class SystemDictDataController {
 
     @ApiOperation("查询字典数据")
     @PostMapping("/page")
-    public ResponseVO<List<SystemDictDataDO>> page(@Valid @RequestBody SystemDictDataQueryVO systemDictDataQueryVO){
+    public ResponseVO<PageResult<SystemDictDataDO>> page(@Valid @RequestBody SystemDictDataQueryVO systemDictDataQueryVO){
         return PageUtils.page(systemDictDataQueryVO, () ->systemDictDataService.getList(systemDictDataQueryVO));
     }
 

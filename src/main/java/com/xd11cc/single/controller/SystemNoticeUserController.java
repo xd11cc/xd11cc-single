@@ -1,5 +1,6 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.dto.SystemNoticeUserDTO;
 import com.xd11cc.single.entity.vo.SystemNoticeSendVO;
@@ -31,7 +32,7 @@ public class SystemNoticeUserController {
 
     @PostMapping("/myPage")
     @ApiOperation("我的通知分页")
-    public ResponseVO<List<SystemNoticeUserDTO>> myPage(@Valid @RequestBody SystemNoticeUserQueryVO queryVO) {
+    public ResponseVO<PageResult<SystemNoticeUserDTO>> myPage(@Valid @RequestBody SystemNoticeUserQueryVO queryVO) {
         return PageUtils.page(queryVO, () -> systemNoticeUserService.getMyNoticeList(queryVO));
     }
 

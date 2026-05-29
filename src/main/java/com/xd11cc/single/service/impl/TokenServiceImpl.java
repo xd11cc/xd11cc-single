@@ -10,7 +10,7 @@ import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.service.TokenService;
-import com.xd11cc.single.utils.IdUtils;
+import cn.hutool.core.util.IdUtil;
 import com.xd11cc.single.utils.JwtUtils;
 import com.xd11cc.single.utils.TenantUtils;
 import io.jsonwebtoken.Claims;
@@ -102,7 +102,7 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     public String createToken(LoginUserDTO loginUserDTO) {
-        String token = IdUtils.fastUUID();
+        String token = IdUtil.fastUUID();
         loginUserDTO.setToken(token);
         loginUserDTO.setLoginTime(System.currentTimeMillis());
         setUserAgent(loginUserDTO);

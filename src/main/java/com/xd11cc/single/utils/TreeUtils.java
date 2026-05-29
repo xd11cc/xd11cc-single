@@ -1,11 +1,9 @@
 package com.xd11cc.single.utils;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author xd11cc
@@ -14,15 +12,7 @@ import java.util.function.Function;
 public class TreeUtils {
 
     /**
-     * 构建树形结构
-     * @param allNodes 所有节点的平铺列表
-     * @param getId 获取节点id
-     * @param getParentId 获取节点父id
-     * @param setChildren 设置子节点列表
-     * @param getSort 获取排序字段（可为null，不排序）
-     * @param rootParentId 根节点的parentId
-     * @param <T> 节点类型
-     * @return 树形结构列表
+     * 构建树形结构（O(n) HashMap 索引实现）
      */
     public static <T> List<T> buildTree(List<T> allNodes,
                                         Function<T, Long> getId,
@@ -30,17 +20,28 @@ public class TreeUtils {
                                         BiConsumer<T, List<T>> setChildren,
                                         Function<T, Integer> getSort,
                                         Long rootParentId) {
-        List<T> tree = new ArrayList<>();
+        if (allNodes == null || allNodes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Map<Long, List<T>> parentIdMap = allNodes.stream()
+                .collect(Collectors.groupingBy(
+                        node -> getParentId.apply(node) == null ? -1L : getParentId.apply(node)
+                ));
+
         for (T node : allNodes) {
-            if (Objects.equals(rootParentId, getParentId.apply(node))) {
-                List<T> children = buildTree(allNodes, getId, getParentId, setChildren, getSort, getId.apply(node));
-                setChildren.accept(node, children);
-                tree.add(node);
+            List<T> children = parentIdMap.getOrDefault(getId.apply(node), Collections.emptyList());
+            if (getSort != null && !children.isEmpty()) {
+                children.sort(Comparator.comparingInt(n -> getSort.apply(n) == null ? 0 : getSort.apply(n)));
             }
+            setChildren.accept(node, children);
         }
-        if (getSort != null) {
-            tree.sort(Comparator.comparing(n -> getSort.apply(n) == null ? 0 : getSort.apply(n)));
+
+        Long key = rootParentId == null ? -1L : rootParentId;
+        List<T> roots = parentIdMap.getOrDefault(key, Collections.emptyList());
+        if (getSort != null && !roots.isEmpty()) {
+            roots.sort(Comparator.comparingInt(n -> getSort.apply(n) == null ? 0 : getSort.apply(n)));
         }
-        return tree;
+        return roots;
     }
 }
