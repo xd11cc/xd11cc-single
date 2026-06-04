@@ -3,6 +3,7 @@ package com.xd11cc.single.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xd11cc.single.config.RedisCache;
+import com.xd11cc.single.config.annotation.Lock;
 import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.convert.SystemTenantConvert;
@@ -25,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author xd11cc
@@ -38,6 +40,7 @@ public class SystemTenantServiceImpl extends ServiceImpl<SystemTenantMapper, Sys
     private RedisCache redisCache;
 
     @Override
+    @Lock(prefix = "tenant:add", key = "#vo.domain", waitTime = 3, leaseTime = 5, unit = TimeUnit.SECONDS)
     @Transactional(rollbackFor = Exception.class)
     public int add(SystemTenantAddVO vo) {
         SystemTenantDO tenantDO = SystemTenantConvert.INSTANCE.addVO2DO(vo);

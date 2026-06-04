@@ -13,13 +13,13 @@ import lombok.NoArgsConstructor;
  *      1 - 业务级别异常
  *      x - 预留
  * 第二段，3 位，模块
- *      001 - 认证安全  002 - 工作流(WorkflowErrorEnum)
+ *      001 - 认证安全
  *      003 - 字典      004 - 菜单
  *      005 - 文件      006 - 代码生成
  *      007 - 社交登录  008 - 租户
  *      009 - 部门      010 - 角色
  *      011 - 岗位      012 - 系统配置
- *      013 - 通知
+ *      013 - 通知      014 - 分布式锁
  * 第三段，3 位，错误码
  *       不限制规则。
  *       一般建议，每个模块自增。
@@ -99,6 +99,9 @@ public enum SystemErrorEnum implements ErrorCode {
     NOTICE_NOT_FOUND(1013001, "通知不存在"),
     NOTICE_ALREADY_PUBLISHED(1013002, "通知已发布，不允许修改"),
     NOTICE_NOT_PUBLISHED(1013003, "通知未发布，不允许撤回"),
+
+    // ==================== 014 - 分布式锁 ====================
+    LOCK_ACQUIRE_FAILED(1014001, "系统繁忙，请稍后重试"),
 
     ;
 

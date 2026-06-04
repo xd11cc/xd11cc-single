@@ -62,4 +62,9 @@ public class CacheConstants {
      * 通知未读数key
      */
     public static final String NOTICE_UNREAD_COUNT_KEY = "notice_unread_count:";
+
+    /**
+     * 分布式锁 key 前缀
+     */
+    public static final String REDLOCK_KEY_PREFIX = "redlock:";
 }
