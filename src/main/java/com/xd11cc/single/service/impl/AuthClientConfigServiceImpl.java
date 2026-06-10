@@ -11,8 +11,8 @@ import com.xd11cc.single.entity.vo.AuthClientConfigUpdateVO;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.mapper.AuthClientConfigMapper;
 import com.xd11cc.single.service.IAuthClientConfigService;
-import com.xd11cc.single.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 

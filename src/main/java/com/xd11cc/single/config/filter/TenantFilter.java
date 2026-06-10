@@ -9,8 +9,8 @@ import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.dto.TenantDTO;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.enums.SystemStatusEnum;
+import com.xd11cc.single.utils.ObjectUtils;
 import com.xd11cc.single.utils.ServletUtils;
-import com.xd11cc.single.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
@@ -22,7 +22,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Date;
 
 /**
  * @author xd11cc
@@ -44,7 +43,7 @@ public class TenantFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestURI = request.getRequestURI();
         // 跳过不需要验证的路径
-        if (StringUtils.matches(requestURI, tenantIgnoreProperties.getIgnoreUrls())){
+        if (ObjectUtils.equalsAny(requestURI, tenantIgnoreProperties.getIgnoreUrls())){
             filterChain.doFilter(request, response);
             return;
         }

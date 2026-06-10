@@ -8,7 +8,7 @@ import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.DataScopeEnum;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.utils.SecurityUtils;
-import com.xd11cc.single.utils.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;

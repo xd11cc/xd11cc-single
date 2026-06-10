@@ -4,8 +4,9 @@ import com.xd11cc.single.config.context.PermissionContextHolder;
 import com.xd11cc.single.constants.PermissionConstants;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.utils.SecurityUtils;
-import com.xd11cc.single.utils.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.Set;
 
@@ -27,7 +28,7 @@ public class PermissionService {
             return false;
         }
         LoginUserDTO loginUser = SecurityUtils.getLoginUser();
-        if (loginUser == null || StringUtils.isEmpty(loginUser.getPermissions())){
+        if (loginUser == null || CollectionUtils.isEmpty(loginUser.getPermissions())){
             return false;
         }
         PermissionContextHolder.setContext(permission);
@@ -48,7 +49,7 @@ public class PermissionService {
             return false;
         }
         LoginUserDTO loginUser = SecurityUtils.getLoginUser();
-        if (loginUser == null || StringUtils.isEmpty(loginUser.getPermissions())){
+        if (loginUser == null || CollectionUtils.isEmpty(loginUser.getPermissions())){
             return false;
         }
         PermissionContextHolder.setContext(permissions);

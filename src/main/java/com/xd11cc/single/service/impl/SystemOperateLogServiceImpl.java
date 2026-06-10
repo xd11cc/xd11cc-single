@@ -6,8 +6,8 @@ import com.xd11cc.single.entity.domain.SystemOperateLogDO;
 import com.xd11cc.single.entity.vo.SystemOperateLogQueryVO;
 import com.xd11cc.single.mapper.SystemOperateLogMapper;
 import com.xd11cc.single.service.ISystemOperateLogService;
-import com.xd11cc.single.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -12,9 +12,9 @@ import com.xd11cc.single.entity.vo.SystemDeptUpdateVO;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.mapper.SystemDeptMapper;
 import com.xd11cc.single.service.ISystemDeptService;
-import com.xd11cc.single.utils.StringUtils;
 import com.xd11cc.single.utils.TreeUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 

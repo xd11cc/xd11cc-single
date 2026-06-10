@@ -1,6 +1,7 @@
 package com.xd11cc.single.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xd11cc.single.convert.SystemDictTypeConvert;
 import com.xd11cc.single.entity.domain.SystemDictDataDO;
@@ -12,7 +13,7 @@ import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.mapper.SystemDictTypeMapper;
 import com.xd11cc.single.service.ISystemDictDataService;
 import com.xd11cc.single.service.ISystemDictTypeService;
-import com.xd11cc.single.utils.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -33,9 +34,9 @@ public class SystemDictTypeServiceImpl extends ServiceImpl<SystemDictTypeMapper,
     @Override
     public List<SystemDictTypeDO> getList(SystemDictTypeQueryVO systemDictTypeQueryVO) {
         LambdaQueryWrapper<SystemDictTypeDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.like(!StringUtils.isEmpty(systemDictTypeQueryVO.getDictName()),
+        wrapper.like(StringUtils.isNotEmpty(systemDictTypeQueryVO.getDictName()),
                 SystemDictTypeDO::getDictName, systemDictTypeQueryVO.getDictName());
-        wrapper.like(!StringUtils.isEmpty(systemDictTypeQueryVO.getDictType()),
+        wrapper.like(StringUtils.isNotEmpty(systemDictTypeQueryVO.getDictType()),
                 SystemDictTypeDO::getDictType, systemDictTypeQueryVO.getDictType());
         wrapper.orderByDesc(SystemDictTypeDO::getId);
         return baseMapper.selectList(wrapper);
@@ -58,7 +59,7 @@ public class SystemDictTypeServiceImpl extends ServiceImpl<SystemDictTypeMapper,
                 .collect(Collectors.toList());
         List<SystemDictDataDO> systemDictDataDOS = systemDictDataService.list(new LambdaQueryWrapper<SystemDictDataDO>()
                 .in(SystemDictDataDO::getDictType, types));
-        if (StringUtils.isNotEmpty(systemDictDataDOS)) {
+        if (!CollectionUtils.isEmpty(systemDictDataDOS)) {
             throw new ServiceException(SystemErrorEnum.DICT_TYPE_HAVE_DATA, new Object[]{String.join(",", types)});
         }
         return baseMapper.deleteBatchIds(ids);

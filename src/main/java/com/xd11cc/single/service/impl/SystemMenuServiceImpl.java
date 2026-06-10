@@ -1,6 +1,7 @@
 package com.xd11cc.single.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xd11cc.single.convert.SystemMenuConvert;
 import com.xd11cc.single.entity.domain.SystemMenuDO;
@@ -12,7 +13,6 @@ import com.xd11cc.single.enums.SystemVisibleEnum;
 import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.mapper.SystemMenuMapper;
 import com.xd11cc.single.service.ISystemMenuService;
-import com.xd11cc.single.utils.StringUtils;
 import com.xd11cc.single.utils.TreeUtils;
 import org.springframework.stereotype.Service;
 
@@ -90,7 +90,7 @@ public class SystemMenuServiceImpl extends ServiceImpl<SystemMenuMapper, SystemM
         LambdaQueryWrapper<SystemMenuDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SystemMenuDO::getParentId, id);
         List<SystemMenuDO> systemMenuDOS = baseMapper.selectList(wrapper);
-        if (StringUtils.isNotEmpty(systemMenuDOS)){
+        if (!CollectionUtils.isEmpty(systemMenuDOS)){
             throw new ServiceException(SystemErrorEnum.MENU_HAVE_CHILDREN);
         }
         return baseMapper.deleteById(id);

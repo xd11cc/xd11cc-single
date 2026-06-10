@@ -5,7 +5,6 @@ import cn.hutool.http.useragent.UserAgentUtil;
 import com.xd11cc.single.config.RedisCache;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.SecurityConstants;
-import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.config.exception.ServiceException;
@@ -15,7 +14,7 @@ import com.xd11cc.single.utils.JwtUtils;
 import com.xd11cc.single.utils.TenantUtils;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
-import com.xd11cc.single.utils.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

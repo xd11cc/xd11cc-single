@@ -20,17 +20,18 @@ import lombok.NoArgsConstructor;
  *      009 - 部门      010 - 角色
  *      011 - 岗位      012 - 系统配置
  *      013 - 通知      014 - 分布式锁
+ *      015 - 定时任务
  * 第三段，3 位，错误码
  *       不限制规则。
  *       一般建议，每个模块自增。
  **/
-@NoArgsConstructor
 @AllArgsConstructor
 @Getter
 public enum SystemErrorEnum implements ErrorCode {
 
     // ==================== HTTP 标准错误 ====================
     BAD_REQUEST(400, "请求参数有误"),
+    BAD_REQUEST1(400, "请求参数有误，{}"),
     UNAUTHORIZED(401, "未授权"),
     METHOD_NOT_ALLOWED(405, "请求方法不正确"),
     SYSTEM_ERROR(500, "系统异常，请联系管理员处理"),
@@ -103,9 +104,15 @@ public enum SystemErrorEnum implements ErrorCode {
     // ==================== 014 - 分布式锁 ====================
     LOCK_ACQUIRE_FAILED(1014001, "系统繁忙，请稍后重试"),
 
+    // ==================== 015 - 定时任务 ====================
+    JOB_NOT_FOUND(1015001, "定时任务不存在"),
+    JOB_EXISTS(1015002, "定时任务已存在"),
+    CRON_EXPRESSION_ERROR(1015003, "Cron表达式格式错误"),
+    JOB_RUN_FAILURE(1015004, "任务执行异常: {}"),
+
     ;
 
-    private int errorCode;
+    private final int errorCode;
 
-    private String errorMsg;
+    private final String errorMsg;
 }

@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
  * @Author: xd11cc
  * @Date: 2025/6/21 22:46
  **/
-@NoArgsConstructor
 @AllArgsConstructor
 @Getter
 public enum LoginWayEnum {
@@ -17,7 +16,7 @@ public enum LoginWayEnum {
     APP(1, "移动端"),
     ;
 
-    private int code;
+    private final int code;
 
-    private String info;
+    private final String info;
 }

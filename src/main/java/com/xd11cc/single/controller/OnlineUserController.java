@@ -5,15 +5,14 @@ import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.entity.vo.OnlineUserVO;
-import com.xd11cc.single.utils.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author xd11cc

@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
  */
 @Getter
 @AllArgsConstructor
-@NoArgsConstructor
 public enum MenuTypeEnum {
 
     DIR("M", "目录"),
@@ -19,7 +18,7 @@ public enum MenuTypeEnum {
 
     ;
 
-    private String code;
+    private final String code;
 
-    private String info;
+    private final String info;
 }
