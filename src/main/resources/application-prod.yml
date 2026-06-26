@@ -8,7 +8,6 @@ spring:
         url: jdbc:mysql://xd11cc-mysql:3306/xd11cc_single?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
         username: root
         password: xd11cc@1216
-      #        password: root
       slave:
         enable: false
         url:

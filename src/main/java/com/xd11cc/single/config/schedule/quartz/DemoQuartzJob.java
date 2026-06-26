@@ -1,4 +1,4 @@
-package com.xd11cc.single.config.job.quartz;
+package com.xd11cc.single.config.schedule.quartz;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

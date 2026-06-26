@@ -27,12 +27,20 @@ public class SecurityUtils {
         try {
             return (LoginUserDTO) getAuthentication().getPrincipal();
         } catch (Exception e) {
-            throw new ServiceException(SystemErrorEnum.UNAUTHORIZED);
+            return new LoginUserDTO();
         }
     }
 
     public static Long getUserId() {
         return getLoginUser().getUserId();
+    }
+
+    public static Long getRequireUserId() {
+        LoginUserDTO loginUser = getLoginUser();
+        if (loginUser == null) {
+            throw new ServiceException(SystemErrorEnum.UNAUTHORIZED);
+        }
+        return loginUser.getUserId();
     }
 
     public static String getUsername() {
