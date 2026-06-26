@@ -10,7 +10,7 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 
 | Layer | Technology | Version | Description |
 |------|------|------|------|
-| **Core Framework** | Spring Boot | 2.7.9 | Application framework |
+| **Core Framework** | Spring Boot | 2.7.18 | Application framework |
 | **Security** | Spring Security + JWT | 5.7.x + 0.11.5 | Stateless authentication, Redis session management |
 | **Social Login** | JustAuth | 1.16.7 | OAuth2 third-party login (GitHub/Google/WeChat, etc.) |
 | **ORM** | MyBatis-Plus | 3.5.3.1 | Enhanced CRUD + auto-fill + multi-tenant interceptor |
@@ -22,9 +22,10 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 | **Real-time** | Netty WebSocket | 4.1.x | Independent port, long-connection push |
 | **Task Scheduling** | XXL-JOB + Quartz | 2.4.0 / 2.7.x | Distributed cron tasks + local scheduling |
 | **Object Storage** | MinIO | 8.6.0 | S3-compatible distributed storage |
+| **Payment** | Alipay SDK + WeChat Pay SDK | 4.40.831 / 4.8.0 | Multi-channel payment client abstraction |
 | **API Docs** | Swagger2 + Knife4j | 2.9.2 / 3.0.3 | Online API documentation |
 | **Containerization** | Docker + Docker Compose | - | One-command deployment |
-| **Utilities** | Hutool / Fastjson2 / MapStruct / EasyExcel | 5.8.16 / 2.0.39 / 1.6.3 / 3.3.2 | Utility library collection |
+| **Utilities** | Hutool / Fastjson2 / MapStruct / EasyExcel / TTL | 5.8.16 / 2.0.39 / 1.6.3 / 3.3.2 / 2.13.2 | Utility library collection |
 
 ## Features
 
@@ -50,7 +51,9 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 - **WebSocket Push** — Netty-based WebSocket server on independent port (12001) with token authentication, heartbeat detection (30s), and idle connection cleanup
 - **Message Queue** — RabbitMQ with producer Confirm + Return callbacks to prevent message loss, manual consumer ACK for reliable consumption
 - **Distributed Scheduling** — XXL-JOB with shard broadcasting, failover, and retry capabilities
-- **Local Scheduling** — Quartz integration for lightweight single-machine cron tasks
+- **Local Scheduling** — Quartz integration supporting memory mode + JDBC persistence dual modes, `AbstractQuartzJob` base class encapsulating execution context (tenant ID, execution params), supports `@DisallowConcurrentExecution` for concurrency control
+- **Distributed Lock** — `@Lock` annotation-driven, based on Redisson RLock, supports SpEL-based dynamic lock key granularity (ALL/KEY modes), configurable wait timeout, retry count, and auto-release time
+- **Payment Integration** — Unified `PayClient` interface abstracting multi-channel payment (Alipay PC/WAP/QR/App/Barcode + WeChat JSAPI/Native/WAP/App/Barcode), `@PayClientCode` annotation + factory pattern for auto-registration, supports unified order, refund, and callback parsing
 - **Object Storage** — MinIO file upload/download with pre-signed URL direct uploads to reduce backend bandwidth
 - **PDF Conversion** — Spire.PDF integration for PDF to Word and other document format conversions
 
@@ -81,7 +84,10 @@ src/main/java/com/xd11cc/single/
 │   ├── annotation/               # Custom annotations
 │   │   ├── DataScope.java        #   Data permission control
 │   │   ├── DataSource.java       #   Dynamic datasource switching
+│   │   ├── Lock.java             #   Distributed lock
 │   │   ├── OperateLog.java       #   Operation log recording
+│   │   ├── PayClientCode.java    #   Payment channel marker
+│   │   ├── PayClientScan.java    #   Payment client scan registration
 │   │   ├── RateLimit.java        #   API rate limiting
 │   │   └── TenantIgnore.java     #   Skip tenant filter
 │   ├── aspectj/                  # AOP aspect implementations
@@ -93,10 +99,11 @@ src/main/java/com/xd11cc/single/
 │   ├── handler/                  # Handlers (Security auth success/failure, MyBatis auto-fill, global exception)
 │   ├── initializer/              # Startup initializers (tenant cache warm-up)
 │   ├── interceptor/              # Spring MVC interceptors (tenant DB interceptor)
-│   ├── job/xxl/                  # XXL-JOB task handlers
 │   ├── mq/                       # RabbitMQ queue configuration
 │   ├── netty/                    # Netty WebSocket server (Server/Channel/Handler)
+│   ├── pay/                      # Payment client abstraction layer (factory / Alipay / WeChat)
 │   ├── properties/               # @ConfigurationProperties classes
+│   ├── schedule/                 # Scheduled tasks (quartz / xxl)
 │   ├── MybatisPlusConfig.java    # MyBatis-Plus config (interceptors / pagination)
 │   ├── SecurityConfig.java       # Spring Security config
 │   ├── RedisConfig.java          # Redis serialization config
@@ -271,6 +278,37 @@ public ResponseVO<String> loginByPassword(...) { ... }
 - Supports three dimensions: `IP` / `USER` / `DEFAULT`
 - Key format: `rate_limit:{key}:{type}:{identifier}`
 
+### Distributed Lock
+
+```java
+@Lock(prefix = "order:pay", key = "#orderId", waitTime = 3, leaseTime = 30)
+public void processPayment(String orderId) { ... }
+```
+
+**Implementation**:
+- `@Lock` annotation + `LockAspect` AOP aspect
+- Redisson `RLock` reentrant lock implementation
+- Supports two granularity modes: `ALL` (global mutual exclusion) / `KEY` (sharded by SpEL expression)
+- Configurable parameters: `waitTime` (lock acquisition timeout), `leaseTime` (auto-release time), `retryTimes` (retry count)
+- Lock key format: `lock:{prefix}:{lockMode}:{resolvedKey}`
+
+### Payment Client Architecture
+
+```
+Payment Request → PayClientFactory.getPayClient(channel)
+                → PayClient.unifiedOrder(reqDTO)      // Unified order placement
+                → PayClient.parseOrderNotify(...)     // Channel callback parsing
+                → PayClient.unifiedRefund(reqDTO)     // Unified refund
+                → PayClient.parseRefundNotify(...)    // Refund callback parsing
+```
+
+**Key Design**:
+- `PayClient<Config>` generic interface unifies channel differences across Alipay/WeChat/etc.
+- `@PayClientCode(PayChannelEnum.ALIPAY_WAP)` annotation marks channel implementation classes
+- `PayClientScannerRegistrar` scans and registers implementations into `PayClientFactory` at startup
+- `AbstractAlipayPayClient` / `AbstractWxPayClient` encapsulates common SDK logic
+- Supported channels: Alipay (PC/WAP/QR/App/Barcode), WeChat (JSAPI/Native/WAP/App/Barcode)
+
 ### Thread Pool Design
 
 ```java
@@ -355,7 +393,10 @@ public ResponseVO<PageResult<SystemUserVO>> page(...) { ... }
 - [x] Freemarker code generator templates
 - [x] Multi-tenant data isolation
 - [x] Notification module
-- [ ] Alipay & WeChat Pay integration
+- [x] Quartz scheduled tasks (memory + JDBC persistence)
+- [x] Distributed lock (@Lock annotation)
+- [x] Payment infrastructure (multi-channel client abstraction layer, business APIs in progress)
+- [ ] Payment business APIs (order creation / callback handling / refund flow)
 - [ ] Enhanced audit logs (field-level change tracking)
 - [ ] Internationalization (i18n)
 

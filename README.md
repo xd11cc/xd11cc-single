@@ -10,7 +10,7 @@
 
 | 层级 | 技术 | 版本 | 说明 |
 |------|------|------|------|
-| **基础框架** | Spring Boot | 2.7.9 | 应用框架 |
+| **基础框架** | Spring Boot | 2.7.18 | 应用框架 |
 | **安全认证** | Spring Security + JWT | 5.7.x + 0.11.5 | 无状态认证，Redis 会话管理 |
 | **社交登录** | JustAuth | 1.16.7 | OAuth2 第三方登录（GitHub/Google/微信等） |
 | **ORM 框架** | MyBatis-Plus | 3.5.3.1 | 增强 CRUD + 自动填充 + 多租户拦截 |
@@ -22,9 +22,10 @@
 | **实时通讯** | Netty WebSocket | 4.1.x | 独立端口、长连接推送 |
 | **任务调度** | XXL-JOB + Quartz | 2.4.0 / 2.7.x | 分布式定时任务 + 本地调度 |
 | **对象存储** | MinIO | 8.6.0 | 兼容 S3 协议的分布式存储 |
+| **支付集成** | 支付宝 SDK + 微信支付 SDK | 4.40.831 / 4.8.0 | 多渠道支付客户端抽象 |
 | **接口文档** | Swagger2 + Knife4j | 2.9.2 / 3.0.3 | 在线 API 文档 |
 | **容器化** | Docker + Docker Compose | - | 一键部署 |
-| **工具库** | Hutool / Fastjson2 / MapStruct / EasyExcel | 5.8.16 / 2.0.39 / 1.6.3 / 3.3.2 | 实用工具集 |
+| **工具库** | Hutool / Fastjson2 / MapStruct / EasyExcel / TTL | 5.8.16 / 2.0.39 / 1.6.3 / 3.3.2 / 2.13.2 | 实用工具集 |
 
 ## 功能特性
 
@@ -50,7 +51,9 @@
 - **WebSocket 推送** — 基于 Netty 独立端口（12001）提供 WebSocket 服务，支持 Token 认证、心跳检测（30s）、空闲连接清理
 - **消息队列** — RabbitMQ 集成，生产者 Confirm + Return 回调保证消息不丢，消费者手动 ACK 确保可靠消费
 - **分布式调度** — XXL-JOB 集成，支持分片广播、故障转移、失败重试等企业级调度能力
-- **本地调度** — Quartz 集成，适用于单机轻量级定时任务
+- **本地调度** — Quartz 集成，支持内存模式 + JDBC 持久化双模式，`AbstractQuartzJob` 抽象基类封装执行上下文（租户 ID、执行参数），支持 `@DisallowConcurrentExecution` 防并发控制
+- **分布式锁** — `@Lock` 注解驱动，基于 Redisson RLock 实现，支持 SpEL Key 动态锁粒度（ALL/KEY 两种模式），可配置等待超时、重试次数、自动释放时间
+- **支付集成** — 统一 `PayClient` 接口抽象多渠道支付（支付宝 PC/WAP/扫码/APP/条码 + 微信 JSAPI/Native/WAP/App/条码），`@PayClientCode` 注解 + 工厂模式自动注册，支持统一下单、退款、回调解析
 - **对象存储** — MinIO 文件上传/下载，预签名 URL 直传减轻后端带宽压力
 - **PDF 转换** — Spire.PDF 集成，支持 PDF 转 Word 等文档格式转换
 
@@ -81,7 +84,10 @@ src/main/java/com/xd11cc/single/
 │   ├── annotation/               # 自定义注解
 │   │   ├── DataScope.java        #   数据权限控制
 │   │   ├── DataSource.java       #   动态数据源切换
+│   │   ├── Lock.java             #   分布式锁
 │   │   ├── OperateLog.java       #   操作日志记录
+│   │   ├── PayClientCode.java    #   支付渠道标记
+│   │   ├── PayClientScan.java    #   支付客户端扫描注册
 │   │   ├── RateLimit.java        #   接口限流
 │   │   └── TenantIgnore.java     #   跳过租户过滤
 │   ├── aspectj/                  # AOP 切面实现
@@ -93,10 +99,11 @@ src/main/java/com/xd11cc/single/
 │   ├── handler/                  # 处理器 (Security认证成功失败/MyBatis自动填充/全局异常)
 │   ├── initializer/              # 启动初始化器 (租户缓存预热)
 │   ├── interceptor/              # Spring MVC 拦截器 (租户数据库拦截)
-│   ├── job/xxl/                  # XXL-JOB 任务处理器
 │   ├── mq/                       # RabbitMQ 队列配置
 │   ├── netty/                    # Netty WebSocket 服务端 (Server/Channel/Handler)
+│   ├── pay/                      # 支付客户端抽象层 (工厂/支付宝/微信)
 │   ├── properties/               # @ConfigurationProperties 配置属性类
+│   ├── schedule/                 # 定时任务 (quartz/xxl)
 │   ├── MybatisPlusConfig.java    # MyBatis-Plus 配置 (拦截器/分页)
 │   ├── SecurityConfig.java       # Spring Security 配置
 │   ├── RedisConfig.java          # Redis 序列化配置
@@ -271,6 +278,37 @@ public ResponseVO<String> loginByPassword(...) { ... }
 - 支持 `IP`/`USER`/`DEFAULT` 三种限流维度
 - Key 格式：`rate_limit:{key}:{type}:{identifier}`
 
+### 分布式锁
+
+```java
+@Lock(prefix = "order:pay", key = "#orderId", waitTime = 3, leaseTime = 30)
+public void processPayment(String orderId) { ... }
+```
+
+**实现原理**：
+- `@Lock` 注解 + `LockAspect` AOP 切面
+- Redisson `RLock` 可重入锁实现
+- 支持 `ALL`（全局互斥）/ `KEY`（按 SpEL 表达式分锁）两种粒度
+- 可配置参数：`waitTime`（获取等待超时）、`leaseTime`（自动释放时间）、`retryTimes`（重试次数）
+- Lock Key 格式：`lock:{prefix}:{lockMode}:{resolvedKey}`
+
+### 支付客户端架构
+
+```
+支付请求 → PayClientFactory.getPayClient(channel)
+        → PayClient.unifiedOrder(reqDTO)      // 统一下单
+        → PayClient.parseOrderNotify(...)     // 渠道回调解析
+        → PayClient.unifiedRefund(reqDTO)     // 统一退款
+        → PayClient.parseRefundNotify(...)    // 退款回调解析
+```
+
+**关键设计**：
+- `PayClient<Config>` 泛型接口统一支付宝/微信等渠道差异
+- `@PayClientCode(PayChannelEnum.ALIPAY_WAP)` 注解标记渠道实现类
+- `PayClientScannerRegistrar` 启动时扫描并注册到 `PayClientFactory`
+- `AbstractAlipayPayClient` / `AbstractWxPayClient` 封装 SDK 公共逻辑
+- 已接入渠道：支付宝（PC/WAP/扫码/APP/条码）、微信（JSAPI/Native/WAP/App/条码）
+
 ### 线程池设计
 
 ```java
@@ -355,9 +393,12 @@ public ResponseVO<PageResult<SystemUserVO>> page(...) { ... }
 - [x] Freemarker 代码生成器模板
 - [x] 多租户数据隔离
 - [x] 通知公告模块
-- [ ] 支付宝 & 微信支付集成
-- [ ] 审计日志增强（字段级变更记录）
-- [ ] 国际化多语言支持
+- [x] Quartz 定时任务（内存 + JDBC 持久化）
+- [x] 分布式锁（@Lock 注解）
+- [x] 支付基础设施（多渠道客户端抽象层，业务接口持续完善中）
+- [ ] 支付业务接口（订单创建/回调处理/退款流程）
+- [ ] 增强审计日志（字段级变更追踪）
+- [ ] 国际化（i18n）
 
 ## 许可证
 
