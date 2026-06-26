@@ -1,7 +1,7 @@
 # 日志级别
 logging:
   level:
-    com.xd11cc.*: warn
+    com.xd11cc.*: info
 
 # druid数据源配置
 spring:
