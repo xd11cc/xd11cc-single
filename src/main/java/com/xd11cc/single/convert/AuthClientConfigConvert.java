@@ -14,7 +14,7 @@ import org.mapstruct.factory.Mappers;
 @Mapper
 public interface AuthClientConfigConvert {
 
-    AuthClientConfigConvert CONVERT = Mappers.getMapper(AuthClientConfigConvert.class);
+    AuthClientConfigConvert INSTANCE = Mappers.getMapper(AuthClientConfigConvert.class);
 
     AuthClientConfigListVO do2listVO(AuthClientConfigDO authClientConfigDO);
 

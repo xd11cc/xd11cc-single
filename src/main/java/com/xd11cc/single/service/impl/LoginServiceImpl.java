@@ -133,6 +133,8 @@ public class LoginServiceImpl implements LoginService {
         if (!captcha.equals(captchaValue)) {
             throw new ServiceException(SystemErrorEnum.CAPTCHA_ERROR);
         }
+        // 校验通过删除redis中的验证码
+        redisCache.removeCacheObject(getCaptchaKey(captchaId));
     }
 
     @Override

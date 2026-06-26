@@ -14,7 +14,7 @@ import java.util.Base64;
  */
 public class RSAUtils {
 
-    private static final String RSA_ALGORITHM = "RSA/ECB/PKCS1Padding";
+    private static final String RSA_ALGORITHM = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
     private static final String CHARSET = "UTF-8";
 
     public static String encryptByPublicKey(String plainText, String base64PublicKey) throws Exception {

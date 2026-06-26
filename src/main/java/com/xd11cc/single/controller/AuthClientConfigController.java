@@ -40,7 +40,7 @@ public class AuthClientConfigController {
     @ApiOperation("获取授权配置信息（登录页）")
     public ResponseVO<List<AuthClientConfigListVO>> list() {
         List<AuthClientConfigListVO> list = authClientConfigService.list().stream()
-                .map(AuthClientConfigConvert.CONVERT::do2listVO)
+                .map(AuthClientConfigConvert.INSTANCE::do2listVO)
                 .collect(Collectors.toList());
         return ResponseVO.success(list);
     }

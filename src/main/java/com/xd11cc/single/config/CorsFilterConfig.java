@@ -21,7 +21,7 @@ public class CorsFilterConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        // 设置访问源地址
+        // 设置访问源地址 todo 建议生产环境使用前端域名
         config.addAllowedOriginPattern("*");
         // 设置访问源请求头
         config.addAllowedHeader("*");

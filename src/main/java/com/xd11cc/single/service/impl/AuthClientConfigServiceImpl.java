@@ -35,7 +35,7 @@ public class AuthClientConfigServiceImpl extends ServiceImpl<AuthClientConfigMap
 
     @Override
     public int add(AuthClientConfigAddVO authClientConfigAddVO) {
-        AuthClientConfigDO authClientConfigDO = AuthClientConfigConvert.CONVERT.addVO2DO(authClientConfigAddVO);
+        AuthClientConfigDO authClientConfigDO = AuthClientConfigConvert.INSTANCE.addVO2DO(authClientConfigAddVO);
         try {
             return baseMapper.insert(authClientConfigDO);
         } catch (DuplicateKeyException e) {
@@ -50,7 +50,7 @@ public class AuthClientConfigServiceImpl extends ServiceImpl<AuthClientConfigMap
 
     @Override
     public int modifyById(AuthClientConfigUpdateVO authClientConfigUpdateVO) {
-        AuthClientConfigDO authClientConfigDO = AuthClientConfigConvert.CONVERT.updateVO2DO(authClientConfigUpdateVO);
+        AuthClientConfigDO authClientConfigDO = AuthClientConfigConvert.INSTANCE.updateVO2DO(authClientConfigUpdateVO);
         try {
             return baseMapper.updateById(authClientConfigDO);
         } catch (DuplicateKeyException e) {

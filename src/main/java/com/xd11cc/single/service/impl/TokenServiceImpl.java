@@ -125,6 +125,7 @@ public class TokenServiceImpl implements TokenService {
                 loginUserDTO.setOs(userAgent.getOs().getName());
             }
         } catch (Exception ignored) {
+            log.error("设置用户 Agent 失败...");
         }
     }
 
