@@ -1,5 +1,7 @@
 package com.xd11cc.single.config;
 
+import com.xd11cc.single.config.properties.CorsProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -18,17 +20,19 @@ import org.springframework.web.filter.CorsFilter;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class CorsFilterConfig {
 
+    @Autowired
+    private CorsProperties corsProperties;
+
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        // 设置访问源地址 todo 建议生产环境使用前端域名
-        config.addAllowedOriginPattern("*");
-        // 设置访问源请求头
+        for (String origin : corsProperties.getAllowedOrigins()) {
+            config.addAllowedOriginPattern(origin);
+        }
         config.addAllowedHeader("*");
-        // 设置访问源请求方法
         config.addAllowedMethod("*");
-        // 有效期 1800秒
         config.setMaxAge(1800L);
+        config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);

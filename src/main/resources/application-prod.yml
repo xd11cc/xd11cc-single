@@ -3,6 +3,16 @@ logging:
   level:
     com.xd11cc.*: info
 
+# MyBatis-Plus SQL日志：生产环境走SLF4J（受日志级别控制，不会打印到stdout）
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+# CORS跨域配置（生产环境限制具体域名）
+cors:
+  allowed-origins:
+    - "https://xd11ccc.cloud"
+
 # druid数据源配置
 spring:
   datasource:
@@ -80,7 +90,7 @@ spring:
         # 连接池的最大数据库连接
         max-active: 8
         # 连接池的最大阻塞等待时间（负值代表没有限制）
-        max-wait: -1ms
+        max-wait: 2000ms
 
 # xxl-job配置
 xxl:

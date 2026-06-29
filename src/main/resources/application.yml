@@ -24,6 +24,11 @@ spring:
       max-file-size: 100MB
       max-request-size: 100MB
 
+# 日志级别
+logging:
+  level:
+    com.xd11cc.*: debug
+
 mybatis-plus:
   global-config:
     db-config:
@@ -81,6 +86,11 @@ security:
     - /file/upload/anonymous
     # minio域名白名单
     - /system/config/getConfig/minio-domain
+
+# CORS跨域配置
+cors:
+  allowed-origins:
+    - "*"
 
 # 需要忽略租户的表
 tenant:
