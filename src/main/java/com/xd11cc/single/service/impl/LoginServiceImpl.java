@@ -198,6 +198,10 @@ public class LoginServiceImpl implements LoginService {
         String sourceType = authUser.getSource().toLowerCase();
         String uuid = authUser.getUuid();
         String successUrl = systemConfigService.getConfig("auth-redirect-successUrl");
+        if (successUrl == null) {
+            log.error("系统配置缺失: auth-redirect-successUrl");
+            return;
+        }
 
         // 1、判断是否社交绑定
         AuthSocialUserDO authSocialUserDO = authSocialUserService.getBySourceAndUuid(sourceType, uuid);
@@ -220,6 +224,10 @@ public class LoginServiceImpl implements LoginService {
         // 3、不匹配，前端跳转到绑定页面
         redisCache.setCacheObject(getAuthStateKey(state), authUser, 500, TimeUnit.MINUTES);
         String bindUserUrl = systemConfigService.getConfig("auth-redirect-bindUserUrl");
+        if (bindUserUrl == null) {
+            log.error("系统配置缺失: auth-redirect-bindUserUrl");
+            return;
+        }
         response.sendRedirect(String.format(bindUserUrl, source, state));
     }
 
@@ -277,38 +285,41 @@ public class LoginServiceImpl implements LoginService {
 
         // 认证成功，将用户信息设入上下文（供 DefaultDBFieldHandler 自动填充 createUserId）
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            LoginUserDTO loginUserDTO = (LoginUserDTO) authentication.getPrincipal();
+            SystemUserDO systemUserDO = loginUserDTO.getSystemUserDO();
 
-        LoginUserDTO loginUserDTO = (LoginUserDTO) authentication.getPrincipal();
-        SystemUserDO systemUserDO = loginUserDTO.getSystemUserDO();
+            // 3、校验该社交账号是否已绑定其他用户
+            String sourceType = authUser.getSource().toLowerCase();
+            String uuid = authUser.getUuid();
+            AuthSocialUserDO existSocialUser = authSocialUserService.getBySourceAndUuid(sourceType, uuid);
+            if (existSocialUser != null) {
+                throw new ServiceException(SystemErrorEnum.SOCIAL_USER_BINDEDE);
+            }
 
-        // 3、校验该社交账号是否已绑定其他用户
-        String sourceType = authUser.getSource().toLowerCase();
-        String uuid = authUser.getUuid();
-        AuthSocialUserDO existSocialUser = authSocialUserService.getBySourceAndUuid(sourceType, uuid);
-        if (existSocialUser != null) {
-            throw new ServiceException(SystemErrorEnum.SOCIAL_USER_BINDEDE);
+            // 4、创建绑定记录
+            AuthSocialUserDO authSocialUserDO = new AuthSocialUserDO();
+            authSocialUserDO.setUuid(uuid);
+            authSocialUserDO.setUserId(systemUserDO.getId());
+            authSocialUserDO.setSource(sourceType);
+            authSocialUserDO.setOpenId(authUser.getToken().getOpenId());
+            authSocialUserDO.setToken(authUser.getToken().getAccessToken());
+            authSocialUserDO.setRowTokenInfo(JSON.toJSONString(authUser.getToken()));
+            authSocialUserDO.setNickname(authUser.getNickname());
+            authSocialUserDO.setAvatar(authUser.getAvatar());
+            authSocialUserDO.setRowUserInfo(authUser.getRawUserInfo().toString());
+            authSocialUserDO.setCode(socialUserBindVO.getState());
+            authSocialUserDO.setState(socialUserBindVO.getState());
+            authSocialUserDO.setBindTime(new Date());
+            authSocialUserService.save(authSocialUserDO);
+
+            // 5、删除 Redis 缓存（一次性消费）
+            redisCache.removeCacheObject(getAuthStateKey(socialUserBindVO.getState()));
+
+            // 6、生成 Token
+            return tokenService.createToken(loginUserDTO);
+        } finally {
+            SecurityContextHolder.clearContext();
         }
-
-        // 4、创建绑定记录
-        AuthSocialUserDO authSocialUserDO = new AuthSocialUserDO();
-        authSocialUserDO.setUuid(uuid);
-        authSocialUserDO.setUserId(systemUserDO.getId());
-        authSocialUserDO.setSource(sourceType);
-        authSocialUserDO.setOpenId(authUser.getToken().getOpenId());
-        authSocialUserDO.setToken(authUser.getToken().getAccessToken());
-        authSocialUserDO.setRowTokenInfo(JSON.toJSONString(authUser.getToken()));
-        authSocialUserDO.setNickname(authUser.getNickname());
-        authSocialUserDO.setAvatar(authUser.getAvatar());
-        authSocialUserDO.setRowUserInfo(authUser.getRawUserInfo().toString());
-        authSocialUserDO.setCode(socialUserBindVO.getState());
-        authSocialUserDO.setState(socialUserBindVO.getState());
-        authSocialUserDO.setBindTime(new Date());
-        authSocialUserService.save(authSocialUserDO);
-
-        // 5、删除 Redis 缓存（一次性消费）
-        redisCache.removeCacheObject(getAuthStateKey(socialUserBindVO.getState()));
-
-        // 6、生成 Token
-        return tokenService.createToken(loginUserDTO);
     }
 }

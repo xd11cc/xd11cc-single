@@ -59,7 +59,7 @@ public class SystemDictDataServiceImpl extends ServiceImpl<SystemDictDataMapper,
         try {
             row = baseMapper.insert(systemDictDataDO);
         } catch (DuplicateKeyException e) {
-            throw new ServiceException(SystemErrorEnum.DICT_TYPE_EXISTS);
+            throw new ServiceException(SystemErrorEnum.DICT_DATA_EXISTS);
         }
         if (row > 0) {
             log.info("dictType:{}, tenantId:{}", systemDictDataDO.getDictType(), systemDictDataDO.getTenantId());
@@ -71,9 +71,13 @@ public class SystemDictDataServiceImpl extends ServiceImpl<SystemDictDataMapper,
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int deleteByIds(List<Long> ids) {
+        // 删除前查询 dictType，用于清理缓存
+        List<SystemDictDataDO> dataList = baseMapper.selectBatchIds(ids);
         int i = baseMapper.deleteBatchIds(ids);
-        if (i > 0){
-            // 删除缓存
+        if (i > 0) {
+            for (SystemDictDataDO data : dataList) {
+                redisCache.removeCacheObject(getDictTypeKey(data.getDictType()));
+            }
         }
         return i;
     }
@@ -83,8 +87,8 @@ public class SystemDictDataServiceImpl extends ServiceImpl<SystemDictDataMapper,
     public int modifyById(SystemDictDataUpdateVO systemDictDataUpdateVO) {
         SystemDictDataDO systemDictDataDO = SystemDictDataConvert.INSTANCE.updateVO2DO(systemDictDataUpdateVO);
         int i = baseMapper.updateById(systemDictDataDO);
-        if (i > 0){
-            // 删除缓存
+        if (i > 0) {
+            redisCache.removeCacheObject(getDictTypeKey(systemDictDataUpdateVO.getDictType()));
         }
         return i;
     }
@@ -130,7 +134,7 @@ public class SystemDictDataServiceImpl extends ServiceImpl<SystemDictDataMapper,
         });
         // 5、将全局字典缓存到租户字典，空数组也保存，防止缓存穿透
         if (CollectionUtils.isEmpty(globalist)) {
-            redisCache.setCacheObject(getDictTypeKey(dictType), globalCacheList, 10, TimeUnit.MINUTES);
+            redisCache.setCacheObject(getDictTypeKey(dictType), globalist, 10, TimeUnit.MINUTES);
         }else {
             setDictCache(dictType, globalist);
         }

@@ -109,8 +109,7 @@ public class SystemNoticeUserServiceImpl extends ServiceImpl<SystemNoticeUserMap
             LambdaQueryWrapper<SystemNoticeUserDO> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(SystemNoticeUserDO::getUserId, userId);
             queryWrapper.eq(SystemNoticeUserDO::getReadStatus, 0);
-            queryWrapper.inSql(SystemNoticeUserDO::getNoticeId,
-                    "SELECT id FROM system_notice WHERE type = " + type + " AND del_flag = 0 AND status = 1");
+            queryWrapper.apply("notice_id IN (SELECT id FROM system_notice WHERE type = {0} AND del_flag = 0 AND status = 1)", type);
             List<SystemNoticeUserDO> unreadList = list(queryWrapper);
             if (!unreadList.isEmpty()) {
                 List<Long> ids = unreadList.stream().map(SystemNoticeUserDO::getId).collect(Collectors.toList());

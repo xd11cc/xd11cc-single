@@ -41,7 +41,11 @@ public class ScheduleUtils {
     }
 
     public static void updateScheduleJob(Scheduler scheduler, SystemJobDO jobDO) throws SchedulerException {
-        JobDetail jobDetail = JobBuilder.newJob(scheduler.getJobDetail(getJobKey(jobDO.getId(), jobDO.getJobGroup())).getJobClass())
+        JobDetail existingJob = scheduler.getJobDetail(getJobKey(jobDO.getId(), jobDO.getJobGroup()));
+        if (existingJob == null) {
+            throw new ServiceException(SystemErrorEnum.JOB_NOT_FOUND);
+        }
+        JobDetail jobDetail = JobBuilder.newJob(existingJob.getJobClass())
                 .withIdentity(getJobKey(jobDO.getId(), jobDO.getJobGroup()))
                 .setJobData(buildJobDataMap(jobDO))
                 .storeDurably()

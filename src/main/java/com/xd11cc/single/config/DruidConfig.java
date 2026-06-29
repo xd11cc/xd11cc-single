@@ -3,6 +3,7 @@ package com.xd11cc.single.config;
 import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
+import lombok.extern.slf4j.Slf4j;
 import com.alibaba.druid.spring.boot.autoconfigure.properties.DruidStatProperties;
 import com.alibaba.druid.util.Utils;
 import com.xd11cc.single.config.properties.DruidProperties;
@@ -25,6 +26,7 @@ import java.util.Map;
  * @Author: xd11cc
  * @Date: 2025/6/26 16:54
  **/
+@Slf4j
 @Configuration
 public class DruidConfig {
 
@@ -78,7 +80,7 @@ public class DruidConfig {
             DataSource dataSource = SpringUtil.getBean(beanName);
             targetDataSources.put(sourceType, dataSource);
         } catch (Exception e) {
-
+            log.error("动态数据源[{}]初始化失败: {}", sourceType, e.getMessage(), e);
         }
     }
 

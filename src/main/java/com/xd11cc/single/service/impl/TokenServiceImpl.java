@@ -70,6 +70,10 @@ public class TokenServiceImpl implements TokenService {
                 Claims claims = JwtUtils.parseToken(token);
                 String uuidToken = (String) claims.get(SecurityConstants.LOGIN_USER_KEY);
                 Integer tenantId = (Integer) claims.get(SecurityConstants.TENANT_ID);
+                if (tenantId == null) {
+                    log.error("Token 缺少租户信息");
+                    throw new ServiceException(SystemErrorEnum.UNAUTHORIZED);
+                }
                 return TenantUtils.execute(Long.valueOf(tenantId), ()->{
                     return redisCache.getCacheObject(getLoginTokenKey(uuidToken));
                 });

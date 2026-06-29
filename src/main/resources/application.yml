@@ -12,7 +12,7 @@ spring:
     active: dev
   jackson:
     time-zone: Asia/Shanghai
-    date-format: yyyy-MM-dd HH:dd:ss
+    date-format: yyyy-MM-dd HH:mm:ss
   mvc:
     path match:
       # 由于spring默认的url匹配策略是PATH_PATTERN_PARSER，与security匹配规则不一致可能会导致安全策略失效

@@ -116,9 +116,6 @@ public class SystemConfigServiceImpl extends ServiceImpl<SystemConfigMapper, Sys
         String globalValue = TenantUtils.execute(-1L, () -> getConfigFromDB(configKey));
         if (globalValue != null) {
             setConfigCache(configKey, globalValue);
-            TenantUtils.execute(-1L, () -> {
-                setConfigCache(configKey, globalValue);
-            });
             return globalValue;
         }
         // 5、空值缓存防止穿透

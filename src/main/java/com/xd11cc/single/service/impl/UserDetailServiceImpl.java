@@ -21,6 +21,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @Author: xd11cc
  * @Date: 2025/6/18 14:59
@@ -63,10 +65,13 @@ public class UserDetailServiceImpl implements UserDetailsService {
         }
         // 获取上下文中用户输入的密码凭证
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getCredentials() == null) {
+            throw new ServiceException(SystemErrorEnum.UNAUTHORIZED);
+        }
         String password = authentication.getCredentials().toString();
         if (!SecurityUtils.matchPassword(password, systemUserDO.getPassword())) {
             retryCount += 1;
-            redisCache.setCacheObject(getPasswordErrorCountKey(userId), retryCount);
+            redisCache.setCacheObject(getPasswordErrorCountKey(userId), retryCount, 30, TimeUnit.MINUTES);
             throw new ServiceException(SystemErrorEnum.PASSWORD_ERROR);
         }
         if (redisCache.hasKey(getPasswordErrorCountKey(userId))) {

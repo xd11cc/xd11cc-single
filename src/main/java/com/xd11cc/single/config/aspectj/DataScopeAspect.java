@@ -8,6 +8,7 @@ import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.DataScopeEnum;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
  * @date 2026-05-28
  * @description todo 初步实现数据隔离，具体情况需结合业务
  */
+@Slf4j
 @Aspect
 @Component
 public class DataScopeAspect {
@@ -48,6 +50,9 @@ public class DataScopeAspect {
 
         BaseQueryVO queryVO = findQueryVO(joinPoint.getArgs());
         if (queryVO == null) {
+            log.warn("@DataScope 注解方法缺少 BaseQueryVO 参数，数据权限过滤未生效: {}.{}",
+                    joinPoint.getSignature().getDeclaringTypeName(),
+                    joinPoint.getSignature().getName());
             return;
         }
 

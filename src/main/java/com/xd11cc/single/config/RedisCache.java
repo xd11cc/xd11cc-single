@@ -204,7 +204,7 @@ public class RedisCache {
         }
         BoundSetOperations<String, T> boundSetOperations = redisTemplate.boundSetOps(key);
         Iterator<T> iterator = dataSet.iterator();
-        if (iterator.hasNext()) {
+        while (iterator.hasNext()) {
             boundSetOperations.add(iterator.next());
         }
         return boundSetOperations;

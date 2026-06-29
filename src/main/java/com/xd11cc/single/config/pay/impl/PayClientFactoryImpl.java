@@ -81,7 +81,6 @@ public class PayClientFactoryImpl implements PayClientFactory {
                 payClient.init();
                 return payClient;
             });
-            clients.put(client.getId(), client);
         }else {
             client.refresh(config);
         }
