@@ -10,6 +10,7 @@ import com.xd11cc.single.utils.PageUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,6 +36,7 @@ public class GenerateCodeController {
 
     @ApiOperation("生成代码")
     @GetMapping
+    @PreAuthorize("ss.hasPermission('system:generate:code')")
     public ResponseVO<List<PreviewCodeVO>> generateCode(String tableName){
         return ResponseVO.success(generateCodeService.generateCode(tableName));
     }
