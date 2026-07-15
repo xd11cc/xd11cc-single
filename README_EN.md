@@ -41,7 +41,7 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 
 - **JWT Authentication** — Stateless token auth with JWT as Redis key index, server-side session lifecycle control (kick user, refresh permissions)
 - **OAuth2 Social Login** — Integrated with JustAuth, supporting 20+ social platforms (GitHub, Google, WeChat, etc.)
-- **API Rate Limiting** — `@RateLimit` annotation-driven, based on Redisson `RRateLimiter` token bucket algorithm, supports three dimensions: IP / User / Global
+- **API Rate Limiting** — `@RequestLimit` annotation-driven, based on Redisson `RRateLimiter` token bucket algorithm, supports three dimensions: IP / User / Global
 - **RSA Encryption** — End-to-end password transmission encryption
 - **CAPTCHA** — Image CAPTCHA with Redis TTL expiration, prevents brute force attacks
 - **CORS** — Unified cross-origin configuration with whitelisted domain control
@@ -52,7 +52,7 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 - **Message Queue** — RabbitMQ with producer Confirm + Return callbacks to prevent message loss, manual consumer ACK for reliable consumption
 - **Distributed Scheduling** — XXL-JOB with shard broadcasting, failover, and retry capabilities
 - **Local Scheduling** — Quartz integration supporting memory mode + JDBC persistence dual modes, `AbstractQuartzJob` base class encapsulating execution context (tenant ID, execution params), supports `@DisallowConcurrentExecution` for concurrency control
-- **Distributed Lock** — `@Lock` annotation-driven, based on Redisson RLock, supports SpEL-based dynamic redisLock key granularity (ALL/KEY modes), configurable wait timeout, retry count, and auto-release time
+- **Distributed Lock** — `@RedisLock` annotation-driven, based on Redisson RLock, supports SpEL-based dynamic lock key granularity (ALL/KEY modes), configurable wait timeout, retry count, and auto-release time
 - **Payment Integration** — Unified `PayClient` interface abstracting multi-channel payment (Alipay PC/WAP/QR/App/Barcode + WeChat JSAPI/Native/WAP/App/Barcode), `@PayClientCode` annotation + factory pattern for auto-registration, supports unified order, refund, and callback parsing
 - **Object Storage** — MinIO file upload/download with pre-signed URL direct uploads to reduce backend bandwidth
 - **PDF Conversion** — Spire.PDF integration for PDF to Word and other document format conversions
@@ -84,11 +84,11 @@ src/main/java/com/xd11cc/single/
 │   ├── annotation/               # Custom annotations
 │   │   ├── DataScope.java        #   Data permission control
 │   │   ├── DataSource.java       #   Dynamic datasource switching
-│   │   ├── Lock.java             #   Distributed redisLock
+│   │   ├── RedisLock.java         #   Distributed lock
 │   │   ├── OperateLog.java       #   Operation log recording
 │   │   ├── PayClientCode.java    #   Payment channel marker
 │   │   ├── PayClientScan.java    #   Payment client scan registration
-│   │   ├── RateLimit.java        #   API rate limiting
+│   │   ├── RequestLimit.java      #   API rate limiting
 │   │   └── TenantIgnore.java     #   Skip tenant filter
 │   ├── aspectj/                  # AOP aspect implementations
 │   ├── auth/                     # OAuth2 social login config (AuthRequestFactory)
@@ -267,30 +267,32 @@ Subsequent Requests → JwtAuthenticationTokenFilter
 ### Rate Limiting
 
 ```java
-@RateLimit(key = "login:", time = 60, count = 10, type = RateLimitEnum.IP)
+@RequestLimit(key = "login:", time = 60, count = 10, type = RequestLimitEnum.IP)
 @PostMapping("/login/loginByPassword")
 public ResponseVO<String> loginByPassword(...) { ... }
 ```
 
 **Implementation**:
-- `@RateLimit` annotation + `RateLimitAspect` AOP
+- `@RequestLimit` annotation + `RequestLimitAspect` AOP
 - Redisson `RRateLimiter` token bucket algorithm (multi-instance quota sharing in distributed scenarios)
 - Supports three dimensions: `IP` / `USER` / `DEFAULT`
-- Key format: `rate_limit:{key}:{type}:{identifier}`
+- Key format: `request_limit:{prefix}{key}{dimension}:{identifier}`
 
 ### Distributed Lock
 
 ```java
-@Lock(prefix = "order:pay", key = "#orderId", waitTime = 3, leaseTime = 30)
+@RedisLock(prefix = "order:pay", key = "#orderId", waitTime = 3, leaseTime = 30)
 public void processPayment(String orderId) { ... }
 ```
 
 **Implementation**:
-- `@Lock` annotation + `LockAspect` AOP aspect
-- Redisson `RLock` reentrant redisLock implementation
-- Supports two granularity modes: `ALL` (global mutual exclusion) / `KEY` (sharded by SpEL expression)
-- Configurable parameters: `waitTime` (redisLock acquisition timeout), `leaseTime` (auto-release time), `retryTimes` (retry count)
-- Lock key format: `redisLock:{prefix}:{lockMode}:{resolvedKey}`
+- `@RedisLock` annotation + `RedisLockAspect` AOP aspect
+- Redisson `RLock` reentrant lock implementation
+- Supports two granularity modes: `ALL` (global mutual exclusion, all args concatenated) / `KEY` (sharded by SpEL expression)
+- Configurable parameters: `waitTime` (lock acquisition timeout), `leaseTime` (auto-release time), `retryTimes` (retry count)
+- Lock key format: `redlock:{prefix}:{declaringClass}.{methodName}:{resolvedValue}`
+  - KEY mode (key specified): `resolvedValue` is the SpEL result, e.g. `redlock:tenant:add:SystemTenantServiceImpl.add:example.com`
+  - ALL mode (key empty): `resolvedValue` is all args concatenated with `|`
 
 ### Payment Client Architecture
 
@@ -394,7 +396,7 @@ public ResponseVO<PageResult<SystemUserVO>> page(...) { ... }
 - [x] Multi-tenant data isolation
 - [x] Notification module
 - [x] Quartz scheduled tasks (memory + JDBC persistence)
-- [x] Distributed redisLock (@Lock annotation)
+- [x] Distributed lock (@RedisLock annotation)
 - [x] Payment infrastructure (multi-channel client abstraction layer, business APIs in progress)
 - [ ] Payment business APIs (order creation / callback handling / refund flow)
 - [ ] Enhanced audit logs (field-level change tracking)

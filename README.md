@@ -41,7 +41,7 @@
 
 - **JWT 认证** — 无状态 Token 认证，JWT 作为 Redis Key 索引，服务端主动控制会话生命周期（踢人、刷新权限）
 - **OAuth2 社交登录** — 集成 JustAuth，支持 GitHub、Google、微信等 20+ 社交平台登录
-- **接口限流** — `@RateLimit` 注解驱动，基于 Redisson RRateLimiter 实现令牌桶算法，支持 IP/用户/全局三种限流维度
+- **接口限流** — `@RequestLimit` 注解驱动，基于 Redisson RRateLimiter 实现令牌桶算法，支持 IP/用户/全局三种限流维度
 - **RSA 加密** — 密码传输端到端加密，防止中间人窃取
 - **验证码** — 图形验证码 + Redis TTL 过期机制，防暴力破解
 - **CORS 跨域** — 统一跨域配置，支持白名单域名控制
@@ -52,7 +52,7 @@
 - **消息队列** — RabbitMQ 集成，生产者 Confirm + Return 回调保证消息不丢，消费者手动 ACK 确保可靠消费
 - **分布式调度** — XXL-JOB 集成，支持分片广播、故障转移、失败重试等企业级调度能力
 - **本地调度** — Quartz 集成，支持内存模式 + JDBC 持久化双模式，`AbstractQuartzJob` 抽象基类封装执行上下文（租户 ID、执行参数），支持 `@DisallowConcurrentExecution` 防并发控制
-- **分布式锁** — `@Lock` 注解驱动，基于 Redisson RLock 实现，支持 SpEL Key 动态锁粒度（ALL/KEY 两种模式），可配置等待超时、重试次数、自动释放时间
+- **分布式锁** — `@RedisLock` 注解驱动，基于 Redisson RLock 实现，支持 SpEL Key 动态锁粒度（ALL/KEY 两种模式），可配置等待超时、重试次数、自动释放时间
 - **支付集成** — 统一 `PayClient` 接口抽象多渠道支付（支付宝 PC/WAP/扫码/APP/条码 + 微信 JSAPI/Native/WAP/App/条码），`@PayClientCode` 注解 + 工厂模式自动注册，支持统一下单、退款、回调解析
 - **对象存储** — MinIO 文件上传/下载，预签名 URL 直传减轻后端带宽压力
 - **PDF 转换** — Spire.PDF 集成，支持 PDF 转 Word 等文档格式转换
@@ -84,11 +84,11 @@ src/main/java/com/xd11cc/single/
 │   ├── annotation/               # 自定义注解
 │   │   ├── DataScope.java        #   数据权限控制
 │   │   ├── DataSource.java       #   动态数据源切换
-│   │   ├── Lock.java             #   分布式锁
+│   │   ├── RedisLock.java             #   分布式锁
 │   │   ├── OperateLog.java       #   操作日志记录
 │   │   ├── PayClientCode.java    #   支付渠道标记
 │   │   ├── PayClientScan.java    #   支付客户端扫描注册
-│   │   ├── RateLimit.java        #   接口限流
+│   │   ├── RequestLimit.java          #   接口限流
 │   │   └── TenantIgnore.java     #   跳过租户过滤
 │   ├── aspectj/                  # AOP 切面实现
 │   ├── auth/                     # OAuth2 社交登录配置 (AuthRequestFactory)
@@ -267,30 +267,32 @@ docker-compose up -d
 ### 接口限流
 
 ```java
-@RateLimit(key = "login:", time = 60, count = 10, type = RateLimitEnum.IP)
+@RequestLimit(key = "login:", time = 60, count = 10, type = RequestLimitEnum.IP)
 @PostMapping("/login/loginByPassword")
 public ResponseVO<String> loginByPassword(...) { ... }
 ```
 
 **实现原理**：
-- `@RateLimit` 注解 + `RateLimitAspect` AOP 切面
+- `@RequestLimit` 注解 + `RequestLimitAspect` AOP 切面
 - Redisson `RRateLimiter` 令牌桶算法（分布式场景多实例共享配额）
 - 支持 `IP`/`USER`/`DEFAULT` 三种限流维度
-- Key 格式：`rate_limit:{key}:{type}:{identifier}`
+- Key 格式：`request_limit:{prefix}{key}{dimension}:{identifier}`
 
 ### 分布式锁
 
 ```java
-@Lock(prefix = "order:pay", key = "#orderId", waitTime = 3, leaseTime = 30)
+@RedisLock(prefix = "order:pay", key = "#orderId", waitTime = 3, leaseTime = 30)
 public void processPayment(String orderId) { ... }
 ```
 
 **实现原理**：
-- `@Lock` 注解 + `LockAspect` AOP 切面
+- `@RedisLock` 注解 + `RedisLockAspect` AOP 切面
 - Redisson `RLock` 可重入锁实现
-- 支持 `ALL`（全局互斥）/ `KEY`（按 SpEL 表达式分锁）两种粒度
+- 支持 `ALL`（所有入参拼接为锁维度）/ `KEY`（按 SpEL 表达式指定锁维度）两种粒度
 - 可配置参数：`waitTime`（获取等待超时）、`leaseTime`（自动释放时间）、`retryTimes`（重试次数）
-- Lock Key 格式：`redisLock:{prefix}:{lockMode}:{resolvedKey}`
+- Lock Key 格式：`redlock:{prefix}:{declaringClass}.{methodName}:{resolvedValue}`
+  - KEY 模式（key 非空）：`resolvedValue` 为 SpEL 解析结果，如 `redlock:tenant:add:SystemTenantServiceImpl.add:example.com`
+  - ALL 模式（key 为空）：`resolvedValue` 为所有入参用 `|` 拼接
 
 ### 支付客户端架构
 
@@ -394,7 +396,7 @@ public ResponseVO<PageResult<SystemUserVO>> page(...) { ... }
 - [x] 多租户数据隔离
 - [x] 通知公告模块
 - [x] Quartz 定时任务（内存 + JDBC 持久化）
-- [x] 分布式锁（@Lock 注解）
+- [x] 分布式锁（@RedisLock 注解）
 - [x] 支付基础设施（多渠道客户端抽象层，业务接口持续完善中）
 - [ ] 支付业务接口（订单创建/回调处理/退款流程）
 - [ ] 增强审计日志（字段级变更追踪）
