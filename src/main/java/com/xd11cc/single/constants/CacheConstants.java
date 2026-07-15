@@ -66,5 +66,5 @@ public class CacheConstants {
     /**
      * 分布式锁 key 前缀
      */
-    public static final String REDLOCK_KEY_PREFIX = "redlock:";
+    public static final String REDIS_LOCK_KEY = "redis_lock:";
 }

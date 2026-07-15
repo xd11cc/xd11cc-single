@@ -107,7 +107,7 @@ public class RedisLockAspect {
      * key 解析优先级：SpEL 表达式 > 全部参数拼接
      */
     private String buildLockKey(Method method, RedisLock redisLock, ProceedingJoinPoint joinPoint) {
-        StringBuilder sb = new StringBuilder(CacheConstants.REDLOCK_KEY_PREFIX)
+        StringBuilder sb = new StringBuilder(CacheConstants.REDIS_LOCK_KEY)
                 .append(redisLock.prefix()).append(":");
 
         sb.append(method.getDeclaringClass().getSimpleName()).append(".")
