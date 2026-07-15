@@ -59,9 +59,14 @@ public class SecurityConfig {
         return http
                 // CSRF禁用，因为不使用session
                 .csrf(AbstractHttpConfigurer::disable)
-                // 禁用HTTP响应标头
+                // 安全响应头配置
                 .headers(headers -> {
-                    headers.cacheControl(HeadersConfigurer.CacheControlConfig::disable).frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin);
+                    // X-Frame-Options: SAMEORIGIN（防止点击劫持）
+                    headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin);
+                    // X-Content-Type-Options: nosniff（Spring Security 默认以 DENY 开启）
+                    headers.contentTypeOptions();
+                    // HSTS（生产环境配合 HTTPS；本地/测试环境可通过 profile 关闭）
+                    headers.httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000));
                 })
                 // 异常处理类（此处处理认证失败异常）
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint))

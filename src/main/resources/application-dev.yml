@@ -70,11 +70,11 @@ spring:
     lettuce:
       pool:
         # 连接池中最小空闲连接
-        min-idle: 0
+        min-idle: 4
         # 连接池中最大空闲连接
-        max-idle: 8
+        max-idle: 16
         # 连接池的最大数据库连接
-        max-active: 8
+        max-active: 32
         # 连接池的最大阻塞等待时间（负值代表没有限制）
         max-wait: 2000ms
   # rabbitmq配置

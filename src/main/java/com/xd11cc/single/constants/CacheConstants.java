@@ -64,7 +64,7 @@ public class CacheConstants {
     public static final String NOTICE_UNREAD_COUNT_KEY = "notice_unread_count:";
 
     /**
-     * 分布式锁 key 前缀
+     * 分布式锁 key 前缀（与 @RedisLock 注解的默认 prefix = "lock" 对应，业务场景可自定义）
      */
     public static final String REDIS_LOCK_KEY = "redis_lock:";
 }

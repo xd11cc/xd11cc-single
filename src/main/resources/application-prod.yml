@@ -55,12 +55,12 @@ spring:
         enabled: true
       stat-view-servlet:
         enabled: true
-        # 设置白名单，不填则允许所有访问
-        allow:
+        # 生产环境仅允许内网访问 Druid 监控
+        allow: 127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
         url-pattern: /druid/*
-        # 控制台管理用户名和密码
-        login-username: xd11cc
-        login-password: xd11cc@1216
+        # 控制台管理用户名和密码（上线后通过环境变量注入，不要硬编码）
+        login-username: ${DRUID_USERNAME:xd11cc}
+        login-password: ${DRUID_PASSWORD}
       filter:
         stat:
           enabled: true
@@ -70,7 +70,8 @@ spring:
           merge-sql: true
         wall:
           config:
-            multi-statement-allow: true
+            # 生产环境关闭多语句执行（有批量插入需求时可按需放开白名单）
+            multi-statement-allow: false
 
   # redis配置
   redis:
@@ -84,11 +85,11 @@ spring:
     lettuce:
       pool:
         # 连接池中最小空闲连接
-        min-idle: 0
+        min-idle: 4
         # 连接池中最大空闲连接
-        max-idle: 8
-        # 连接池的最大数据库连接
-        max-active: 8
+        max-idle: 16
+        # 连接池的最大数据库连接（生产建议随并发量调整，参考值：max-active = CPU核心数 × 8）
+        max-active: 32
         # 连接池的最大阻塞等待时间（负值代表没有限制）
         max-wait: 2000ms
 

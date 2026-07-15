@@ -6,6 +6,8 @@ import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.entity.vo.OnlineUserVO;
+import com.xd11cc.single.enums.SystemErrorEnum;
+import com.xd11cc.single.config.exception.ServiceException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -65,10 +67,21 @@ public class OnlineUserController {
     @PreAuthorize("@ss.hasPermission('system:onlineUser:forceLogout')")
     public ResponseVO<Void> forceLogout(@PathVariable String tokenId) {
         LoginUserDTO loginUser = redisCache.getCacheObject(CacheConstants.LOGIN_TOKEN_KEY + tokenId);
-        if (loginUser != null) {
-            redisCache.removeCacheObject(CacheConstants.LOGIN_TOKEN_KEY + tokenId);
-            redisCache.removeCacheObject(CacheConstants.LOGIN_USER_KEY + loginUser.getUserId());
+        if (loginUser == null) {
+            return ResponseVO.success();
         }
+
+        Long currentTenantId = TenantContextHolder.getTenantId();
+        Long userTenantId = loginUser.getSystemUserDO() != null
+                ? loginUser.getSystemUserDO().getTenantId()
+                : null;
+        // 跨租户强退校验：仅允许操作当前租户下的会话；超级管理员可通过切换租户上下文操作对应租户
+        if (userTenantId == null || !userTenantId.equals(currentTenantId)) {
+            throw new ServiceException(SystemErrorEnum.NOT_FOUND_TENANT);
+        }
+
+        redisCache.removeCacheObject(CacheConstants.LOGIN_TOKEN_KEY + tokenId);
+        redisCache.removeCacheObject(CacheConstants.LOGIN_USER_KEY + loginUser.getUserId());
         return ResponseVO.success();
     }
 }

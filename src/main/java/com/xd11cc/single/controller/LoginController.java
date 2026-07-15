@@ -1,5 +1,7 @@
 package com.xd11cc.single.controller;
 
+import com.xd11cc.single.config.annotation.RequestLimit;
+import com.xd11cc.single.enums.RequestLimitEnum;
 import com.xd11cc.single.config.RedisCache;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.entity.vo.*;
@@ -10,13 +12,7 @@ import com.xd11cc.single.utils.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import me.zhyd.oauth.config.AuthConfig;
-import me.zhyd.oauth.model.AuthCallback;
-import me.zhyd.oauth.model.AuthResponse;
 import me.zhyd.oauth.model.AuthUser;
-import me.zhyd.oauth.request.AuthGithubRequest;
-import me.zhyd.oauth.request.AuthRequest;
-import me.zhyd.oauth.utils.AuthStateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author: xd11cc
@@ -51,6 +48,7 @@ public class LoginController {
 
     @PostMapping("/loginByPassword")
     @ApiOperation("账号密码登录")
+    @RequestLimit(key = "login:pwd", type = RequestLimitEnum.IP, count = 5, time = 1, timeUnit = TimeUnit.MINUTES)
     public ResponseVO<String> loginByPassword(@Valid @RequestBody LoginPasswordVO loginPasswordVO){
         return ResponseVO.success(loginService.loginByPassword(loginPasswordVO));
     }
