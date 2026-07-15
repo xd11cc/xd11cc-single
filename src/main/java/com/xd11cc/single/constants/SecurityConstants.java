@@ -46,4 +46,14 @@ public class SecurityConstants {
      */
     public static final String USER_TOKEN = "user_token";
 
+    /**
+     * 用户id
+     */
+    public static final String USER_ID = "user_id";
+
+    /**
+     * 用户类型
+     */
+    public static final String USER_TYPE = "user_type";
+
 }

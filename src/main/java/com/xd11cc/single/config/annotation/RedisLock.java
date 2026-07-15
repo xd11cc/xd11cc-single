@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Lock {
+public @interface RedisLock {
 
     /**
      * 锁的前缀 key（业务自定义）

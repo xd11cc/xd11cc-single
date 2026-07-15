@@ -1,6 +1,6 @@
 package com.xd11cc.single.config.aspectj;
 
-import com.xd11cc.single.config.annotation.Lock;
+import com.xd11cc.single.config.annotation.RedisLock;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.config.exception.ServiceException;
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 @Slf4j
 @Order(Ordered.LOWEST_PRECEDENCE - 2)
-public class LockAspect {
+public class RedisLockAspect {
 
     private static final ExpressionParser PARSER = new SpelExpressionParser();
     private static final ParameterNameDiscoverer NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
@@ -41,29 +41,29 @@ public class LockAspect {
     @Autowired
     private RedissonClient redissonClient;
 
-    @org.aspectj.lang.annotation.Pointcut("@annotation(com.xd11cc.single.config.annotation.Lock)")
+    @org.aspectj.lang.annotation.Pointcut("@annotation(com.xd11cc.single.config.annotation.RedisLock)")
     public void pointCut() {}
 
     @Around("pointCut()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
-        Lock lock = method.getAnnotation(Lock.class);
-        if (lock == null) {
+        RedisLock redisLock = method.getAnnotation(RedisLock.class);
+        if (redisLock == null) {
             return joinPoint.proceed();
         }
 
-        validateLockParams(lock);
+        validateLockParams(redisLock);
 
         // 构建锁 key
-        String lockKey = buildLockKey(method, lock, joinPoint);
+        String lockKey = buildLockKey(method, redisLock, joinPoint);
         RLock rLock = redissonClient.getLock(lockKey);
 
         try {
             boolean acquired;
-            long waitTime = lock.waitTime();
-            long leaseTime = lock.leaseTime();
-            TimeUnit unit = lock.unit();
+            long waitTime = redisLock.waitTime();
+            long leaseTime = redisLock.leaseTime();
+            TimeUnit unit = redisLock.unit();
 
             if (waitTime > 0 && leaseTime > 0) {
                 // 等待时间 + 自动释放时间都设置
@@ -106,14 +106,14 @@ public class LockAspect {
      * 格式：redlock:{prefix}:{className.methodName}:{keyValue}
      * key 解析优先级：SpEL 表达式 > 全部参数拼接
      */
-    private String buildLockKey(Method method, Lock lock, ProceedingJoinPoint joinPoint) {
+    private String buildLockKey(Method method, RedisLock redisLock, ProceedingJoinPoint joinPoint) {
         StringBuilder sb = new StringBuilder(CacheConstants.REDLOCK_KEY_PREFIX)
-                .append(lock.prefix()).append(":");
+                .append(redisLock.prefix()).append(":");
 
         sb.append(method.getDeclaringClass().getSimpleName()).append(".")
                 .append(method.getName()).append(":");
 
-        if (lock.key().isEmpty()) {
+        if (redisLock.key().isEmpty()) {
             // 未设置 SpEL：拼接所有入参
             Object[] args = joinPoint.getArgs();
             for (Object arg : args) {
@@ -121,7 +121,7 @@ public class LockAspect {
             }
         } else {
             // 使用 SpEL 表达式解析指定入参
-            Object keyValue = parseSpEL(method, joinPoint.getArgs(), lock.key());
+            Object keyValue = parseSpEL(method, joinPoint.getArgs(), redisLock.key());
             sb.append(keyValue);
         }
 
@@ -141,8 +141,8 @@ public class LockAspect {
         return PARSER.parseExpression(expression).getValue(context);
     }
 
-    private void validateLockParams(Lock lock) {
-        if (lock.waitTime() < 0 || lock.leaseTime() < 0) {
+    private void validateLockParams(RedisLock redisLock) {
+        if (redisLock.waitTime() < 0 || redisLock.leaseTime() < 0) {
             throw new IllegalArgumentException("分布式锁配置错误：waitTime 和 leaseTime 不能小于 0");
         }
     }

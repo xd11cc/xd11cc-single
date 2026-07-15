@@ -11,7 +11,7 @@ mybatis-plus:
 # CORS跨域配置（todo 生产环境限制具体域名）
 cors:
   allowed-origins:
-    - "*"
+    - "https://xd11ccc.cloud"
 
 # druid数据源配置
 spring:

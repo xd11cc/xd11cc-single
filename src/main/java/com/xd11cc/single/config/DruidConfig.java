@@ -1,6 +1,5 @@
 package com.xd11cc.single.config;
 
-import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +7,7 @@ import com.alibaba.druid.spring.boot.autoconfigure.properties.DruidStatPropertie
 import com.alibaba.druid.util.Utils;
 import com.xd11cc.single.config.properties.DruidProperties;
 import com.xd11cc.single.enums.DataSourceEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -62,26 +62,16 @@ public class DruidConfig {
      */
     @Bean
     @Primary
-    public DynamicDataSource dynamicDataSource(@Qualifier("masterDataSource") DataSource masterDataSource) {
+    public DynamicDataSource dynamicDataSource(@Qualifier("masterDataSource") DataSource masterDataSource,
+                                               @Autowired(required = false) @Qualifier("slaveDataSource") DataSource slaveDataSource) {
         Map<Object, Object> targetDataSources = new HashMap<>();
         targetDataSources.put(DataSourceEnum.MASTER.name(), masterDataSource);
-        setDataSource(targetDataSources, DataSourceEnum.SLAVE.name(), "slaveDataSource");
-        return new DynamicDataSource(masterDataSource, targetDataSources);
-    }
-
-    /**
-     * 设置从库
-     * @param targetDataSources
-     * @param sourceType
-     * @param beanName
-     */
-    private void setDataSource(Map<Object, Object> targetDataSources, String sourceType, String beanName) {
-        try {
-            DataSource dataSource = SpringUtil.getBean(beanName);
-            targetDataSources.put(sourceType, dataSource);
-        } catch (Exception e) {
-            log.error("动态数据源[{}]初始化失败: {}", sourceType, e.getMessage(), e);
+        if (slaveDataSource != null) {
+            targetDataSources.put(DataSourceEnum.SLAVE.name(), slaveDataSource);
+        } else {
+            log.warn("从库数据源未配置或已禁用，仅使用主库数据源");
         }
+        return new DynamicDataSource(masterDataSource, targetDataSources);
     }
 
     /**

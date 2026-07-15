@@ -1,6 +1,6 @@
 package com.xd11cc.single.config.aspectj;
 
-import com.xd11cc.single.config.annotation.RateLimit;
+import com.xd11cc.single.config.annotation.RequestLimit;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.config.exception.RateLimitException;
 import com.xd11cc.single.utils.IpUtils;
@@ -24,59 +24,59 @@ import java.util.concurrent.TimeUnit;
 @Aspect
 @Component
 @Slf4j
-public class RateLimitAspect {
+public class RequestLimitAspect {
 
     @Autowired
     private RedissonClient redissonClient;
 
-    @Pointcut("@annotation(com.xd11cc.single.config.annotation.RateLimit)")
+    @Pointcut("@annotation(com.xd11cc.single.config.annotation.RequestLimit)")
     public void pointCut() {}
 
     @Around("pointCut()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
-        RateLimit rateLimit = method.getAnnotation(RateLimit.class);
-        if (rateLimit == null) {
+        RequestLimit requestLimit = method.getAnnotation(RequestLimit.class);
+        if (requestLimit == null) {
             return joinPoint.proceed();
         }
 
-        validateRateLimitParams(rateLimit);
+        validateRateLimitParams(requestLimit);
 
-        String rateLimitKey = buildRateLimitKey(method, rateLimit);
+        String rateLimitKey = buildRateLimitKey(method, requestLimit);
 
-        RRateLimiter rateLimiter = getOrCreateLimiter(rateLimitKey, rateLimit);
+        RRateLimiter rateLimiter = getOrCreateLimiter(rateLimitKey, requestLimit);
 
         if (rateLimiter.tryAcquire(1)) {
             log.debug("限流放行 -> key:{}，接口:{}.{}", rateLimitKey, method.getDeclaringClass().getName(), method.getName());
             return joinPoint.proceed();
         } else {
             log.info("触发限流 -> key:{}, 限流规则:{}次/{}秒, 接口:{}.{}",
-                    rateLimitKey, rateLimit.count(), rateLimit.time(),
+                    rateLimitKey, requestLimit.count(), requestLimit.time(),
                     method.getDeclaringClass().getName(), method.getName());
-            throw new RateLimitException(rateLimit.message());
+            throw new RateLimitException(requestLimit.message());
         }
     }
 
-    private RRateLimiter getOrCreateLimiter(String key, RateLimit rateLimit) {
+    private RRateLimiter getOrCreateLimiter(String key, RequestLimit requestLimit) {
         RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
         if (rateLimiter.trySetRate(
                 RateType.OVERALL,
-                rateLimit.count(),
-                rateLimit.time(),
-                converToRateIntervalUnit(rateLimit.timeUnit())
+                requestLimit.count(),
+                requestLimit.time(),
+                converToRateIntervalUnit(requestLimit.timeUnit())
         )) {
             // 首次创建时设置过期时间，防止动态 key 残留
-            rateLimiter.expire(java.time.Duration.ofSeconds(rateLimit.time() * 2L));
+            rateLimiter.expire(java.time.Duration.ofSeconds(requestLimit.time() * 2L));
             log.debug("Rate limiter initialized: {}", key);
         }
         return rateLimiter;
     }
 
-    private String buildRateLimitKey(Method method, RateLimit rateLimit) {
-        StringBuilder sb = new StringBuilder(CacheConstants.RATE_LIMIT_KEY);
-        sb.append(rateLimit.key());
-        switch (rateLimit.type()) {
+    private String buildRateLimitKey(Method method, RequestLimit requestLimit) {
+        StringBuilder sb = new StringBuilder(CacheConstants.REQUEST_LIMIT_KEY);
+        sb.append(requestLimit.key());
+        switch (requestLimit.type()) {
             case IP:
                 sb.append("ip:").append(IpUtils.getIpAddr());
                 break;
@@ -103,11 +103,11 @@ public class RateLimitAspect {
         }
     }
 
-    private void validateRateLimitParams(RateLimit rateLimit) {
-        if (rateLimit.count() <= 0) {
+    private void validateRateLimitParams(RequestLimit requestLimit) {
+        if (requestLimit.count() <= 0) {
             throw new IllegalArgumentException("限流配置错误：count必须大于0");
         }
-        if (rateLimit.time() <= 0) {
+        if (requestLimit.time() <= 0) {
             throw new IllegalArgumentException("限流配置错误：time必须大于0");
         }
     }

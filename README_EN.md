@@ -17,7 +17,7 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 | **Pagination** | PageHelper | 1.4.6 | ThreadLocal-based pagination interceptor |
 | **Database** | MySQL | 8.0.33 | utf8mb4 + utf8mb4_0900_ai_ci |
 | **Connection Pool** | Druid | 1.2.24 | SQL monitoring + slow query detection + dynamic multi-datasource |
-| **Cache** | Redis + Redisson | 6.0+ / 3.36.0 | Distributed lock, rate limiting, session storage |
+| **Cache** | Redis + Redisson | 6.0+ / 3.36.0 | Distributed redisLock, rate limiting, session storage |
 | **Message Queue** | RabbitMQ | 2.7.x | Async decoupling, event notifications |
 | **Real-time** | Netty WebSocket | 4.1.x | Independent port, long-connection push |
 | **Task Scheduling** | XXL-JOB + Quartz | 2.4.0 / 2.7.x | Distributed cron tasks + local scheduling |
@@ -52,7 +52,7 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 - **Message Queue** — RabbitMQ with producer Confirm + Return callbacks to prevent message loss, manual consumer ACK for reliable consumption
 - **Distributed Scheduling** — XXL-JOB with shard broadcasting, failover, and retry capabilities
 - **Local Scheduling** — Quartz integration supporting memory mode + JDBC persistence dual modes, `AbstractQuartzJob` base class encapsulating execution context (tenant ID, execution params), supports `@DisallowConcurrentExecution` for concurrency control
-- **Distributed Lock** — `@Lock` annotation-driven, based on Redisson RLock, supports SpEL-based dynamic lock key granularity (ALL/KEY modes), configurable wait timeout, retry count, and auto-release time
+- **Distributed Lock** — `@Lock` annotation-driven, based on Redisson RLock, supports SpEL-based dynamic redisLock key granularity (ALL/KEY modes), configurable wait timeout, retry count, and auto-release time
 - **Payment Integration** — Unified `PayClient` interface abstracting multi-channel payment (Alipay PC/WAP/QR/App/Barcode + WeChat JSAPI/Native/WAP/App/Barcode), `@PayClientCode` annotation + factory pattern for auto-registration, supports unified order, refund, and callback parsing
 - **Object Storage** — MinIO file upload/download with pre-signed URL direct uploads to reduce backend bandwidth
 - **PDF Conversion** — Spire.PDF integration for PDF to Word and other document format conversions
@@ -84,7 +84,7 @@ src/main/java/com/xd11cc/single/
 │   ├── annotation/               # Custom annotations
 │   │   ├── DataScope.java        #   Data permission control
 │   │   ├── DataSource.java       #   Dynamic datasource switching
-│   │   ├── Lock.java             #   Distributed lock
+│   │   ├── Lock.java             #   Distributed redisLock
 │   │   ├── OperateLog.java       #   Operation log recording
 │   │   ├── PayClientCode.java    #   Payment channel marker
 │   │   ├── PayClientScan.java    #   Payment client scan registration
@@ -287,10 +287,10 @@ public void processPayment(String orderId) { ... }
 
 **Implementation**:
 - `@Lock` annotation + `LockAspect` AOP aspect
-- Redisson `RLock` reentrant lock implementation
+- Redisson `RLock` reentrant redisLock implementation
 - Supports two granularity modes: `ALL` (global mutual exclusion) / `KEY` (sharded by SpEL expression)
-- Configurable parameters: `waitTime` (lock acquisition timeout), `leaseTime` (auto-release time), `retryTimes` (retry count)
-- Lock key format: `lock:{prefix}:{lockMode}:{resolvedKey}`
+- Configurable parameters: `waitTime` (redisLock acquisition timeout), `leaseTime` (auto-release time), `retryTimes` (retry count)
+- Lock key format: `redisLock:{prefix}:{lockMode}:{resolvedKey}`
 
 ### Payment Client Architecture
 
@@ -394,7 +394,7 @@ public ResponseVO<PageResult<SystemUserVO>> page(...) { ... }
 - [x] Multi-tenant data isolation
 - [x] Notification module
 - [x] Quartz scheduled tasks (memory + JDBC persistence)
-- [x] Distributed lock (@Lock annotation)
+- [x] Distributed redisLock (@Lock annotation)
 - [x] Payment infrastructure (multi-channel client abstraction layer, business APIs in progress)
 - [ ] Payment business APIs (order creation / callback handling / refund flow)
 - [ ] Enhanced audit logs (field-level change tracking)

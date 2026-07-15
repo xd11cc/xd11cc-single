@@ -1,6 +1,6 @@
 package com.xd11cc.single.config.annotation;
 
-import com.xd11cc.single.enums.RateLimitEnum;
+import com.xd11cc.single.enums.RequestLimitEnum;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  **/
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RateLimit {
+public @interface RequestLimit {
 
     /**
      * 限流前缀
@@ -45,7 +45,7 @@ public @interface RateLimit {
      * 注意：USER 类型不能用于未登录的接口
      * @return
      */
-    RateLimitEnum type() default RateLimitEnum.DEFAULT;
+    RequestLimitEnum type() default RequestLimitEnum.DEFAULT;
 
     /**
      * 限流提示信息

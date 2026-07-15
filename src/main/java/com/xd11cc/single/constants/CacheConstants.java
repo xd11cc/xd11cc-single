@@ -31,7 +31,7 @@ public class CacheConstants {
     /**
      * 接口限流key
      */
-    public static final String RATE_LIMIT_KEY = "rate_limit:";
+    public static final String REQUEST_LIMIT_KEY = "request_limit:";
 
     /**
      * 租户域名key

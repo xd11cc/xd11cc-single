@@ -1,6 +1,7 @@
 package com.xd11cc.single.controller;
 
 import com.xd11cc.single.config.RedisCache;
+import com.xd11cc.single.config.context.TenantContextHolder;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
@@ -40,6 +41,9 @@ public class OnlineUserController {
                 continue;
             }
             if (StringUtils.isNotEmpty(username) && !loginUser.getUsername().contains(username)) {
+                continue;
+            }
+            if (!loginUser.getSystemUserDO().getTenantId().equals(TenantContextHolder.getTenantId())) {
                 continue;
             }
             OnlineUserVO vo = new OnlineUserVO();

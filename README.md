@@ -290,7 +290,7 @@ public void processPayment(String orderId) { ... }
 - Redisson `RLock` 可重入锁实现
 - 支持 `ALL`（全局互斥）/ `KEY`（按 SpEL 表达式分锁）两种粒度
 - 可配置参数：`waitTime`（获取等待超时）、`leaseTime`（自动释放时间）、`retryTimes`（重试次数）
-- Lock Key 格式：`lock:{prefix}:{lockMode}:{resolvedKey}`
+- Lock Key 格式：`redisLock:{prefix}:{lockMode}:{resolvedKey}`
 
 ### 支付客户端架构
 

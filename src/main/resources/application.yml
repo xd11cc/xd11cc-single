@@ -54,7 +54,7 @@ netty:
 # swagger配置
 swagger:
   title: 后端API
-  description: 单体项目框架搭建
+  description: xd11cc单体架构后端API
   version: v1.0.0
 
 # security白名单配置
