@@ -72,11 +72,12 @@ public class TokenServiceImpl implements TokenService {
             try {
                 Claims claims = jwtUtils.parseToken(token);
                 String uuidToken = (String) claims.get(SecurityConstants.LOGIN_USER_KEY);
-                Long tenantId = (Long) claims.get(SecurityConstants.TENANT_ID);
-                if (tenantId == null) {
-                    log.error("Token 缺少租户信息");
+                Object tenantIdClaim = claims.get(SecurityConstants.TENANT_ID);
+                if (!(tenantIdClaim instanceof Number)) {
+                    log.error("Token 租户信息无效");
                     throw new ServiceException(SystemErrorEnum.UNAUTHORIZED);
                 }
+                Long tenantId = ((Number) tenantIdClaim).longValue();
                 return TenantUtils.execute(tenantId, ()->{
                     return redisCache.getCacheObject(getLoginTokenKey(uuidToken));
                 });
