@@ -21,4 +21,10 @@ import java.util.List;
 public class SecurityProperties {
 
     private List<String> permitAllUrls = Collections.emptyList();
+
+    /**
+     * JWT 签名密钥，必须通过环境变量或启动参数显式注入，禁止硬编码默认值。
+     * 建议长度 &gt;= 32 字节（HS256 安全基线）。
+     */
+    private String tokenSecret;
 }

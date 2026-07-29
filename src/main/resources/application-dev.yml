@@ -56,7 +56,7 @@ spring:
           merge-sql: true
         wall:
           config:
-            multi-statement-allow: true
+            multi-statement-allow: false
 
   # redis配置
   redis:
@@ -114,7 +114,7 @@ xxl:
   job:
     executor:
       app-name: ${spring.application.name}
-      log-path: src/xxl-job-log
+      log-path: ${XXL_JOB_LOG_PATH:./logs/xxl-job}
       log-retention-days: 30
     admin:
       addresses: https://xd11cc.xyz/xxl-job-admin

@@ -16,6 +16,7 @@ import org.redisson.api.RateIntervalUnit;
 import org.redisson.api.RateType;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 @Aspect
 @Component
 @Slf4j
+@Order(5)
 public class RequestLimitAspect {
 
     @Autowired

@@ -6,6 +6,7 @@ import com.xd11cc.single.config.RedisCache;
 import com.xd11cc.single.config.annotation.RedisLock;
 import com.xd11cc.single.config.exception.ServiceException;
 import com.xd11cc.single.constants.CacheConstants;
+import com.xd11cc.single.config.context.TenantContextHolder;
 import com.xd11cc.single.convert.SystemTenantConvert;
 import com.xd11cc.single.entity.domain.SystemTenantDO;
 import com.xd11cc.single.entity.dto.TenantDTO;
@@ -106,7 +107,7 @@ public class SystemTenantServiceImpl extends ServiceImpl<SystemTenantMapper, Sys
         List<SystemTenantDO> tenantList = baseMapper.selectList(wrapper);
 
         // 重建 Redis Hash
-        redisCache.removeCacheObject(CacheConstants.TENANT_DOMAIN_KEY, false);
+        TenantContextHolder.runWithoutTenantAwareness(() -> redisCache.removeCacheObject(CacheConstants.TENANT_DOMAIN_KEY));
         Map<String, TenantDTO> tenantMap = new HashMap<>();
         for (SystemTenantDO tenant : tenantList) {
             TenantDTO dto = new TenantDTO();
@@ -121,7 +122,7 @@ public class SystemTenantServiceImpl extends ServiceImpl<SystemTenantMapper, Sys
             }
         }
         if (!tenantMap.isEmpty()) {
-            redisCache.setCacheMap(CacheConstants.TENANT_DOMAIN_KEY, tenantMap, false);
+            TenantContextHolder.runWithoutTenantAwareness(() -> redisCache.setCacheMap(CacheConstants.TENANT_DOMAIN_KEY, tenantMap));
         }
         log.info("租户缓存刷新完成，共加载 {} 个租户", tenantMap.size());
     }

@@ -16,6 +16,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +31,7 @@ import java.util.concurrent.Executor;
 @Aspect
 @Component
 @Slf4j
+@Order(4)
 public class OperateLogAspect {
 
     @Autowired

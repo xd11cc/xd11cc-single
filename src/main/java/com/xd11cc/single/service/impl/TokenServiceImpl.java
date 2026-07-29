@@ -37,6 +37,8 @@ public class TokenServiceImpl implements TokenService {
 
     @Autowired
     private RedisCache redisCache;
+    @Autowired
+    private JwtUtils jwtUtils;
 
     public static String getLoginTokenKey(String uuidToken) {
         return CacheConstants.LOGIN_TOKEN_KEY + uuidToken;
@@ -52,7 +54,7 @@ public class TokenServiceImpl implements TokenService {
         if (StringUtils.isNotEmpty(token)) {
             token = token.replace(SecurityConstants.TOKEN_PREFIX, "");
             try {
-                Claims claims = JwtUtils.parseToken(token);
+                Claims claims = jwtUtils.parseToken(token);
                 String uuidToken = (String) claims.get(SecurityConstants.LOGIN_USER_KEY);
                 return redisCache.getCacheObject(getLoginTokenKey(uuidToken));
             } catch (Exception e) {
@@ -68,14 +70,14 @@ public class TokenServiceImpl implements TokenService {
         if (StringUtils.isNotEmpty(token)) {
             token = token.replace(SecurityConstants.TOKEN_PREFIX, "");
             try {
-                Claims claims = JwtUtils.parseToken(token);
+                Claims claims = jwtUtils.parseToken(token);
                 String uuidToken = (String) claims.get(SecurityConstants.LOGIN_USER_KEY);
-                Integer tenantId = (Integer) claims.get(SecurityConstants.TENANT_ID);
+                Long tenantId = (Long) claims.get(SecurityConstants.TENANT_ID);
                 if (tenantId == null) {
                     log.error("Token 缺少租户信息");
                     throw new ServiceException(SystemErrorEnum.UNAUTHORIZED);
                 }
-                return TenantUtils.execute(Long.valueOf(tenantId), ()->{
+                return TenantUtils.execute(tenantId, ()->{
                     return redisCache.getCacheObject(getLoginTokenKey(uuidToken));
                 });
             } catch (Exception e) {
@@ -124,7 +126,7 @@ public class TokenServiceImpl implements TokenService {
         claims.put(SecurityConstants.LOGIN_USER_KEY, token);
         claims.put(SecurityConstants.TENANT_ID, loginUserDTO.getSystemUserDO().getTenantId());
         claims.put(Claims.SUBJECT, loginUserDTO.getUsername());
-        return JwtUtils.createToken(claims);
+        return jwtUtils.createToken(claims);
     }
 
     private void setUserAgent(LoginUserDTO loginUserDTO) {

@@ -21,188 +21,112 @@ public class RedisCache {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    // ==================== String ====================
+
     /**
-     * 设置基本类型
-     * @param key
-     * @param value
-     * @param <T>
+     * @param key key
+     * @param value 值
+     * @param <T> 值类型
      */
     public <T> void setCacheObject(String key, final T value) {
-        setCacheObject(key, value, true);
-    }
-
-    public <T> void setCacheObject(String key, final T value, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        redisTemplate.opsForValue().set(key, value);
+        redisTemplate.opsForValue().set(resolveKey(key), value);
     }
 
     /**
-     * 设置基本类型
-     * @param key
-     * @param value
-     * @param timeout
-     * @param unit
-     * @param <T>
+     * @param key key
+     * @param value 值
+     * @param timeout 过期时间
+     * @param unit 时间单位
+     * @param <T> 值类型
      */
     public <T> void setCacheObject(String key, final T value, final long timeout, final TimeUnit unit) {
-        setCacheObject(key, value, timeout, unit, true);
-    }
-
-    public <T> void setCacheObject(String key, final T value, long timeout, TimeUnit unit, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        redisTemplate.opsForValue().set(key, value, timeout, unit);
+        redisTemplate.opsForValue().set(resolveKey(key), value, timeout, unit);
     }
 
     /**
-     * 设置过期时间
-     * @param key
-     * @param timeout
-     * @param unit
-     * @return
+     * @param key key
+     * @param timeout 过期时间
+     * @param unit 时间单位
+     * @return 是否成功
      */
     public boolean expire(String key, final long timeout, final TimeUnit unit) {
-        return expire(key, timeout, unit, true);
-    }
-
-    public boolean expire(String key, final long timeout, final TimeUnit unit, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.expire(key, timeout, unit);
+        return redisTemplate.expire(resolveKey(key), timeout, unit);
     }
 
     /**
-     * 获取过期时间
-     * @param key
-     * @return
+     * @param key key
+     * @return 剩余过期时间（秒）
      */
-    public long getExpire(String key){
-        return getExpire(key, true);
-    }
-
-    public long getExpire(String key, final TimeUnit unit) {
-        return getExpire(key, unit, true);
-    }
-
-    public long getExpire(String key, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.getExpire(key);
-    }
-
-    public long getExpire(String key, TimeUnit unit, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.getExpire(key, unit);
+    public long getExpire(String key) {
+        return redisTemplate.getExpire(resolveKey(key));
     }
 
     /**
-     * 是否存在
-     * @param key
-     * @return
+     * @param key key
+     * @param unit 时间单位
+     * @return 剩余过期时间
+     */
+    public long getExpire(String key, final TimeUnit unit) {
+        return redisTemplate.getExpire(resolveKey(key), unit);
+    }
+
+    /**
+     * @param key key
+     * @return 是否存在
      */
     public boolean hasKey(String key) {
-        return hasKey(key, true);
-    }
-
-    public boolean hasKey(String key, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.hasKey(key);
+        return redisTemplate.hasKey(resolveKey(key));
     }
 
     /**
-     * 根据key获取设置的对象
-     * @param key
-     * @return
-     * @param <T>
+     * @param key key
+     * @param <T> 值类型
+     * @return 值
      */
     public <T> T getCacheObject(String key) {
-        return getCacheObject(key, true);
-    }
-
-    public <T> T getCacheObject(String key, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
         ValueOperations<String, T> valueOperations = redisTemplate.opsForValue();
-        return valueOperations.get(key);
+        return valueOperations.get(resolveKey(key));
     }
 
     /**
-     * 移除设置的key
-     * @param key
+     * @param key key
      */
     public void removeCacheObject(String key) {
-        removeCacheObject(key, true);
+        redisTemplate.delete(resolveKey(key));
     }
 
-    public void removeCacheObject(String key, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        redisTemplate.delete(key);
-    }
+    // ==================== List ====================
 
     /**
-     * 设置集合
-     * @param key
-     * @param dataList
-     * @return
-     * @param <T>
+     * @param key key
+     * @param dataList 数据列表
+     * @param <T> 值类型
+     * @return 列表长度
      */
     public <T> long setCacheList(String key, final List<T> dataList) {
-        return setCacheList(key, dataList, true);
-    }
-
-    public <T> long setCacheList(String key, final List<T> dataList, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        Long count = redisTemplate.opsForList().rightPushAll(key, dataList);
+        Long count = redisTemplate.opsForList().rightPushAll(resolveKey(key), dataList);
         return null != count ? count : 0;
     }
 
     /**
-     * 获取集合
-     * @param key
-     * @return
-     * @param <T>
+     * @param key key
+     * @param <T> 值类型
+     * @return 列表数据
      */
     public <T> List<T> getCacheList(String key) {
-        return getCacheList(key, true);
+        return redisTemplate.opsForList().range(resolveKey(key), 0, -1);
     }
 
-    public <T> List<T> getCacheList(String key, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.opsForList().range(key, 0, -1);
-    }
+    // ==================== Set ====================
 
     /**
-     * 设置set集合
-     * @param key
-     * @param dataSet
-     * @return
-     * @param <T>
+     * @param key key
+     * @param dataSet 数据集
+     * @param <T> 值类型
+     * @return BoundSetOperations
      */
     public <T> BoundSetOperations<String, T> setCacheSet(String key, final Set<T> dataSet) {
-        return setCacheSet(key, dataSet, true);
-    }
-
-    public <T> BoundSetOperations<String, T> setCacheSet(String key, final Set<T> dataSet, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        BoundSetOperations<String, T> boundSetOperations = redisTemplate.boundSetOps(key);
+        BoundSetOperations<String, T> boundSetOperations = redisTemplate.boundSetOps(resolveKey(key));
         Iterator<T> iterator = dataSet.iterator();
         while (iterator.hasNext()) {
             boundSetOperations.add(iterator.next());
@@ -211,234 +135,167 @@ public class RedisCache {
     }
 
     /**
-     * 获取set集合
-     * @param key
-     * @return
-     * @param <T>
+     * @param key key
+     * @param <T> 值类型
+     * @return 集合数据
      */
     public <T> Set<T> getCacheSet(String key) {
-        return getCacheSet(key, true);
+        return redisTemplate.opsForSet().members(resolveKey(key));
     }
 
-    public <T> Set<T> getCacheSet(String key, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.opsForSet().members(key);
-    }
+    // ==================== Hash ====================
 
     /**
-     * 设置map集合
-     * @param key
-     * @param dataMap
-     * @param <T>
+     * @param key key
+     * @param dataMap 数据Map
+     * @param <T> 值类型
      */
     public <T> void setCacheMap(String key, final Map<String, T> dataMap) {
-        setCacheMap(key, dataMap, true);
-    }
-
-    public <T> void setCacheMap(String key, final Map<String, T> dataMap, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
         if (null != dataMap && !dataMap.isEmpty()) {
-            redisTemplate.opsForHash().putAll(key, dataMap);
+            redisTemplate.opsForHash().putAll(resolveKey(key), dataMap);
         }
     }
 
     /**
-     * 获取map集合
-     * @param key
-     * @return
-     * @param <T>
+     * @param key key
+     * @param <T> 值类型
+     * @return Map数据
      */
     public <T> Map<String, T> getCacheMap(String key) {
-        return getCacheMap(key, true);
-    }
-
-    public <T> Map<String, T> getCacheMap(String key, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.opsForHash().entries(key);
+        return redisTemplate.opsForHash().entries(resolveKey(key));
     }
 
     /**
-     * 设置map集合中key的值
-     * @param key
-     * @param hKey
-     * @param value
-     * @param <T>
+     * @param key key
+     * @param hKey hashKey
+     * @param value 值
+     * @param <T> 值类型
      */
-    public <T> void setCacheMapValue(String key, final String hKey,  final T value) {
-        redisTemplate.opsForHash().put(key, hKey, value);
-    }
-
-    public <T> void setCacheMapValue(String key, final String hKey,  final T value, boolean isTenant){
-        if (isTenant){
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        redisTemplate.opsForHash().put(key, hKey, value);
+    public <T> void setCacheMapValue(String key, final String hKey, final T value) {
+        redisTemplate.opsForHash().put(resolveKey(key), hKey, value);
     }
 
     /**
-     * 获取map中key的值
-     * @param key
-     * @param hKey
-     * @return
-     * @param <T>
+     * @param key key
+     * @param hKey hashKey
+     * @param <T> 值类型
+     * @return hashKey对应的值
      */
     public <T> T getCacheMapValue(String key, final String hKey) {
-        return getCacheMapValue(key, hKey, true);
-    }
-
-    public <T> T getCacheMapValue(String key, final String hKey, boolean isTenant) {
-        if (isTenant){
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
         HashOperations<String, String, T> hashOperations = redisTemplate.opsForHash();
-        return hashOperations.get(key, hKey);
+        return hashOperations.get(resolveKey(key), hKey);
     }
 
     /**
-     * 获取map中keys的值
-     * @param key
-     * @param hKeys
-     * @return
-     * @param <T>
+     * @param key key
+     * @param hKeys hashKey列表
+     * @param <T> 值类型
+     * @return 值列表
      */
     public <T> List<T> getMultiCacheMapValue(String key, final Collection<String> hKeys) {
-        return getMultiCacheMapValue(key, hKeys, true);
-    }
-
-    public <T> List<T> getMultiCacheMapValue(String key, Collection<String> hKeys, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.opsForHash().multiGet(key, hKeys);
+        return redisTemplate.opsForHash().multiGet(resolveKey(key), hKeys);
     }
 
     /**
-     * 移除map中key的值
-     * @param key
-     * @param hKey
-     * @return
+     * @param key key
+     * @param hKey hashKey
+     * @return 是否删除成功
      */
     public boolean removeCacheMapValue(String key, final String hKey) {
-        return removeCacheMapValue(key, hKey, true);
+        return redisTemplate.opsForHash().delete(resolveKey(key), hKey) > 0;
     }
 
-    public boolean removeCacheMapValue(String key, final String hKey, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.opsForHash().delete(key, hKey) > 0;
-    }
+    // ==================== ZSet ====================
 
     /**
-     * 设置zSet集合
-     * @param key
-     * @param value
-     * @param score
-     * @return
-     * @param <T>
+     * @param key key
+     * @param value 值
+     * @param score 分数
+     * @param <T> 值类型
+     * @return 是否添加成功
      */
     public <T> Boolean zSetAdd(String key, final T value, double score) {
-        return zSetAdd(key, value, score, true);
-    }
-
-    public <T> Boolean zSetAdd(String key, final T value, double score, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.opsForZSet().add(key, value, score);
+        return redisTemplate.opsForZSet().add(resolveKey(key), value, score);
     }
 
     /**
-     * 移除zSet集合
-     * @param key
-     * @param value
-     * @return
-     * @param <T>
+     * @param key key
+     * @param value 值
+     * @param <T> 值类型
+     * @return 删除数量
      */
     public <T> Long zSetRemove(String key, final T value) {
-        return zSetRemove(key, value, true);
-    }
-
-    public <T> Long zSetRemove(String key, final T value, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.opsForZSet().remove(key, value);
+        return redisTemplate.opsForZSet().remove(resolveKey(key), value);
     }
 
     /**
-     * 获取score范围之内的zSet数据
-     * @param key
-     * @param min
-     * @param max
-     * @param offset
-     * @param count
-     * @return
-     * @param <V>
+     * @param key key
+     * @param min 最小分数
+     * @param max 最大分数
+     * @param offset 偏移量
+     * @param count 数量
+     * @param <V> 值类型
+     * @return 分数范围内的值
      */
     public <V> Set<V> zSetRangeByScore(String key, final double min, final double max, final long offset, final long count) {
-        return zSetRangeByScore(key, min, max, offset, count, true);
-    }
-
-    public <V> Set<V> zSetRangeByScore(String key, final double min, final double max, final long offset, final long count, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.opsForZSet().rangeByScore(key, min, max, offset, count);
+        return redisTemplate.opsForZSet().rangeByScore(resolveKey(key), min, max, offset, count);
     }
 
     /**
-     * 同上排序方向相反（降序排列）
-     * @param key
-     * @param min
-     * @param max
-     * @param offset
-     * @param count
-     * @return
-     * @param <V>
+     * @param key key
+     * @param min 最小分数
+     * @param max 最大分数
+     * @param offset 偏移量
+     * @param count 数量
+     * @param <V> 值类型
+     * @return 分数范围内的值（降序）
      */
     public <V> Set<V> zSetReverseRangeByScore(String key, final double min, final double max, final long offset, final long count) {
-        return zSetReverseRangeByScore(key, min, max, offset, count, true);
+        return redisTemplate.opsForZSet().reverseRangeByScore(resolveKey(key), min, max, offset, count);
     }
 
-    public <V> Set<V> zSetReverseRangeByScore(String key, final double min, final double max, final long offset, final long count, boolean isTenant) {
-        if (isTenant) {
-            key = key + ":" + TenantContextHolder.getTenantId();
-        }
-        return redisTemplate.opsForZSet().reverseRangeByScore(key, min, max, offset, count);
-    }
+    // ==================== Utilities ====================
 
-    /**
-     * 获取redisTemplate对象
-     * @return
-     */
     public RedisTemplate getRedisTemplate() {
         return redisTemplate;
     }
 
     /**
-     * 获取匹配的key集合
      * @param prefix key前缀
-     * @return
+     * @return 匹配的key集合
      */
     public Set<String> keys(String prefix) {
-        return keys(prefix, true);
-    }
-
-    public Set<String> keys(String prefix, boolean isTenant) {
-        String pattern;
-        if (isTenant) {
-            pattern = prefix + "*:" + TenantContextHolder.getTenantId();
-        } else {
-            pattern = prefix + "*";
+        String pattern = prefix + "*";
+        if (TenantContextHolder.isTenantAware()) {
+            Long tenantId = TenantContextHolder.getTenantId();
+            if (tenantId != null) {
+                pattern = prefix + "*:" + tenantId;
+            }
         }
         return redisTemplate.keys(pattern);
     }
 
+    // ==================== Key Resolution ====================
+
+    private String resolveKey(String key) {
+        if (TenantContextHolder.isTenantAware()) {
+            Long tenantId = TenantContextHolder.getTenantId();
+            if (tenantId != null) {
+                return key + ":" + tenantId;
+            }
+        }
+        return key;
+    }
+
+    /**
+     * @param key key
+     * @param explicitTenantId 显式指定的租户 ID（非空时优先于当前线程租户）
+     * @return 拼接租户 ID 后的 key
+     */
+    private String resolveKey(String key, Long explicitTenantId) {
+        if (explicitTenantId != null) {
+            return key + ":" + explicitTenantId;
+        }
+        return resolveKey(key);
+    }
 }

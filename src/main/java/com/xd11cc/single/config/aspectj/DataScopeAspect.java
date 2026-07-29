@@ -8,12 +8,12 @@ import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.DataScopeEnum;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.utils.SecurityUtils;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
  * @date 2026-05-28
  * @description todo 初步实现数据隔离，具体情况需结合业务
  */
-@Slf4j
 @Aspect
 @Component
+@Order(2)
 public class DataScopeAspect {
 
     @Before("@annotation(com.xd11cc.single.config.annotation.DataScope)")
@@ -50,10 +50,10 @@ public class DataScopeAspect {
 
         BaseQueryVO queryVO = findQueryVO(joinPoint.getArgs());
         if (queryVO == null) {
-            log.warn("@DataScope 注解方法缺少 BaseQueryVO 参数，数据权限过滤未生效: {}.{}",
+            throw new ServiceException(500, String.format(
+                    "@DataScope 注解方法必须携带 BaseQueryVO 参数，数据权限过滤方可生效。违规方法: %s.%s",
                     joinPoint.getSignature().getDeclaringTypeName(),
-                    joinPoint.getSignature().getName());
-            return;
+                    joinPoint.getSignature().getName()));
         }
 
         String sqlFilter = buildSqlFilter(loginUser, dataScope);

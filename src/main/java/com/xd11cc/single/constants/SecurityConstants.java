@@ -5,12 +5,6 @@ package com.xd11cc.single.constants;
  * @Date: 2025/6/16 15:51
  **/
 public class SecurityConstants {
-
-    /**
-     * 生成token密钥
-     */
-    public static final String TOKEN_SECRET = "SKCW2dMYWJS3M8upfECJGBXdmXjA7Qet";
-
     /**
      * token前缀
      */

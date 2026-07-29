@@ -1,6 +1,5 @@
 package com.xd11cc.single.entity.domain;
 
-import com.xd11cc.single.entity.base.BaseTenantDO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
@@ -61,8 +60,8 @@ public class AuthSocialUserDO implements Serializable {
     @ApiModelProperty(value = "备注", required = false)
     private String remark;
 
-    @ApiModelProperty(value = "租户id", required = true)
-    private Integer tenantId;
+    @ApiModelProperty(value = "多租户id", required = true)
+    private Long tenantId;
 
     @ApiModelProperty(value = "绑定时间", required = true)
     private Date bindTime;

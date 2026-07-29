@@ -38,7 +38,7 @@ public class OnlineUserController {
         }
         List<OnlineUserVO> list = new ArrayList<>();
         for (String key : keys) {
-            LoginUserDTO loginUser = redisCache.getCacheObject(key, false);
+            LoginUserDTO loginUser = TenantContextHolder.runWithoutTenantAwareness(() -> redisCache.getCacheObject(key));
             if (loginUser == null) {
                 continue;
             }

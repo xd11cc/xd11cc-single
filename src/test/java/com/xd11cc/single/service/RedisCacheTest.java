@@ -2,6 +2,7 @@ package com.xd11cc.single.service;
 
 import cn.hutool.core.date.DateUtil;
 import com.xd11cc.single.config.RedisCache;
+import com.xd11cc.single.config.context.TenantContextHolder;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.entity.dto.TenantDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +56,8 @@ public class RedisCacheTest {
         map.put("localhost", tenantDTO);
         map.put("127.0.0.1", tenantDTO);
         map.forEach((k,v)->{
-            redisCache.setCacheMapValue(CacheConstants.TENANT_DOMAIN_KEY, k, v, false);
+            TenantContextHolder.runWithoutTenantAwareness(() ->
+                    redisCache.setCacheMapValue(CacheConstants.TENANT_DOMAIN_KEY, k, v));
         });
     }
 }

@@ -22,7 +22,7 @@ spring:
       master:
         url: jdbc:mysql://xd11cc-mysql:3306/xd11cc_single?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
         username: root
-        password: xd11cc@1216
+        password: ${MYSQL_PASSWORD:}
       slave:
         enable: false
         url:
@@ -79,7 +79,7 @@ spring:
     port: 6379
     database: 0
     #    password:
-    password: xd11cc@1216
+    password: ${REDIS_PASSWORD:}
     # 连接超时时间
     connect-timeout: 10s
     lettuce:
@@ -108,7 +108,7 @@ xxl:
 minio:
   endpoint: http://xd11cc-minio:9000
   accessKey: admin
-  secretKey: xd11cc@1216
+  secretKey: ${MINIO_SECRET_KEY:}
   bucketName: xd11cc-bucket
   connectTimeout: 30000
   writeTimeout: 3600000

@@ -8,6 +8,7 @@ import com.xd11cc.single.entity.vo.*;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.service.LoginService;
+import com.xd11cc.single.service.SocialLoginService;
 import com.xd11cc.single.utils.SecurityUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -37,6 +38,8 @@ public class LoginController {
 
     @Autowired
     private LoginService loginService;
+    @Autowired
+    private SocialLoginService socialLoginService;
     @Autowired
     private ISystemMenuService systemMenuService;
     @Autowired
@@ -75,7 +78,7 @@ public class LoginController {
     @ApiOperation("社交授权认证")
     public ResponseVO<String> render(HttpServletRequest request, HttpServletResponse response,
                        @PathVariable("source") String source) throws IOException {
-        return ResponseVO.success(loginService.getRedirectUri(source));
+        return ResponseVO.success(socialLoginService.getRedirectUri(source));
     }
 
 
@@ -90,7 +93,7 @@ public class LoginController {
                                           @RequestParam("code") String code,
                                           @RequestParam("state") String state,
                                           HttpServletResponse response) {
-        loginService.callback(source, code, state, response);
+        socialLoginService.callback(source, code, state, response);
     }
 
     @PostMapping("/social-user/info/{state}")
@@ -102,6 +105,6 @@ public class LoginController {
     @PostMapping("/social-user/bind")
     @ApiOperation("社交绑定")
     public ResponseVO<String> socialUserBind(@Valid @RequestBody SocialUserBindVO socialUserBindVO){
-        return ResponseVO.success(loginService.socialUserBind(socialUserBindVO));
+        return ResponseVO.success(socialLoginService.socialUserBind(socialUserBindVO));
     }
 }
