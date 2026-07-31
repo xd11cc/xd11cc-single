@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -41,7 +42,7 @@ public class RedisLockAspect {
     @Autowired
     private RedissonClient redissonClient;
 
-    @org.aspectj.lang.annotation.Pointcut("@annotation(com.xd11cc.single.config.annotation.RedisLock)")
+    @Pointcut("@annotation(com.xd11cc.single.config.annotation.RedisLock)")
     public void pointCut() {}
 
     @Around("pointCut()")
