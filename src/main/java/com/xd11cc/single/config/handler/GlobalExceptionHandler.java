@@ -11,6 +11,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.slf4j.helpers.MessageFormatter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
@@ -95,7 +96,13 @@ public class GlobalExceptionHandler {
     public ResponseVO<?> handleServiceException(ServiceException e){
         log.error(e.getMessage(), e);
         ErrorCode errorCode = e.getErrorCode();
-        return null != errorCode ? ResponseVO.fail(errorCode) : ResponseVO.fail(e.getMessage());
+        if (errorCode == null) {
+            return ResponseVO.fail(e.getMessage());
+        }
+        String errorMsg = e.getArgs() == null
+                ? errorCode.getErrorMsg()
+                : MessageFormatter.arrayFormat(errorCode.getErrorMsg(), e.getArgs()).getMessage();
+        return ResponseVO.fail(errorCode.getErrorCode(), errorMsg);
     }
 
     /**

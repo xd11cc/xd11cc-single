@@ -70,11 +70,14 @@ public enum SystemErrorEnum implements ErrorCode {
     GENERATE_CODE_ERROR(1006002, "代码生成失败"),
 
     // ==================== 007 - 社交登录模块 ====================
-    AUTH_SOURCE_FORBIDDEN(1007001, "{}授权方式以被禁用"),
+    AUTH_SOURCE_FORBIDDEN(1007001, "{}授权方式已被禁用"),
     SOCIAL_USER_BINDEDE(1007002, "该社交账号已绑定其他用户"),
     SOCIAL_USER_NOT_FOUND(1007003, "社交用户信息不存在"),
     SOCIAL_AUTH_NOT_SUPPORT(1007004, "社交登录不支持"),
     AUTH_SOURCE_EXISTS(1007005, "该应用类型已存在"),
+    SOCIAL_AUTH_FAILED(1007006, "第三方授权登录失败：{}"),
+    SOCIAL_AUTH_CONFIG_MISSING(1007007, "社交登录跳转配置缺失：{}"),
+    SOCIAL_AUTH_REDIRECT_FAILED(1007008, "社交登录页面跳转失败"),
 
     // ==================== 008 - 租户模块 ====================
     CHOOSE_RIGHT_DOMAIN(1008001, "请使用正确的域名访问"),

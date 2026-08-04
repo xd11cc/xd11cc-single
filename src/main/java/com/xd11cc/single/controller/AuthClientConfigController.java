@@ -1,5 +1,6 @@
 package com.xd11cc.single.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xd11cc.single.config.annotation.OperateLog;
 import com.xd11cc.single.convert.AuthClientConfigConvert;
 import com.xd11cc.single.entity.base.PageResult;
@@ -10,6 +11,7 @@ import com.xd11cc.single.entity.vo.AuthClientConfigListVO;
 import com.xd11cc.single.entity.vo.AuthClientConfigQueryVO;
 import com.xd11cc.single.entity.vo.AuthClientConfigUpdateVO;
 import com.xd11cc.single.enums.OperateTypeEnum;
+import com.xd11cc.single.enums.SystemStatusEnum;
 import com.xd11cc.single.service.IAuthClientConfigService;
 import com.xd11cc.single.utils.PageUtils;
 import io.swagger.annotations.Api;
@@ -39,7 +41,10 @@ public class AuthClientConfigController {
     @GetMapping("/list")
     @ApiOperation("获取授权配置信息（登录页）")
     public ResponseVO<List<AuthClientConfigListVO>> list() {
-        List<AuthClientConfigListVO> list = authClientConfigService.list().stream()
+        List<AuthClientConfigListVO> list = authClientConfigService
+                .list(new LambdaQueryWrapper<AuthClientConfigDO>()
+                        .eq(AuthClientConfigDO::getStatus, SystemStatusEnum.NORMAL.getCode()))
+                .stream()
                 .map(AuthClientConfigConvert.INSTANCE::do2listVO)
                 .collect(Collectors.toList());
         return ResponseVO.success(list);
