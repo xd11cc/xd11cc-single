@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * @author xd11cc
  * @date 2025-11-26 14:26:36
+ * TODO 单体项目先注释，后续拓展微服务直接迁移
  */
 @Configuration
 public class XxlJobConfig {

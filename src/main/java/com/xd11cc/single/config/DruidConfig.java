@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -21,6 +22,11 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.alibaba.druid.stat.DruidDataSourceStatManager;
+import com.alibaba.druid.stat.JdbcDataSourceStat;
+import com.alibaba.druid.support.http.StatViewServlet;
+import com.alibaba.druid.support.http.WebStatFilter;
 
 /**
  * @Author: xd11cc
@@ -52,6 +58,16 @@ public class DruidConfig {
     public DataSource slaveDataSource(DruidProperties druidProperties) {
         DruidDataSource dataSource = DruidDataSourceBuilder.create().build();
         return druidProperties.dataSource(dataSource);
+    }
+
+    /**
+     * Flowable 流程引擎专用数据源，指向 xd11cc_flowable schema。
+     * 不接入 DynamicDataSource 路由，Flowable 引擎直接注入此 bean。
+     */
+    @Bean("flowableDataSource")
+    @ConfigurationProperties("spring.datasource.druid.flowable")
+    public DataSource flowableDataSource() {
+        return DruidDataSourceBuilder.create().build();
     }
 
     /**

@@ -14,6 +14,25 @@ spring:
         url:
         username:
         password:
+
+      # Flowable 流程引擎专用数据源（指向 xd11cc_flowable schema）
+      flowable:
+        url: jdbc:mysql://127.0.0.1:3306/xd11cc_flowable?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true
+        username: root
+        password: xd11cc@1216
+        initial-size: 2
+        min-idle: 2
+        max-active: 10
+        max-wait: 60000
+        connect-timeout: 30000
+        socket-timeout: 60000
+        time-between-eviction-runs-millis: 60000
+        min-evictable-idle-time-millis: 300000
+        max-evictable-idle-time-millis: 900000
+        validation-query: SELECT 1 FROM DUAL
+        test-while-idle: true
+        test-on-borrow: false
+        test-on-return: false
       # 初始连接数
       initial-size: 5
       # 最小连接池数量
