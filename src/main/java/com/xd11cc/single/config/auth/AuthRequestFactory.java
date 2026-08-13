@@ -80,10 +80,12 @@ public class AuthRequestFactory {
      */
     private AuthConfig getAuthConfig(String source) {
         AuthClientConfigDO authClientConfigDO = authClientConfigService.getBySource(source);
+        if (authClientConfigDO == null) {
+            return null;
+        }
 
         // 校验该配置是否被禁用
-        if (null != authClientConfigDO &&
-                SystemStatusEnum.FORBIDDEN.getCode().equals(authClientConfigDO.getStatus())) {
+        if (SystemStatusEnum.FORBIDDEN.getCode().equals(authClientConfigDO.getStatus())) {
             throw new ServiceException(SystemErrorEnum.AUTH_SOURCE_FORBIDDEN, new Object[]{source});
         }
 

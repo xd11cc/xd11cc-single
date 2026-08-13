@@ -20,7 +20,7 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 | **Cache** | Redis + Redisson | 6.0+ / 3.36.0 | Distributed redisLock, rate limiting, session storage |
 | **Message Queue** | RabbitMQ | 2.7.x | Async decoupling, event notifications |
 | **Real-time** | Netty WebSocket | 4.1.x | Independent port, long-connection push |
-| **Task Scheduling** | XXL-JOB + Quartz | 2.4.0 / 2.7.x | Distributed cron tasks + local scheduling |
+| **Task Scheduling** | XXL-JOB | 2.4.0 | Distributed scheduling, failover, and retries |
 | **Object Storage** | MinIO | 8.6.0 | S3-compatible distributed storage |
 | **Payment** | Alipay SDK + WeChat Pay SDK | 4.40.831 / 4.8.0 | Multi-channel payment client abstraction |
 | **API Docs** | Swagger2 + Knife4j | 2.9.2 / 3.0.3 | Online API documentation |
@@ -51,7 +51,6 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 - **WebSocket Push** — Netty-based WebSocket server on independent port (12001) with token authentication, heartbeat detection (30s), and idle connection cleanup
 - **Message Queue** — RabbitMQ with producer Confirm + Return callbacks to prevent message loss, manual consumer ACK for reliable consumption
 - **Distributed Scheduling** — XXL-JOB with shard broadcasting, failover, and retry capabilities
-- **Local Scheduling** — Quartz integration supporting memory mode + JDBC persistence dual modes, `AbstractQuartzJob` base class encapsulating execution context (tenant ID, execution params), supports `@DisallowConcurrentExecution` for concurrency control
 - **Distributed Lock** — `@RedisLock` annotation-driven, based on Redisson RLock, supports SpEL-based dynamic lock key granularity (ALL/KEY modes), configurable wait timeout, retry count, and auto-release time
 - **Payment Integration** — Unified `PayClient` interface abstracting multi-channel payment (Alipay PC/WAP/QR/App/Barcode + WeChat JSAPI/Native/WAP/App/Barcode), `@PayClientCode` annotation + factory pattern for auto-registration, supports unified order, refund, and callback parsing
 - **Object Storage** — MinIO file upload/download with pre-signed URL direct uploads to reduce backend bandwidth
@@ -103,14 +102,13 @@ src/main/java/com/xd11cc/single/
 │   ├── netty/                    # Netty WebSocket server (Server/Channel/Handler)
 │   ├── pay/                      # Payment client abstraction layer (factory / Alipay / WeChat)
 │   ├── properties/               # @ConfigurationProperties classes
-│   ├── schedule/                 # Scheduled tasks (quartz / xxl)
+│   ├── schedule/                 # XXL-JOB scheduled tasks
 │   ├── MybatisPlusConfig.java    # MyBatis-Plus config (interceptors / pagination)
 │   ├── SecurityConfig.java       # Spring Security config
 │   ├── RedisConfig.java          # Redis serialization config
 │   ├── DruidConfig.java          # Druid connection pool + monitoring config
 │   ├── ThreadPoolConfig.java     # Thread pool config (netty / log / notice)
-│   ├── NettyServer.java          # Netty WebSocket startup class
-│   └── QuartzConfig.java         # Quartz scheduler config
+│   └── NettyServer.java          # Netty WebSocket startup class
 ├── constants/                    # Application constants (CacheConstants/SecurityConstants)
 ├── controller/                   # REST API controllers
 ├── convert/                      # MapStruct object converters
@@ -395,7 +393,6 @@ public ResponseVO<PageResult<SystemUserVO>> page(...) { ... }
 - [x] Freemarker code generator templates
 - [x] Multi-tenant data isolation
 - [x] Notification module
-- [x] Quartz scheduled tasks (memory + JDBC persistence)
 - [x] Distributed lock (@RedisLock annotation)
 - [x] Payment infrastructure (multi-channel client abstraction layer, business APIs in progress)
 - [ ] Payment business APIs (order creation / callback handling / refund flow)

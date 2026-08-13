@@ -20,7 +20,7 @@
 | **缓存** | Redis + Redisson | 6.0+ / 3.36.0 | 分布式锁、限流、会话存储 |
 | **消息队列** | RabbitMQ | 2.7.x | 异步解耦、事件通知 |
 | **实时通讯** | Netty WebSocket | 4.1.x | 独立端口、长连接推送 |
-| **任务调度** | XXL-JOB + Quartz | 2.4.0 / 2.7.x | 分布式定时任务 + 本地调度 |
+| **任务调度** | XXL-JOB | 2.4.0 | 分布式定时任务、故障转移与失败重试 |
 | **对象存储** | MinIO | 8.6.0 | 兼容 S3 协议的分布式存储 |
 | **支付集成** | 支付宝 SDK + 微信支付 SDK | 4.40.831 / 4.8.0 | 多渠道支付客户端抽象 |
 | **接口文档** | Swagger2 + Knife4j | 2.9.2 / 3.0.3 | 在线 API 文档 |
@@ -51,7 +51,6 @@
 - **WebSocket 推送** — 基于 Netty 独立端口（12001）提供 WebSocket 服务，支持 Token 认证、心跳检测（30s）、空闲连接清理
 - **消息队列** — RabbitMQ 集成，生产者 Confirm + Return 回调保证消息不丢，消费者手动 ACK 确保可靠消费
 - **分布式调度** — XXL-JOB 集成，支持分片广播、故障转移、失败重试等企业级调度能力
-- **本地调度** — Quartz 集成，支持内存模式 + JDBC 持久化双模式，`AbstractQuartzJob` 抽象基类封装执行上下文（租户 ID、执行参数），支持 `@DisallowConcurrentExecution` 防并发控制
 - **分布式锁** — `@RedisLock` 注解驱动，基于 Redisson RLock 实现，支持 SpEL Key 动态锁粒度（ALL/KEY 两种模式），可配置等待超时、重试次数、自动释放时间
 - **支付集成** — 统一 `PayClient` 接口抽象多渠道支付（支付宝 PC/WAP/扫码/APP/条码 + 微信 JSAPI/Native/WAP/App/条码），`@PayClientCode` 注解 + 工厂模式自动注册，支持统一下单、退款、回调解析
 - **对象存储** — MinIO 文件上传/下载，预签名 URL 直传减轻后端带宽压力
@@ -103,14 +102,13 @@ src/main/java/com/xd11cc/single/
 │   ├── netty/                    # Netty WebSocket 服务端 (Server/Channel/Handler)
 │   ├── pay/                      # 支付客户端抽象层 (工厂/支付宝/微信)
 │   ├── properties/               # @ConfigurationProperties 配置属性类
-│   ├── schedule/                 # 定时任务 (quartz/xxl)
+│   ├── schedule/                 # XXL-JOB 定时任务
 │   ├── MybatisPlusConfig.java    # MyBatis-Plus 配置 (拦截器/分页)
 │   ├── SecurityConfig.java       # Spring Security 配置
 │   ├── RedisConfig.java          # Redis 序列化配置
 │   ├── DruidConfig.java          # Druid 连接池 + 监控配置
 │   ├── ThreadPoolConfig.java     # 线程池配置 (netty/log/notice)
-│   ├── NettyServer.java          # Netty WebSocket 启动类
-│   └── QuartzConfig.java         # Quartz 调度器配置
+│   └── NettyServer.java          # Netty WebSocket 启动类
 ├── constants/                    # 应用常量 (CacheConstants/SecurityConstants)
 ├── controller/                   # REST API 控制器
 ├── convert/                      # MapStruct 对象转换器
@@ -395,7 +393,6 @@ public ResponseVO<PageResult<SystemUserVO>> page(...) { ... }
 - [x] Freemarker 代码生成器模板
 - [x] 多租户数据隔离
 - [x] 通知公告模块
-- [x] Quartz 定时任务（内存 + JDBC 持久化）
 - [x] 分布式锁（@RedisLock 注解）
 - [x] 支付基础设施（多渠道客户端抽象层，业务接口持续完善中）
 - [ ] 支付业务接口（订单创建/回调处理/退款流程）

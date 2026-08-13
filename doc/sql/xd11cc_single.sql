@@ -11,7 +11,7 @@
  Target Server Version : 80042 (8.0.42)
  File Encoding         : 65001
 
- Date: 29/06/2026 10:55:16
+ Date: 13/08/2026 13:56:00
 */
 
 SET NAMES utf8mb4;
@@ -39,9 +39,8 @@ CREATE TABLE `auth_client_config` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_source_tenant` (`source`,`tenant_id`,`del_flag`),
-  KEY `idx_tenant_id` (`tenant_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='授权应用配置表';
+  UNIQUE KEY `uk_tenant_source` (`tenant_id`,`source`,`del_flag`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='授权应用配置表';
 
 -- ----------------------------
 -- Records of auth_client_config
@@ -59,11 +58,11 @@ CREATE TABLE `auth_social_user` (
   `user_id` bigint DEFAULT NULL COMMENT '用户id',
   `source` varchar(32) NOT NULL COMMENT '应用类型',
   `open_id` varchar(64) DEFAULT NULL COMMENT '社交openId',
-  `token` varchar(255) NOT NULL COMMENT '社交token',
-  `row_token_info` varchar(1024) NOT NULL COMMENT '社交token原始信息',
+  `token` varchar(1000) NOT NULL COMMENT '社交token（生产环境建议加密存储）',
+  `row_token_info` text NOT NULL COMMENT '社交token原始信息',
   `nickname` varchar(32) DEFAULT NULL COMMENT '社交昵称',
   `avatar` varchar(255) NOT NULL COMMENT '社交头像',
-  `row_user_info` varchar(2048) NOT NULL COMMENT '社交用户原始信息',
+  `row_user_info` text NOT NULL COMMENT '社交用户原始信息',
   `code` varchar(32) NOT NULL COMMENT '最后一次认证code',
   `state` varchar(32) NOT NULL COMMENT '最后一次认证state',
   `bind_time` datetime NOT NULL COMMENT '绑定时间',
@@ -71,9 +70,9 @@ CREATE TABLE `auth_social_user` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_uuid_source` (`uuid`,`source`,`del_flag`),
-  KEY `idx_user_id` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='社交用户表';
+  UNIQUE KEY `uk_tenant_source_uuid` (`tenant_id`,`source`,`uuid`,`del_flag`),
+  KEY `idx_tenant_user` (`tenant_id`,`user_id`,`del_flag`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='社交用户表';
 
 -- ----------------------------
 -- Records of auth_social_user
@@ -88,7 +87,7 @@ DROP TABLE IF EXISTS `system_config`;
 CREATE TABLE `system_config` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `config_key` varchar(100) NOT NULL COMMENT '配置键',
-  `config_value` varchar(500) NOT NULL COMMENT '配置值',
+  `config_value` text NOT NULL COMMENT '配置值',
   `config_name` varchar(32) NOT NULL COMMENT '配置名称',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
@@ -98,14 +97,14 @@ CREATE TABLE `system_config` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_key_tenant` (`config_key`,`tenant_id`,`del_flag`) COMMENT '同一租户下 key 唯一'
+  UNIQUE KEY `uk_tenant_config_key` (`tenant_id`,`config_key`,`del_flag`) COMMENT '同一租户下 key 唯一'
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统配置';
 
 -- ----------------------------
 -- Records of system_config
 -- ----------------------------
 BEGIN;
-INSERT INTO `system_config` (`id`, `config_key`, `config_value`, `config_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, 'minio-domain', 'https://xd11cc.xyz/minio-api', 'minio域名', 1, '2026-05-20 15:44:42', 1, '2026-05-20 15:44:47', 0, NULL, 1);
+INSERT INTO `system_config` (`id`, `config_key`, `config_value`, `config_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, 'minio-domain', 'https://xd11cc.xyz/minio-api/xd11cc-bucket/', 'minio域名', 1, '2026-05-20 15:44:42', 1, '2026-08-04 10:26:45', 0, NULL, 1);
 INSERT INTO `system_config` (`id`, `config_key`, `config_value`, `config_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (2, 'auth-redirect-successUrl', 'http://localhost:20001/xd11cc/dashboard?token=%s', '授权成功跳转地址', 1, '2026-05-21 11:14:10', 1, '2026-05-21 11:14:15', 0, NULL, 1);
 INSERT INTO `system_config` (`id`, `config_key`, `config_value`, `config_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (3, 'auth-redirect-bindUserUrl', 'http://localhost:20001/xd11cc/login?source=%s&state=%s&need-bind', '授权绑定跳转地址', 1, '2026-05-21 11:15:38', 1, '2026-05-21 11:15:44', 0, NULL, 1);
 COMMIT;
@@ -117,10 +116,10 @@ DROP TABLE IF EXISTS `system_dept`;
 CREATE TABLE `system_dept` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `parent_id` bigint DEFAULT NULL COMMENT '父部门id',
-  `dept_code` varchar(20) NOT NULL COMMENT '部门编码',
-  `dept_name` varchar(20) NOT NULL COMMENT '部门名称',
+  `dept_code` varchar(50) NOT NULL COMMENT '部门编码',
+  `dept_name` varchar(50) NOT NULL COMMENT '部门名称',
   `leader_id` bigint NOT NULL COMMENT '部门负责人',
-  `sort` int NOT NULL COMMENT '排序',
+  `sort` int NOT NULL DEFAULT '0' COMMENT '排序',
   `status` char(2) NOT NULL COMMENT '部门状态，字典类型system_status',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
   `create_time` datetime NOT NULL COMMENT '创建时间',
@@ -130,8 +129,8 @@ CREATE TABLE `system_dept` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE KEY `uk_dept_code_tenant` (`dept_code`,`tenant_id`,`del_flag`),
-  KEY `idx_parent_id` (`parent_id`)
+  UNIQUE KEY `uk_tenant_dept_code` (`tenant_id`,`dept_code`,`del_flag`),
+  KEY `idx_tenant_parent` (`tenant_id`,`parent_id`,`del_flag`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='部门表';
 
 -- ----------------------------
@@ -158,8 +157,8 @@ CREATE TABLE `system_dept_post` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  KEY `idx_dept_id` (`dept_id`),
-  KEY `idx_post_id` (`post_id`)
+  UNIQUE KEY `uk_tenant_dept_post` (`tenant_id`,`dept_id`,`post_id`,`del_flag`),
+  KEY `idx_tenant_post` (`tenant_id`,`post_id`,`del_flag`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='部门岗位表';
 
 -- ----------------------------
@@ -170,12 +169,6 @@ INSERT INTO `system_dept_post` (`id`, `dept_id`, `post_id`, `create_user_id`, `c
 INSERT INTO `system_dept_post` (`id`, `dept_id`, `post_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (2, 2, 1, 1, '2026-05-27 11:05:40', 1, '2026-05-27 11:05:40', 0, NULL, 1);
 INSERT INTO `system_dept_post` (`id`, `dept_id`, `post_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (3, 1, 2, 1, '2026-05-27 11:06:17', 1, '2026-05-27 11:06:17', 0, NULL, 1);
 INSERT INTO `system_dept_post` (`id`, `dept_id`, `post_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (4, 2, 2, 1, '2026-05-27 11:06:17', 1, '2026-05-27 11:06:17', 0, NULL, 1);
-INSERT INTO `system_dept_post` (`id`, `dept_id`, `post_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (5, 1, 3, 1, '2026-05-27 11:06:54', 1, '2026-05-27 11:06:54', NULL, NULL, 1);
-INSERT INTO `system_dept_post` (`id`, `dept_id`, `post_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (6, 2, 3, 1, '2026-05-27 11:06:54', 1, '2026-05-27 11:06:54', NULL, NULL, 1);
-INSERT INTO `system_dept_post` (`id`, `dept_id`, `post_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (7, 1, 3, 1, '2026-05-28 15:40:53', 1, '2026-05-28 15:40:53', NULL, NULL, 1);
-INSERT INTO `system_dept_post` (`id`, `dept_id`, `post_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (8, 2, 3, 1, '2026-05-28 15:40:53', 1, '2026-05-28 15:40:53', NULL, NULL, 1);
-INSERT INTO `system_dept_post` (`id`, `dept_id`, `post_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (9, 1, 3, 1, '2026-05-28 16:04:56', 1, '2026-05-28 16:04:56', NULL, NULL, 1);
-INSERT INTO `system_dept_post` (`id`, `dept_id`, `post_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (10, 2, 3, 1, '2026-05-28 16:04:56', 1, '2026-05-28 16:04:56', NULL, NULL, 1);
 INSERT INTO `system_dept_post` (`id`, `dept_id`, `post_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (11, 1, 3, 1, '2026-05-28 16:10:26', 1, '2026-05-28 16:10:26', 0, NULL, 1);
 INSERT INTO `system_dept_post` (`id`, `dept_id`, `post_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (12, 2, 3, 1, '2026-05-28 16:10:26', 1, '2026-05-28 16:10:26', 0, NULL, 1);
 COMMIT;
@@ -187,8 +180,8 @@ DROP TABLE IF EXISTS `system_dict_data`;
 CREATE TABLE `system_dict_data` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `dict_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '字典类型',
-  `label` varchar(20) NOT NULL COMMENT '标签',
-  `value` varchar(20) NOT NULL COMMENT '键值',
+  `label` varchar(100) NOT NULL COMMENT '标签',
+  `value` varchar(100) NOT NULL COMMENT '键值',
   `css_class` varchar(100) DEFAULT NULL COMMENT '键值颜色',
   `list_class` varchar(100) DEFAULT NULL COMMENT '背景颜色',
   `sort` int NOT NULL COMMENT '排序',
@@ -201,7 +194,8 @@ CREATE TABLE `system_dict_data` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_type_label_tenant` (`dict_type`,`label`,`tenant_id`,`del_flag`) USING BTREE
+  UNIQUE KEY `uk_tenant_type_label` (`tenant_id`,`dict_type`,`label`,`del_flag`) USING BTREE,
+  KEY `idx_tenant_type_status_sort` (`tenant_id`,`dict_type`,`status`,`sort`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='字典数据表';
 
 -- ----------------------------
@@ -237,14 +231,6 @@ INSERT INTO `system_dict_data` (`id`, `dict_type`, `label`, `value`, `css_class`
 INSERT INTO `system_dict_data` (`id`, `dict_type`, `label`, `value`, `css_class`, `list_class`, `sort`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (28, 'system_notice_status', '0', '草稿', NULL, 'primary', 0, '0', 1, '2026-05-29 14:05:41', 1, '2026-05-29 14:05:41', 0, NULL, 1);
 INSERT INTO `system_dict_data` (`id`, `dict_type`, `label`, `value`, `css_class`, `list_class`, `sort`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (29, 'system_notice_status', '1', '已发布', NULL, 'primary', 0, '0', 1, '2026-05-29 14:05:46', 1, '2026-05-29 14:05:46', 0, NULL, 1);
 INSERT INTO `system_dict_data` (`id`, `dict_type`, `label`, `value`, `css_class`, `list_class`, `sort`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (30, 'system_notice_status', '2', '已撤回', NULL, 'primary', 0, '0', 1, '2026-05-29 14:05:54', 1, '2026-05-29 14:05:54', 0, NULL, 1);
-INSERT INTO `system_dict_data` (`id`, `dict_type`, `label`, `value`, `css_class`, `list_class`, `sort`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (31, 'system_job_status', '0', '正常', NULL, 'primary', 0, '0', 1, '2026-06-11 14:16:05', 1, '2026-06-11 14:16:05', 0, NULL, 1);
-INSERT INTO `system_dict_data` (`id`, `dict_type`, `label`, `value`, `css_class`, `list_class`, `sort`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (32, 'system_job_status', '1', '暂停', NULL, 'danger', 0, '0', 1, '2026-06-11 14:16:13', 1, '2026-06-11 14:28:28', 0, NULL, 1);
-INSERT INTO `system_dict_data` (`id`, `dict_type`, `label`, `value`, `css_class`, `list_class`, `sort`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (33, 'system_job_execution_policy', '1', '默认', NULL, 'primary', 0, '0', 1, '2026-06-11 14:17:04', 1, '2026-06-11 14:17:04', 0, NULL, 1);
-INSERT INTO `system_dict_data` (`id`, `dict_type`, `label`, `value`, `css_class`, `list_class`, `sort`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (34, 'system_job_execution_policy', '2', '立即执行', NULL, 'primary', 0, '0', 1, '2026-06-11 14:17:13', 1, '2026-06-11 14:17:13', 0, NULL, 1);
-INSERT INTO `system_dict_data` (`id`, `dict_type`, `label`, `value`, `css_class`, `list_class`, `sort`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (35, 'system_job_execution_policy', '3', '忽略', NULL, 'primary', 0, '0', 1, '2026-06-11 14:17:20', 1, '2026-06-11 14:17:20', 0, NULL, 1);
-INSERT INTO `system_dict_data` (`id`, `dict_type`, `label`, `value`, `css_class`, `list_class`, `sort`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (36, 'system_job_concurrent', '0', '不允许', NULL, 'primary', 0, '0', 1, '2026-06-11 14:18:08', 1, '2026-06-11 14:18:08', 0, NULL, 1);
-INSERT INTO `system_dict_data` (`id`, `dict_type`, `label`, `value`, `css_class`, `list_class`, `sort`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (37, 'system_job_concurrent', '1', '允许', NULL, 'warning', 0, '0', 1, '2026-06-11 14:18:14', 1, '2026-06-11 14:29:12', 0, NULL, 1);
-INSERT INTO `system_dict_data` (`id`, `dict_type`, `label`, `value`, `css_class`, `list_class`, `sort`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (38, 'system_job_group', '0', '默认', NULL, 'primary', 0, '0', 1, '2026-06-18 15:00:11', 1, '2026-06-18 15:00:11', 0, NULL, 1);
 COMMIT;
 
 -- ----------------------------
@@ -262,7 +248,7 @@ CREATE TABLE `system_dict_type` (
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `type` (`dict_type`,`del_flag`) USING BTREE
+  UNIQUE KEY `uk_dict_type` (`dict_type`,`del_flag`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='字典类型表';
 
 -- ----------------------------
@@ -278,70 +264,30 @@ INSERT INTO `system_dict_type` (`id`, `dict_type`, `dict_name`, `create_user_id`
 INSERT INTO `system_dict_type` (`id`, `dict_type`, `dict_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (7, 'system_login_type', '登录类型', 1, '2026-05-28 17:08:12', 1, '2026-05-28 17:08:12', 0, NULL);
 INSERT INTO `system_dict_type` (`id`, `dict_type`, `dict_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (8, 'system_notice_type', '消息类型', 1, '2026-05-29 14:04:54', 1, '2026-05-29 14:04:54', 0, NULL);
 INSERT INTO `system_dict_type` (`id`, `dict_type`, `dict_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (9, 'system_notice_status', '消息状态', 1, '2026-05-29 14:05:27', 1, '2026-05-29 14:05:27', 0, NULL);
-INSERT INTO `system_dict_type` (`id`, `dict_type`, `dict_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (10, 'system_job_status', '任务状态', 1, '2026-06-11 14:15:54', 1, '2026-06-11 14:15:54', 0, NULL);
-INSERT INTO `system_dict_type` (`id`, `dict_type`, `dict_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (11, 'system_job_execution_policy', '执行策略', 1, '2026-06-11 14:16:53', 1, '2026-06-11 14:16:53', 0, NULL);
-INSERT INTO `system_dict_type` (`id`, `dict_type`, `dict_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (12, 'system_job_concurrent', '允许并发', 1, '2026-06-11 14:17:57', 1, '2026-06-11 14:17:57', 0, NULL);
-INSERT INTO `system_dict_type` (`id`, `dict_type`, `dict_name`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (13, 'system_job_group', '任务分组', 1, '2026-06-18 15:00:01', 1, '2026-06-18 15:00:01', 0, NULL);
 COMMIT;
 
 -- ----------------------------
--- Table structure for system_job
+-- Table structure for system_login_log
 -- ----------------------------
-DROP TABLE IF EXISTS `system_job`;
-CREATE TABLE `system_job` (
+DROP TABLE IF EXISTS `system_login_log`;
+CREATE TABLE `system_login_log` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
-  `job_name` varchar(50) NOT NULL COMMENT '任务名称',
-  `job_group` char(2) NOT NULL COMMENT '任务组名',
-  `invoke_target` varchar(255) NOT NULL COMMENT '调度目标字符串',
-  `cron_expression` varchar(50) NOT NULL COMMENT 'cron执行表达式',
-  `execution_policy` char(2) NOT NULL COMMENT '执行策略',
-  `concurrent` char(2) NOT NULL COMMENT '是否允许并发执行',
-  `status` char(2) NOT NULL COMMENT '状态',
-  `create_user_id` bigint NOT NULL COMMENT '创建人id',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
-  `update_user_id` bigint NOT NULL COMMENT '更新人id',
-  `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
-  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
-  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统任务表';
-
--- ----------------------------
--- Records of system_job
--- ----------------------------
-BEGIN;
-INSERT INTO `system_job` (`id`, `job_name`, `job_group`, `invoke_target`, `cron_expression`, `execution_policy`, `concurrent`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, '测试定时任务', '1', 'demoQuartzJob.demoJob()', '0 0/1 0/1 * * ?', '1', '0', '1', 1, '2026-06-11 14:18:34', 1, '2026-06-12 11:08:43', NULL, NULL, 1);
-INSERT INTO `system_job` (`id`, `job_name`, `job_group`, `invoke_target`, `cron_expression`, `execution_policy`, `concurrent`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (2, '测试定时任务', '0', 'demoQuartzJob.demoJob', '0/2 * * * * ?', '1', '0', '1', 1, '2026-06-18 15:03:19', 1, '2026-06-18 15:41:03', 0, NULL, 1);
-INSERT INTO `system_job` (`id`, `job_name`, `job_group`, `invoke_target`, `cron_expression`, `execution_policy`, `concurrent`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (3, '测试定时任务（带参数）', '0', 'demoQuartzJob.demoJobWithParams(\'abccc\')', '0/2 * * * * ?', '1', '0', '1', 1, '2026-06-18 15:41:51', 1, '2026-06-18 15:43:38', 0, NULL, 1);
-COMMIT;
-
--- ----------------------------
--- Table structure for system_job_log
--- ----------------------------
-DROP TABLE IF EXISTS `system_job_log`;
-CREATE TABLE `system_job_log` (
-  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
-  `job_id` bigint NOT NULL COMMENT '任务id',
-  `job_name` varchar(50) NOT NULL COMMENT '任务名称',
-  `job_group` char(2) NOT NULL COMMENT '任务组名',
-  `invoke_target` varchar(255) NOT NULL COMMENT '调度目标字符串',
-  `job_message` varchar(500) DEFAULT NULL COMMENT '日志信息',
-  `status` char(2) DEFAULT NULL COMMENT '执行状态',
-  `create_user_id` bigint NOT NULL COMMENT '创建人id',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
-  `update_user_id` bigint NOT NULL COMMENT '更新人id',
-  `update_time` datetime NOT NULL COMMENT '更新时间',
-  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
-  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `username` varchar(50) NOT NULL COMMENT '登录账号',
+  `login_type` char(2) NOT NULL COMMENT '登录类型 1-密码登录 2-社交登录 3-退出登录',
+  `status` char(2) NOT NULL DEFAULT '0' COMMENT '登录状态 0-成功 1-失败',
+  `login_ip` varchar(50) DEFAULT NULL COMMENT '登录IP',
+  `browser` varchar(50) DEFAULT NULL COMMENT '浏览器',
+  `os` varchar(50) DEFAULT NULL COMMENT '操作系统',
+  `msg` varchar(500) DEFAULT NULL COMMENT '提示消息',
+  `login_time` datetime NOT NULL COMMENT '登录时间',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  KEY `idx_job_id` (`job_id`),
-  KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统任务日志表';
+  KEY `idx_login_time` (`login_time`,`id`),
+  KEY `idx_login_type_status_time` (`login_type`,`status`,`login_time`,`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=150 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='登录日志表';
 
 -- ----------------------------
--- Records of system_job_log
+-- Records of system_login_log
 -- ----------------------------
 BEGIN;
 COMMIT;
@@ -353,8 +299,8 @@ DROP TABLE IF EXISTS `system_menu`;
 CREATE TABLE `system_menu` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `parent_id` bigint DEFAULT NULL COMMENT '父菜单id',
-  `menu_name` varchar(20) NOT NULL COMMENT '菜单名称',
-  `sort` int NOT NULL COMMENT '显示排序',
+  `menu_name` varchar(50) NOT NULL COMMENT '菜单名称',
+  `sort` int NOT NULL DEFAULT '0' COMMENT '显示排序',
   `path` varchar(255) DEFAULT NULL COMMENT '路由路径（如/user/list）',
   `component` varchar(255) DEFAULT NULL COMMENT '组件路径',
   `route_name` varchar(255) DEFAULT NULL COMMENT '路由名称',
@@ -372,8 +318,9 @@ CREATE TABLE `system_menu` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_path` (`path`,`del_flag`) USING BTREE,
-  KEY `idx_parent_id` (`parent_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';
+  KEY `idx_menu_type_status_sort` (`menu_type`,`status`,`del_flag`,`sort`),
+  KEY `idx_parent_del_sort` (`parent_id`,`del_flag`,`sort`)
+) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';
 
 -- ----------------------------
 -- Records of system_menu
@@ -386,7 +333,7 @@ INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `comp
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (5, 3, '字典查询', 4, NULL, NULL, NULL, NULL, NULL, 'B', '0', 'system:dictType:list', 0, 1, '2026-02-11 11:07:38', 1, '2026-03-17 10:27:57', NULL, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (6, NULL, '系统监控', 3, 'monitor', 'Layout', 'Monitor', NULL, 'ep:monitor', 'M', '0', NULL, 0, 1, '2026-02-12 14:31:43', 1, '2026-05-21 14:39:39', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (7, 3, '字典新增', 1, NULL, NULL, NULL, NULL, NULL, 'B', '0', 'system:dictType:add', 0, 1, '2026-02-12 14:45:05', 1, '2026-03-17 10:28:17', 0, NULL);
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (8, 3, '字典修改', 3, NULL, NULL, NULL, NULL, NULL, 'B', '0', 'systm:dictType:update', 0, 1, '2026-02-12 14:45:38', 1, '2026-03-17 10:28:05', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (8, 3, '字典修改', 3, NULL, NULL, NULL, NULL, NULL, 'B', '0', 'system:dictType:update', 0, 1, '2026-02-12 14:45:38', 1, '2026-03-17 10:28:05', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (9, 3, '字典删除', 2, NULL, NULL, NULL, NULL, NULL, 'B', '0', 'system:dictType:delete', 0, 1, '2026-02-12 14:46:05', 1, '2026-03-17 10:28:10', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (10, 6, '数据管理', 1, 'druid', 'monitor/druid/index', 'Druid', NULL, 'ep:data-line', 'C', '0', NULL, 0, 1, '2026-02-13 09:30:16', 1, '2026-05-21 14:39:48', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (11, 3, '字典导出', 5, NULL, NULL, NULL, NULL, NULL, 'B', '0', 'system:dictType:export', 0, 1, '2026-03-17 10:47:57', 1, '2026-03-17 10:47:57', 0, NULL);
@@ -434,15 +381,11 @@ INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `comp
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (59, 47, '删除登录日志', 1, NULL, NULL, NULL, NULL, '', 'B', '0', 'system:loginLog:delete', 0, 1, '2026-06-01 15:22:17', 1, '2026-06-01 15:22:17', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (60, 47, '清空登录日志', 2, NULL, NULL, NULL, NULL, '', 'B', '0', 'system:loginLog:clean', 0, 1, '2026-06-01 15:22:31', 1, '2026-06-01 15:22:31', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (61, 48, '强退用户', 1, NULL, NULL, NULL, NULL, '', 'B', '0', 'system:onlineUser:forceLogout', 0, 1, '2026-06-01 15:23:12', 1, '2026-06-01 15:23:12', 0, NULL);
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (62, 6, '定时任务', 5, 'job', 'system/job/index', 'Job', NULL, 'lucide:timer', 'C', '0', NULL, 0, 1, '2026-06-11 14:06:18', 1, '2026-06-18 17:06:33', 0, NULL);
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (63, 6, '调度日志', 6, 'job-log', 'system/job/log', 'JobLog', NULL, '', 'C', '0', NULL, 1, 1, '2026-06-12 11:00:32', 1, '2026-06-18 17:10:45', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (64, 49, '新增通知', 1, NULL, NULL, NULL, NULL, '', 'B', '0', 'system:notice:add', 0, 1, '2026-06-29 10:19:15', 1, '2026-06-29 10:19:15', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (65, 49, '修改通知', 2, NULL, NULL, NULL, NULL, '', 'B', '0', 'system:notice:update', 0, 1, '2026-06-29 10:19:30', 1, '2026-06-29 10:19:30', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (66, 49, '删除通知', 3, NULL, NULL, NULL, NULL, '', 'B', '0', 'system:notice:delete', 0, 1, '2026-06-29 10:19:49', 1, '2026-06-29 10:19:49', 0, NULL);
 INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (67, 49, '发布/ 撤回通知', 4, NULL, NULL, NULL, NULL, '', 'B', '0', 'system:notice:publish', 0, 1, '2026-06-29 10:20:33', 1, '2026-06-29 10:20:52', 0, NULL);
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (68, 62, '新增任务', 1, NULL, NULL, NULL, NULL, '', 'B', '0', 'system:job:add', 0, 1, '2026-06-29 10:21:43', 1, '2026-06-29 10:21:43', 0, NULL);
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (69, 62, '批量删除', 2, NULL, NULL, NULL, NULL, '', 'B', '0', 'system:job:delete', 0, 1, '2026-06-29 10:21:59', 1, '2026-06-29 10:21:59', 0, NULL);
-INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (70, 62, '更新任务', 3, NULL, NULL, NULL, NULL, '', 'B', '0', 'system:job:update', 0, 1, '2026-06-29 10:22:18', 1, '2026-06-29 10:22:18', 0, NULL);
+INSERT INTO `system_menu` (`id`, `parent_id`, `menu_name`, `sort`, `path`, `component`, `route_name`, `query`, `icon`, `menu_type`, `status`, `permission`, `visible`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`) VALUES (71, 13, '生成代码', 1, NULL, NULL, NULL, NULL, '', 'B', '0', 'system:generate:code', 0, 1, '2026-06-29 16:28:45', 1, '2026-06-29 16:28:45', 0, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -461,17 +404,17 @@ CREATE TABLE `system_notice` (
   `sender_name` varchar(32) DEFAULT NULL COMMENT '发送人姓名',
   `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态 0-草稿 1-已发布 2-已撤回',
   `publish_time` datetime DEFAULT NULL COMMENT '发布时间',
-  `create_user_id` bigint DEFAULT NULL COMMENT '创建人id',
-  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_user_id` bigint DEFAULT NULL COMMENT '更新人id',
-  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `create_user_id` bigint NOT NULL COMMENT '创建人id',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_user_id` bigint NOT NULL COMMENT '更新人id',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  KEY `idx_tenant_type_status` (`tenant_id`,`type`,`status`),
-  KEY `idx_sender_id` (`sender_id`),
-  KEY `idx_create_time` (`create_time`)
+  KEY `idx_tenant_type_status_id` (`tenant_id`,`type`,`status`,`id`),
+  KEY `idx_tenant_sender` (`tenant_id`,`sender_id`,`del_flag`),
+  KEY `idx_tenant_create_time` (`tenant_id`,`create_time`,`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统通知表';
 
 -- ----------------------------
@@ -490,16 +433,15 @@ CREATE TABLE `system_notice_user` (
   `user_id` bigint NOT NULL COMMENT '用户id',
   `read_status` tinyint NOT NULL DEFAULT '0' COMMENT '已读状态 0-未读 1-已读',
   `read_time` datetime DEFAULT NULL COMMENT '已读时间',
-  `create_user_id` bigint DEFAULT NULL COMMENT '创建人id',
-  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_user_id` bigint DEFAULT NULL COMMENT '更新人id',
-  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `create_user_id` bigint NOT NULL COMMENT '创建人id',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_user_id` bigint NOT NULL COMMENT '更新人id',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_notice_user` (`notice_id`,`user_id`,`del_flag`),
-  KEY `idx_user_read` (`user_id`,`read_status`),
-  KEY `idx_notice_id` (`notice_id`)
+  UNIQUE KEY `uk_tenant_notice_user` (`tenant_id`,`notice_id`,`user_id`,`del_flag`),
+  KEY `idx_tenant_user_read` (`tenant_id`,`user_id`,`del_flag`,`read_status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统通知用户关联表';
 
 -- ----------------------------
@@ -533,11 +475,10 @@ CREATE TABLE `system_operate_log` (
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  KEY `idx_module` (`module`),
-  KEY `idx_operate_type` (`operate_type`),
-  KEY `idx_create_time` (`create_time`),
-  KEY `idx_create_user_id` (`create_user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=176 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='操作日志表';
+  KEY `idx_tenant_create_time` (`tenant_id`,`create_time`,`id`),
+  KEY `idx_tenant_module_type_status` (`tenant_id`,`module`,`operate_type`,`status`),
+  KEY `idx_tenant_operator` (`tenant_id`,`create_user_id`,`create_time`)
+) ENGINE=InnoDB AUTO_INCREMENT=194 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='操作日志表';
 
 -- ----------------------------
 -- Records of system_operate_log
@@ -562,7 +503,7 @@ CREATE TABLE `system_post` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_post_code_tenant` (`post_code`,`tenant_id`,`del_flag`)
+  UNIQUE KEY `uk_tenant_post_code` (`tenant_id`,`post_code`,`del_flag`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='岗位表';
 
 -- ----------------------------
@@ -571,7 +512,7 @@ CREATE TABLE `system_post` (
 BEGIN;
 INSERT INTO `system_post` (`id`, `post_code`, `post_name`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, 'development_manager', '研发经理', '0', 1, '2026-05-27 11:05:40', 1, '2026-05-27 11:05:40', 0, NULL, 1);
 INSERT INTO `system_post` (`id`, `post_code`, `post_name`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (2, 'technical_leader', '技术组长', '0', 1, '2026-05-27 11:06:17', 1, '2026-05-27 11:06:17', 0, NULL, 1);
-INSERT INTO `system_post` (`id`, `post_code`, `post_name`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (3, 'java_developemnt', 'Java开发工程师', '0', 1, '2026-05-27 11:06:54', 1, '2026-05-28 16:10:26', 0, '1', 1);
+INSERT INTO `system_post` (`id`, `post_code`, `post_name`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (3, 'java_development', 'Java开发工程师', '0', 1, '2026-05-27 11:06:54', 1, '2026-05-28 16:10:26', 0, NULL, 1);
 COMMIT;
 
 -- ----------------------------
@@ -592,14 +533,15 @@ CREATE TABLE `system_role` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_role_code_tenant` (`role_code`,`tenant_id`,`del_flag`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色表';
+  UNIQUE KEY `uk_tenant_role_code` (`tenant_id`,`role_code`,`del_flag`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色表';
 
 -- ----------------------------
 -- Records of system_role
 -- ----------------------------
 BEGIN;
-INSERT INTO `system_role` (`id`, `role_code`, `role_name`, `data_scope`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, 'super_admin', '超级管理员', '1', '0', 1, '2026-05-27 10:59:35', 1, '2026-05-29 14:03:45', 0, NULL, 1);
+INSERT INTO `system_role` (`id`, `role_code`, `role_name`, `data_scope`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, 'super_admin', '超级管理员', '1', '0', 1, '2026-05-27 10:59:35', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role` (`id`, `role_code`, `role_name`, `data_scope`, `status`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (2, 'just_look', '观察员', '1', '0', 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
 COMMIT;
 
 -- ----------------------------
@@ -607,7 +549,7 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `system_role_dept`;
 CREATE TABLE `system_role_dept` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `role_id` bigint NOT NULL COMMENT '角色id',
   `dept_id` bigint NOT NULL COMMENT '部门id',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
@@ -617,7 +559,8 @@ CREATE TABLE `system_role_dept` (
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  KEY `idx_role_id` (`role_id`)
+  UNIQUE KEY `uk_tenant_role_dept` (`tenant_id`,`role_id`,`dept_id`,`del_flag`),
+  KEY `idx_tenant_dept` (`tenant_id`,`dept_id`,`del_flag`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色-部门关联表（自定义数据权限）';
 
 -- ----------------------------
@@ -642,47 +585,92 @@ CREATE TABLE `system_role_menu` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  KEY `idx_role_id` (`role_id`),
-  KEY `idx_menu_id` (`menu_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色菜单表';
+  UNIQUE KEY `uk_tenant_role_menu` (`tenant_id`,`role_id`,`menu_id`,`del_flag`),
+  KEY `idx_tenant_menu` (`tenant_id`,`menu_id`,`del_flag`)
+) ENGINE=InnoDB AUTO_INCREMENT=140 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色菜单表';
 
 -- ----------------------------
 -- Records of system_role_menu
 -- ----------------------------
 BEGIN;
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, 1, 1, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (2, 1, 16, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (3, 1, 15, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (4, 1, 18, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (5, 1, 14, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (6, 1, 17, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (7, 1, 2, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (8, 1, 3, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (9, 1, 4, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (10, 1, 19, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (11, 1, 12, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (12, 1, 13, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (13, 1, 6, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (14, 1, 10, 1, '2026-05-28 14:20:43', 1, '2026-05-28 14:20:43', NULL, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (15, 1, 1, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (16, 1, 16, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (17, 1, 15, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (18, 1, 18, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (19, 1, 14, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (20, 1, 17, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (21, 1, 2, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (22, 1, 3, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (23, 1, 4, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (24, 1, 19, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (25, 1, 49, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (26, 1, 12, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (27, 1, 13, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (28, 1, 50, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (29, 1, 6, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (30, 1, 10, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (31, 1, 46, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (32, 1, 47, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
-INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (33, 1, 48, 1, '2026-05-29 14:03:45', 1, '2026-05-29 14:03:45', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (55, 1, 1, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (56, 1, 16, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (57, 1, 20, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (58, 1, 21, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (59, 1, 22, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (60, 1, 15, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (61, 1, 23, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (62, 1, 24, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (63, 1, 25, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (64, 1, 26, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (65, 1, 18, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (66, 1, 27, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (67, 1, 28, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (68, 1, 29, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (69, 1, 14, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (70, 1, 30, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (71, 1, 31, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (72, 1, 32, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (73, 1, 17, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (74, 1, 33, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (75, 1, 34, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (76, 1, 35, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (77, 1, 2, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (78, 1, 36, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (79, 1, 37, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (80, 1, 38, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (81, 1, 3, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (82, 1, 7, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (83, 1, 9, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (84, 1, 8, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (85, 1, 11, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (86, 1, 4, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (87, 1, 39, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (88, 1, 40, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (89, 1, 41, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (90, 1, 42, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (91, 1, 19, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (92, 1, 43, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (93, 1, 44, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (94, 1, 45, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (95, 1, 49, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (96, 1, 64, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (97, 1, 65, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (98, 1, 66, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (99, 1, 67, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (100, 1, 12, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (101, 1, 13, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (102, 1, 71, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (103, 1, 50, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (104, 1, 6, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (105, 1, 10, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (106, 1, 46, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (107, 1, 57, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (108, 1, 58, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (109, 1, 47, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (110, 1, 59, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (111, 1, 60, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (112, 1, 48, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (113, 1, 61, 1, '2026-06-29 16:31:03', 1, '2026-06-29 16:31:03', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (119, 2, 1, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (120, 2, 16, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (121, 2, 15, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (122, 2, 18, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (123, 2, 14, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (124, 2, 17, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (125, 2, 2, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (126, 2, 3, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (127, 2, 4, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (128, 2, 19, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (129, 2, 49, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (130, 2, 12, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (131, 2, 13, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (132, 2, 50, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (133, 2, 6, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (134, 2, 10, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (135, 2, 46, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (136, 2, 47, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
+INSERT INTO `system_role_menu` (`id`, `role_id`, `menu_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (137, 2, 48, 1, '2026-06-29 16:32:08', 1, '2026-06-29 16:32:08', 0, NULL, 1);
 COMMIT;
 
 -- ----------------------------
@@ -720,17 +708,17 @@ COMMIT;
 DROP TABLE IF EXISTS `system_user`;
 CREATE TABLE `system_user` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
-  `username` varchar(20) NOT NULL COMMENT '用户名',
+  `username` varchar(30) NOT NULL COMMENT '用户名',
   `password` varchar(64) NOT NULL COMMENT '密码',
-  `nickname` varchar(20) NOT NULL COMMENT '昵称',
+  `nickname` varchar(30) NOT NULL COMMENT '昵称',
   `id_card` varchar(18) DEFAULT NULL COMMENT '身份证号码',
   `sex` char(2) NOT NULL COMMENT '性别，字典类型system_user_sex',
   `phone` varchar(11) DEFAULT NULL COMMENT '手机号码',
-  `email` varchar(20) DEFAULT NULL COMMENT '邮箱',
+  `email` varchar(50) DEFAULT NULL COMMENT '邮箱',
   `dept_id` bigint NOT NULL COMMENT '部门id',
-  `dept_name` varchar(20) NOT NULL COMMENT '部门名称',
+  `dept_name` varchar(50) NOT NULL COMMENT '部门名称',
   `post_id` bigint NOT NULL COMMENT '岗位id',
-  `post_name` varchar(20) NOT NULL COMMENT '岗位名称',
+  `post_name` varchar(50) NOT NULL COMMENT '岗位名称',
   `status` char(2) NOT NULL COMMENT '账号状态，字典类型system_status',
   `head_url` varchar(255) DEFAULT NULL COMMENT '头像路径',
   `create_user_id` bigint NOT NULL COMMENT '创建人id',
@@ -741,9 +729,10 @@ CREATE TABLE `system_user` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_username_tenant` (`username`,`tenant_id`,`del_flag`),
-  KEY `idx_dept_id` (`dept_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
+  UNIQUE KEY `uk_tenant_username` (`tenant_id`,`username`,`del_flag`),
+  KEY `idx_tenant_email` (`tenant_id`,`email`,`del_flag`),
+  KEY `idx_tenant_dept_status` (`tenant_id`,`dept_id`,`status`,`del_flag`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
 
 -- ----------------------------
 -- Records of system_user
@@ -751,6 +740,7 @@ CREATE TABLE `system_user` (
 BEGIN;
 INSERT INTO `system_user` (`id`, `username`, `password`, `nickname`, `id_card`, `sex`, `phone`, `email`, `dept_id`, `dept_name`, `post_id`, `post_name`, `status`, `head_url`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, 'admin', '$2a$10$gHpwj0TMpbxdV5fOdTw03.xcfIxeXRjSo0xVa3J9q1vn27EyHpXkK', 'xd11cc', NULL, '1', '15396919088', '295900422@qq.com', 1, '总公司', 1, '研发经理', '0', NULL, 1, '2025-07-17 09:18:26', 1, '2026-05-28 10:24:09', 0, NULL, 1);
 INSERT INTO `system_user` (`id`, `username`, `password`, `nickname`, `id_card`, `sex`, `phone`, `email`, `dept_id`, `dept_name`, `post_id`, `post_name`, `status`, `head_url`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (2, 'wangchen', '$2a$10$RDVljAeGhmzJ5yePhBbEmeBSXTKToRpbzyNVZd28A12W.lqpiC4UO', '老王', NULL, '1', NULL, NULL, 2, '研发部', 1, '研发经理', '0', NULL, 1, '2026-05-27 16:40:50', 1, '2026-05-27 16:40:50', 0, NULL, 1);
+INSERT INTO `system_user` (`id`, `username`, `password`, `nickname`, `id_card`, `sex`, `phone`, `email`, `dept_id`, `dept_name`, `post_id`, `post_name`, `status`, `head_url`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (4, 'test', '$2a$10$fhwOcNu725dwYOLVa0TPI.uhi36Ln6Po/tchtes8.zM1qHsX0q0vC', '观察员', NULL, '1', NULL, NULL, 2, '研发部', 1, '研发经理', '0', NULL, 1, '2026-07-27 15:45:32', 1, '2026-08-06 15:32:33', 0, NULL, 1);
 COMMIT;
 
 -- ----------------------------
@@ -769,28 +759,17 @@ CREATE TABLE `system_user_role` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
-  KEY `idx_user_id` (`user_id`),
-  KEY `idx_role_id` (`role_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色表';
+  UNIQUE KEY `uk_tenant_user_role` (`tenant_id`,`user_id`,`role_id`,`del_flag`),
+  KEY `idx_tenant_role` (`tenant_id`,`role_id`,`del_flag`)
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色表';
 
 -- ----------------------------
 -- Records of system_user_role
 -- ----------------------------
 BEGIN;
 INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (1, 2, 1, 1, '2026-05-27 16:40:50', 1, '2026-05-27 16:40:50', 0, NULL, 1);
-INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (2, 1, 1, 1, '2026-05-27 16:59:54', 1, '2026-05-27 16:59:54', NULL, NULL, 1);
-INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (3, 1, 1, 1, '2026-05-28 09:42:34', 1, '2026-05-28 09:42:34', NULL, NULL, 1);
-INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (4, 1, 1, 1, '2026-05-28 09:42:53', 1, '2026-05-28 09:42:53', NULL, NULL, 1);
-INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (5, 1, 1, 1, '2026-05-28 09:43:03', 1, '2026-05-28 09:43:03', NULL, NULL, 1);
-INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (6, 1, 1, 1, '2026-05-28 09:43:51', 1, '2026-05-28 09:43:51', NULL, NULL, 1);
-INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (7, 1, 1, 1, '2026-05-28 09:49:44', 1, '2026-05-28 09:49:44', NULL, NULL, 1);
-INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (8, 1, 1, 1, '2026-05-28 09:49:52', 1, '2026-05-28 09:49:52', NULL, NULL, 1);
-INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (9, 1, 1, 1, '2026-05-28 09:50:00', 1, '2026-05-28 09:50:00', NULL, NULL, 1);
-INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (10, 1, 1, 1, '2026-05-28 09:50:08', 1, '2026-05-28 09:50:08', NULL, NULL, 1);
-INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (11, 1, 1, 1, '2026-05-28 09:50:19', 1, '2026-05-28 09:50:19', NULL, NULL, 1);
-INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (12, 1, 1, 1, '2026-05-28 09:51:54', 1, '2026-05-28 09:51:54', NULL, NULL, 1);
-INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (13, 1, 1, 1, '2026-05-28 10:24:05', 1, '2026-05-28 10:24:05', NULL, NULL, 1);
 INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (14, 1, 1, 1, '2026-05-28 10:24:09', 1, '2026-05-28 10:24:09', 0, NULL, 1);
+INSERT INTO `system_user_role` (`id`, `user_id`, `role_id`, `create_user_id`, `create_time`, `update_user_id`, `update_time`, `del_flag`, `remark`, `tenant_id`) VALUES (15, 4, 2, 1, '2026-07-27 15:45:32', 1, '2026-07-27 15:45:32', 0, NULL, 1);
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

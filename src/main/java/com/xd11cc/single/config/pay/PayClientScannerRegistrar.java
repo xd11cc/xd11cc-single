@@ -4,12 +4,9 @@ import com.xd11cc.single.config.annotation.PayClientCode;
 import com.xd11cc.single.config.annotation.PayClientScan;
 import com.xd11cc.single.config.pay.impl.PayClientFactoryImpl;
 import com.xd11cc.single.enums.PayChannelEnum;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
@@ -35,14 +32,13 @@ public class PayClientScannerRegistrar implements ImportBeanDefinitionRegistrar 
         String[] basePackages = (String[]) attrs.get("basePackages");
 
         // 2. 构造扫描器 -- 仅匹配 @PayClientCode
-        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(PayClientCode.class));
+        ClassPathScanningCandidateComponentProvider scanner = createScanner();
 
         for (String basePackage : basePackages) {
             Set<BeanDefinition> candidates = scanner.findCandidateComponents(basePackage);
             for (BeanDefinition candidate : candidates) {
                 try {
-                    Class<?> clazz = Class.forName(candidate.getBeanClassName());
+                    Class<?> clazz = loadClass(candidate.getBeanClassName());
                     PayClientCode annotation = clazz.getAnnotation(PayClientCode.class);
                     if (annotation == null) continue;
 
@@ -53,5 +49,21 @@ public class PayClientScannerRegistrar implements ImportBeanDefinitionRegistrar 
                 }
             }
         }
+    }
+
+    /**
+     * 按类名加载类，供子类覆写以在单测中注入 mock。
+     */
+    protected Class<?> loadClass(String className) throws ClassNotFoundException {
+        return Class.forName(className);
+    }
+
+    /**
+     * 创建扫描器，供子类覆写以在单测中替换 mock。
+     */
+    protected ClassPathScanningCandidateComponentProvider createScanner() {
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new AnnotationTypeFilter(PayClientCode.class));
+        return scanner;
     }
 }
