@@ -2,13 +2,13 @@ package com.xd11cc.single.service.impl;
 
 import cn.hutool.http.useragent.UserAgent;
 import cn.hutool.http.useragent.UserAgentUtil;
-import com.xd11cc.single.config.RedisCache;
-import com.xd11cc.single.config.annotation.RedisLock;
+import com.xd11cc.single.infrastructure.redis.RedisCache;
+import com.xd11cc.single.common.annotation.RedisLock;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.SecurityConstants;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.SystemErrorEnum;
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.service.TokenService;
 import cn.hutool.core.util.IdUtil;
 import com.xd11cc.single.utils.JwtUtils;

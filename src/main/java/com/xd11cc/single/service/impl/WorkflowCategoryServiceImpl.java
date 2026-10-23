@@ -5,7 +5,7 @@ import com.xd11cc.single.entity.domain.WorkflowCategoryDO;
 import com.xd11cc.single.entity.vo.WorkflowCategoryAddVO;
 import com.xd11cc.single.entity.vo.WorkflowCategoryQueryVO;
 import com.xd11cc.single.entity.vo.WorkflowCategoryUpdateVO;
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.service.IWorkflowCategoryService;
 import com.xd11cc.single.mapper.WorkflowCategoryMapper;

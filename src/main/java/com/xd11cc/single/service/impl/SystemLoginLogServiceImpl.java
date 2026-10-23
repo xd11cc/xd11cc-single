@@ -4,7 +4,7 @@ import cn.hutool.http.useragent.UserAgent;
 import cn.hutool.http.useragent.UserAgentUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xd11cc.single.config.context.TenantContextHolder;
+import com.xd11cc.single.common.context.TenantContextHolder;
 import com.xd11cc.single.entity.domain.SystemLoginLogDO;
 import com.xd11cc.single.entity.vo.SystemLoginLogQueryVO;
 import com.xd11cc.single.enums.OperateStatusEnum;

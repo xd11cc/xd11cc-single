@@ -2,7 +2,7 @@ package com.xd11cc.single.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.convert.SystemDeptConvert;
 import com.xd11cc.single.entity.domain.SystemDeptDO;
 import com.xd11cc.single.entity.vo.SystemDeptAddVO;

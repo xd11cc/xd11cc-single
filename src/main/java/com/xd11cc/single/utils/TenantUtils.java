@@ -1,6 +1,6 @@
 package com.xd11cc.single.utils;
 
-import com.xd11cc.single.config.context.TenantContextHolder;
+import com.xd11cc.single.common.context.TenantContextHolder;
 
 import java.util.function.Supplier;
 

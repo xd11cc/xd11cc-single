@@ -1,6 +1,6 @@
 package com.xd11cc.single.utils;
 
-import com.xd11cc.single.config.context.TenantContextHolder;
+import com.xd11cc.single.common.context.TenantContextHolder;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import org.junit.jupiter.api.AfterEach;
@@ -115,8 +115,8 @@ class SecurityUtilsTest {
 
     @Test
     void getRequireUserId_未登录_抛ServiceException() {
-        com.xd11cc.single.config.exception.ServiceException ex = assertThrows(
-                com.xd11cc.single.config.exception.ServiceException.class,
+        com.xd11cc.single.common.exception.ServiceException ex = assertThrows(
+                com.xd11cc.single.common.exception.ServiceException.class,
                 SecurityUtils::getRequireUserId
         );
         assertThat(ex.getErrorCode().getErrorCode()).isEqualTo(401);

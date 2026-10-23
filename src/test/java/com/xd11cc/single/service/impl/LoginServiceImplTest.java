@@ -1,7 +1,7 @@
 package com.xd11cc.single.service.impl;
 
-import com.xd11cc.single.config.exception.ServiceException;
-import com.xd11cc.single.config.RedisCache;
+import com.xd11cc.single.common.exception.ServiceException;
+import com.xd11cc.single.infrastructure.redis.RedisCache;
 import com.xd11cc.single.entity.domain.SystemRoleDO;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.domain.SystemUserRoleDO;
@@ -120,7 +120,7 @@ class LoginServiceImplTest extends BaseUnitTest {
                 .when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
 
         assertThrows(RuntimeException.class,
-                () -> loginService.loginByPassword(buildLoginVO("admin", "123456", "cid", "correct")));
+                () -> loginService.loginByPassword(buildLoginVO("admin", "Passw0rd1", "cid", "correct")));
 
         then(systemLoginLogService).should().recordLoginLog(
                 eq("admin"), eq(LoginTypeEnum.PASSWORD), eq(OperateStatusEnum.FAIL), anyString());
@@ -142,7 +142,7 @@ class LoginServiceImplTest extends BaseUnitTest {
                 .willReturn(auth);
         given(tokenService.createToken(loginUser)).willReturn("mock-jwt-token");
 
-        String token = loginService.loginByPassword(buildLoginVO("admin", "123456", "cid", "correct"));
+        String token = loginService.loginByPassword(buildLoginVO("admin", "Passw0rd1", "cid", "correct"));
 
         assertThat(token).isEqualTo("mock-jwt-token");
         then(systemLoginLogService).should().recordLoginLog(

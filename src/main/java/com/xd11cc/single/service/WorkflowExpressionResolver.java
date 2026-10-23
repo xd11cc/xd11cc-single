@@ -1,6 +1,6 @@
 package com.xd11cc.single.service;
 
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

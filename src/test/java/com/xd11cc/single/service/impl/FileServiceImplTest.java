@@ -1,7 +1,7 @@
 package com.xd11cc.single.service.impl;
 
-import com.xd11cc.single.config.exception.ServiceException;
-import com.xd11cc.single.config.properties.MinioProperties;
+import com.xd11cc.single.common.exception.ServiceException;
+import com.xd11cc.single.common.properties.MinioProperties;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

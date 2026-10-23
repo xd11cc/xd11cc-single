@@ -1,6 +1,6 @@
 package com.xd11cc.single.utils;
 
-import com.xd11cc.single.config.properties.SecurityProperties;
+import com.xd11cc.single.common.properties.SecurityProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;

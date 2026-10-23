@@ -1,6 +1,6 @@
 package com.xd11cc.single.service;
 
-import com.xd11cc.single.config.context.PermissionContextHolder;
+import com.xd11cc.single.common.context.PermissionContextHolder;
 import com.xd11cc.single.constants.PermissionConstants;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.utils.SecurityUtils;

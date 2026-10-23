@@ -1,6 +1,6 @@
 package com.xd11cc.single.service.impl;
 
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.entity.domain.AuthClientConfigDO;
 import com.xd11cc.single.entity.vo.AuthClientConfigAddVO;
 import com.xd11cc.single.entity.vo.AuthClientConfigQueryVO;

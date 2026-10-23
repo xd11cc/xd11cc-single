@@ -1,6 +1,6 @@
 package com.xd11cc.single.util;
 
-import com.xd11cc.single.config.context.TenantContextHolder;
+import com.xd11cc.single.common.context.TenantContextHolder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;

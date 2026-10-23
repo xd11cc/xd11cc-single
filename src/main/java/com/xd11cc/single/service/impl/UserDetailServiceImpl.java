@@ -1,13 +1,13 @@
 package com.xd11cc.single.service.impl;
 
-import com.xd11cc.single.config.RedisCache;
+import com.xd11cc.single.infrastructure.redis.RedisCache;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.UserConstants;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.enums.SystemStatusEnum;
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.service.ISystemUserService;
 import com.xd11cc.single.service.DataScopeService;

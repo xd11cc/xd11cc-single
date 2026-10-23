@@ -1,7 +1,7 @@
 package com.xd11cc.single.controller;
 
-import com.xd11cc.single.config.annotation.OperateLog;
-import com.xd11cc.single.config.annotation.DataScope;
+import com.xd11cc.single.common.annotation.OperateLog;
+import com.xd11cc.single.common.annotation.DataScope;
 import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.domain.SystemUserDO;

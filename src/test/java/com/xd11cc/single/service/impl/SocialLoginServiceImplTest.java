@@ -1,8 +1,8 @@
 package com.xd11cc.single.service.impl;
 
-import com.xd11cc.single.config.RedisCache;
-import com.xd11cc.single.config.auth.AuthRequestFactory;
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.infrastructure.redis.RedisCache;
+import com.xd11cc.single.common.auth.AuthRequestFactory;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.entity.domain.AuthSocialUserDO;
 import com.xd11cc.single.entity.domain.SystemUserDO;

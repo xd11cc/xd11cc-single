@@ -1,6 +1,6 @@
 package com.xd11cc.single.utils;
 
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.entity.dto.GenerateConfigDTO;
 import com.xd11cc.single.entity.vo.ColumnInfoVO;
 import com.xd11cc.single.entity.vo.PreviewCodeVO;

@@ -1,6 +1,6 @@
 package com.xd11cc.single.service.impl;
 
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.entity.domain.SystemDeptDO;
 import com.xd11cc.single.entity.vo.SystemDeptAddVO;
 import com.xd11cc.single.entity.vo.SystemDeptQueryVO;

@@ -1,7 +1,7 @@
 package com.xd11cc.single.service.impl;
 
 import cn.hutool.captcha.*;
-import com.xd11cc.single.config.RedisCache;
+import com.xd11cc.single.infrastructure.redis.RedisCache;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.UserConstants;
 import com.xd11cc.single.convert.SystemUserConvert;
@@ -14,7 +14,7 @@ import com.xd11cc.single.enums.OperateStatusEnum;
 import com.xd11cc.single.enums.LoginTypeEnum;
 import com.xd11cc.single.enums.LoginWayEnum;
 import com.xd11cc.single.enums.SystemErrorEnum;
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.service.*;
 import cn.hutool.core.util.IdUtil;
 import com.xd11cc.single.entity.domain.SystemUserRoleDO;

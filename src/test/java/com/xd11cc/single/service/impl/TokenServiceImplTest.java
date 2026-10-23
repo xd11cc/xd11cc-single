@@ -1,6 +1,6 @@
 package com.xd11cc.single.service.impl;
 
-import com.xd11cc.single.config.RedisCache;
+import com.xd11cc.single.infrastructure.redis.RedisCache;
 import com.xd11cc.single.constants.SecurityConstants;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
@@ -71,7 +71,7 @@ class TokenServiceImplTest extends BaseUnitTest {
         given(request.getHeader("Authorization")).willReturn("Bearer badtoken");
         given(jwtUtils.parseToken("badtoken")).willThrow(new RuntimeException("bad"));
 
-        assertThrows(com.xd11cc.single.config.exception.ServiceException.class,
+        assertThrows(com.xd11cc.single.common.exception.ServiceException.class,
                 () -> tokenService.getLoginUser(request));
     }
 
@@ -97,7 +97,7 @@ class TokenServiceImplTest extends BaseUnitTest {
         given(claims.get("tenant_id")).willReturn("not-a-number");
         given(jwtUtils.parseToken("tok")).willReturn(claims);
 
-        assertThrows(com.xd11cc.single.config.exception.ServiceException.class,
+        assertThrows(com.xd11cc.single.common.exception.ServiceException.class,
                 () -> tokenService.getLoginUser("Bearer tok"));
     }
 
@@ -105,7 +105,7 @@ class TokenServiceImplTest extends BaseUnitTest {
     void getLoginUser_String参数_解析异常_抛未授权() {
         given(jwtUtils.parseToken(anyString())).willThrow(new RuntimeException("expired"));
 
-        assertThrows(com.xd11cc.single.config.exception.ServiceException.class,
+        assertThrows(com.xd11cc.single.common.exception.ServiceException.class,
                 () -> tokenService.getLoginUser("Bearer tok"));
     }
 

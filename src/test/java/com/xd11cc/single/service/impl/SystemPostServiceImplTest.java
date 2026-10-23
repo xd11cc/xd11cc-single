@@ -1,6 +1,6 @@
 package com.xd11cc.single.service.impl;
 
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.entity.domain.SystemDeptPostDO;
 import com.xd11cc.single.entity.domain.SystemPostDO;
 import com.xd11cc.single.entity.vo.SystemPostAddVO;

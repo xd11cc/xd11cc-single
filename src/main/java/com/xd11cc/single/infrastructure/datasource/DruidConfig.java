@@ -1,0 +1,138 @@
+package com.xd11cc.single.infrastructure.datasource;
+
+import com.alibaba.druid.pool.DruidDataSource;
+import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceBuilder;
+import lombok.extern.slf4j.Slf4j;
+import com.alibaba.druid.spring.boot.autoconfigure.properties.DruidStatProperties;
+import com.alibaba.druid.util.Utils;
+import com.xd11cc.single.common.properties.DruidProperties;
+import com.xd11cc.single.enums.DataSourceEnum;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+
+import javax.servlet.*;
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.alibaba.druid.stat.DruidDataSourceStatManager;
+import com.alibaba.druid.stat.JdbcDataSourceStat;
+import com.alibaba.druid.support.http.StatViewServlet;
+import com.alibaba.druid.support.http.WebStatFilter;
+
+/**
+ * @Author: xd11cc
+ * @Date: 2025/6/26 16:54
+ **/
+@Slf4j
+@Configuration
+public class DruidConfig {
+
+    @Bean
+    @ConfigurationProperties("spring.datasource.druid.master")
+    public DataSource masterDataSource(DruidProperties druidProperties) {
+        DruidDataSource dataSource = DruidDataSourceBuilder.create().build();
+        return druidProperties.dataSource(dataSource);
+    }
+
+    /**
+     * @ConditionalOnProperty 条件话配置注解，根据配置文件的某个属性值来判断是否创建Bean
+     * prefix -匹配属性的前缀
+     * name -属性名
+     * havingValue -属性值必须与之相同
+     * matchIfMissing -属性不存在时也视为满足条件
+     * @param druidProperties
+     * @return
+     */
+    @Bean
+    @ConfigurationProperties("spring.datasource.druid.slave")
+    @ConditionalOnProperty(prefix = "spring.datasource.druid.slave", name = "enable", havingValue = "true", matchIfMissing = true)
+    public DataSource slaveDataSource(DruidProperties druidProperties) {
+        DruidDataSource dataSource = DruidDataSourceBuilder.create().build();
+        return druidProperties.dataSource(dataSource);
+    }
+
+    /**
+     * Flowable 流程引擎专用数据源，指向 xd11cc_flowable schema。
+     * 不接入 DynamicDataSource 路由，Flowable 引擎直接注入此 bean。
+     */
+    @Bean("flowableDataSource")
+    @ConfigurationProperties("spring.datasource.druid.flowable")
+    public DataSource flowableDataSource() {
+        return DruidDataSourceBuilder.create().build();
+    }
+
+    /**
+     * @Primary: 将动态数据源标记为首选
+     *
+     * @param masterDataSource
+     * @return
+     */
+    @Bean
+    @Primary
+    public DynamicDataSource dynamicDataSource(@Qualifier("masterDataSource") DataSource masterDataSource,
+                                               @Autowired(required = false) @Qualifier("slaveDataSource") DataSource slaveDataSource) {
+        Map<Object, Object> targetDataSources = new HashMap<>();
+        targetDataSources.put(DataSourceEnum.MASTER.name(), masterDataSource);
+        if (slaveDataSource != null) {
+            targetDataSources.put(DataSourceEnum.SLAVE.name(), slaveDataSource);
+        } else {
+            log.warn("从库数据源未配置或已禁用，仅使用主库数据源");
+        }
+        return new DynamicDataSource(masterDataSource, targetDataSources);
+    }
+
+    /**
+     * 去除监控页面底部的广告
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Bean
+    @ConditionalOnProperty(name = "spring.datasource.druid.statViewServlet.enabled", havingValue = "true")
+    public FilterRegistrationBean removeDruidFilterRegistrationBean(DruidStatProperties properties)
+    {
+        // 获取web监控页面的参数
+        DruidStatProperties.StatViewServlet config = properties.getStatViewServlet();
+        // 提取common.js的配置路径
+        String pattern = config.getUrlPattern() != null ? config.getUrlPattern() : "/druid/*";
+        String commonJsPattern = pattern.replaceAll("\\*", "js/common.js");
+        final String filePath = "support/http/resources/js/common.js";
+        // 创建filter进行过滤
+        Filter filter = new Filter()
+        {
+            @Override
+            public void init(javax.servlet.FilterConfig filterConfig) throws ServletException
+            {
+            }
+            @Override
+            public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+                    throws IOException, ServletException
+            {
+                chain.doFilter(request, response);
+                // 重置缓冲区，响应头不会被重置
+                response.resetBuffer();
+                // 获取common.js
+                String text = Utils.readFromResource(filePath);
+                // 正则替换banner, 除去底部的广告信息
+                text = text.replaceAll("<a.*?banner\"></a><br/>", "");
+                text = text.replaceAll("powered.*?shrek.wang</a>", "");
+                response.getWriter().write(text);
+            }
+            @Override
+            public void destroy()
+            {
+            }
+        };
+        FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+        registrationBean.setFilter(filter);
+        registrationBean.addUrlPatterns(commonJsPattern);
+        return registrationBean;
+    }
+}
