@@ -9,12 +9,12 @@ public class UserConstants {
     /**
      * 用户密码最短长度
      */
-    public static final int USER_PASSWORD_MIN_LENGTH = 6;
+    public static final int USER_PASSWORD_MIN_LENGTH = 8;
 
     /**
      * 用户密码最长长度
      */
-    public static final int USER_PASSWORD_MAX_LENGTH = 20;
+    public static final int USER_PASSWORD_MAX_LENGTH = 16;
 
     /**
      * 密码最多重试次数

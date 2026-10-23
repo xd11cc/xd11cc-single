@@ -3,6 +3,7 @@ package com.xd11cc.single.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.constants.UserConstants;
 import com.xd11cc.single.convert.SystemUserConvert;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.domain.SystemUserRoleDO;
@@ -125,6 +126,7 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
 
     @Override
     public int resetPassword(Long userId, String newPassword) {
+        validatePasswordLength(newPassword);
         SystemUserDO systemUserDO = new SystemUserDO();
         systemUserDO.setId(userId);
         systemUserDO.setPassword(passwordEncoder.encode(newPassword));
@@ -149,6 +151,7 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
 
     @Override
     public int changePassword(Long userId, String oldPassword, String newPassword) {
+        validatePasswordLength(newPassword);
         SystemUserDO systemUserDO = baseMapper.selectById(userId);
         if (!SecurityUtils.matchPassword(oldPassword, systemUserDO.getPassword())) {
             throw new ServiceException(SystemErrorEnum.OLD_PASSWORD_ERROR);
@@ -157,6 +160,14 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
         updateUser.setId(userId);
         updateUser.setPassword(passwordEncoder.encode(newPassword));
         return baseMapper.updateById(updateUser);
+    }
+
+    private void validatePasswordLength(String password) {
+        if (StringUtils.isBlank(password)
+                || password.length() < UserConstants.USER_PASSWORD_MIN_LENGTH
+                || password.length() > UserConstants.USER_PASSWORD_MAX_LENGTH) {
+            throw new ServiceException(SystemErrorEnum.PASSWORD_ERROR);
+        }
     }
 
     private void saveUserRoles(Long userId, List<Long> roleIds) {

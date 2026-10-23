@@ -1,10 +1,12 @@
 package com.xd11cc.single.config.flowable;
 
+import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.IdentityService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -22,8 +24,31 @@ import javax.sql.DataSource;
  *     <li>{@code FlowableSecurityInterceptor} 在此显式注册为 bean，不依赖组件扫描</li>
  * </ol>
  */
+@Slf4j
 @Configuration
 public class FlowableConfig implements WebMvcConfigurer {
+
+    /**
+     * 是否自动建表/升级 ACT_* 表结构。
+     * <p>
+     * 默认 false：生产环境不应在每次启动时自动变更表结构。
+     * 首次初始化时可临时通过 {@code flowable.database-schema-update=true} 打开。
+     * </p>
+     */
+    @Value("${flowable.database-schema-update:false}")
+    private String databaseSchemaUpdate;
+
+    /**
+     * 历史级别：none / activity / audit / full
+     */
+    @Value("${flowable.history-level:audit}")
+    private String historyLevel;
+
+    /**
+     * 是否启用异步执行器（定时任务、异步服务任务等）
+     */
+    @Value("${flowable.async-executor-activate:false}")
+    private boolean asyncExecutorActivate;
 
     @Autowired
     @Qualifier("flowableDataSource")
@@ -53,13 +78,33 @@ public class FlowableConfig implements WebMvcConfigurer {
         ProcessEngineConfiguration configuration = ProcessEngineConfiguration
                 .createStandaloneProcessEngineConfiguration();
         configuration.setDataSource(flowableDataSource);
-        // 首次启动自动建/升级 ACT_* 表；建完后请手动改为 "false"
-        configuration.setDatabaseSchemaUpdate("true");
-        // 保留完整历史（流程变量、任务详情等）
-        configuration.setHistoryLevel(org.flowable.common.engine.impl.history.HistoryLevel.AUDIT);
-        // 关闭异步执行器（单机部署不需要；开启后需要把 TransmittableThreadLocal 手动传递给 Flowable 的 Runnable）
-        configuration.setAsyncExecutorActivate(false);
+        // 读取 application.yml 的 flowable.* 配置，避免与配置文件形成“双轨”误导
+        configuration.setDatabaseSchemaUpdate(databaseSchemaUpdate);
+        configuration.setHistoryLevel(resolveHistoryLevel(historyLevel));
+        configuration.setAsyncExecutorActivate(asyncExecutorActivate);
         return configuration.buildProcessEngine();
+    }
+
+    /**
+     * 将 yml 中的历史级别字符串解析为 Flowable 枚举，非法值回退到 AUDIT。
+     */
+    private org.flowable.common.engine.impl.history.HistoryLevel resolveHistoryLevel(String level) {
+        if (level == null) {
+            return org.flowable.common.engine.impl.history.HistoryLevel.AUDIT;
+        }
+        switch (level.trim().toLowerCase()) {
+            case "none":
+                return org.flowable.common.engine.impl.history.HistoryLevel.NONE;
+            case "activity":
+                return org.flowable.common.engine.impl.history.HistoryLevel.ACTIVITY;
+            case "full":
+                return org.flowable.common.engine.impl.history.HistoryLevel.FULL;
+            case "audit":
+                return org.flowable.common.engine.impl.history.HistoryLevel.AUDIT;
+            default:
+                log.warn("[Flowable] 无法识别的 history-level: {}，回退为 audit", level);
+                return org.flowable.common.engine.impl.history.HistoryLevel.AUDIT;
+        }
     }
 
     /**

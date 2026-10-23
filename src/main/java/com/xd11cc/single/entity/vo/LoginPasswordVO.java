@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 /**
  * @Author: xd11cc
@@ -22,6 +23,7 @@ public class LoginPasswordVO extends BaseLoginVO {
     private String username;
 
     @NotBlank(message = "请输入密码")
+    @Size(min = 8, max = 16, message = "密码长度在8到16个字符之间")
     @ApiModelProperty("密码")
     private String password;
 

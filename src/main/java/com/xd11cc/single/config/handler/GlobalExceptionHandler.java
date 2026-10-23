@@ -95,7 +95,18 @@ public class GlobalExceptionHandler {
     public ResponseVO<?> handleServiceException(ServiceException e){
         log.error(e.getMessage(), e);
         ErrorCode errorCode = e.getErrorCode();
-        return null != errorCode ? ResponseVO.fail(errorCode) : ResponseVO.fail(e.getMessage());
+        if (errorCode == null) {
+            return ResponseVO.fail(e.getMessage());
+        }
+        // e.getMessage() 形如 "1002044:实际格式化后的消息"，去掉前缀后返回，
+        // 这样带 {} 占位符的错误码（如“不一致：modelKey={}, bpmnProcessId={}”）能正确展示实参，
+        // 而不是把模板原样透给前端。
+        String message = e.getMessage();
+        String prefix = errorCode.getErrorCode() + ":";
+        if (message != null && message.startsWith(prefix)) {
+            message = message.substring(prefix.length());
+        }
+        return ResponseVO.fail(errorCode.getErrorCode(), message);
     }
 
     /**
