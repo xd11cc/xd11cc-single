@@ -15,8 +15,14 @@ import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 /**
- * 流程定义管理 + 设计器相关接口。
- * <p>按职责拆分：定义 CRUD（草稿/部署/挂起）、设计器导入导出、缩略图。</p>
+ * 流程定义管理接口。
+ * <p>覆盖流程定义的两个生命周期阶段：</p>
+ * <ul>
+ *     <li><b>草稿（存储于 ACT_RE_MODEL）</b>：保存、详情、删除、部署为正式定义</li>
+ *     <li><b>已部署定义（存储于 ACT_RE_PROCDEF）</b>：分页查询、挂起/激活、版本查询</li>
+ * </ul>
+ *
+ * <p>说明：BPMN 的导入导出与缩略图目前由前端设计器直接处理，后端未提供对应接口。</p>
  *
  * @author xd11cc
  * @date 2026-08-18
@@ -87,9 +93,4 @@ public class WorkflowDefinitionController {
         return ResponseVO.success(workflowService.getDefinitionVersions(key));
     }
 
-    @PostMapping("/definition/copy")
-    @ApiOperation("复制流程定义为新草稿")
-    public ResponseVO<String> copyDefinition(@Valid @RequestBody WorkflowCopyVO copyVO) {
-        return ResponseVO.success(workflowService.copyDefinition(copyVO));
-    }
 }

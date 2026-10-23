@@ -76,12 +76,6 @@ public class WorkflowExpressionConfigController {
                 () -> workflowExpressionConfigService.getList(workflowExpressionConfigQueryVO));
     }
 
-    @ApiOperation("流程表达式配置列表")
-    @GetMapping("/list")
-    public ResponseVO<List<WorkflowExpressionConfigDO>> list() {
-        return ResponseVO.success(workflowExpressionConfigService.list());
-    }
-
     @ApiOperation("按使用场景查询流程表达式配置列表")
     @GetMapping("/options")
     public ResponseVO<List<WorkflowExpressionConfigDO>> options(@RequestParam(required = false) String expressionType) {

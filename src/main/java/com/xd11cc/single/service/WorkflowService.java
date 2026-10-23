@@ -5,7 +5,6 @@ import com.xd11cc.single.entity.vo.*;
 import org.springframework.lang.NonNull;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 工作流服务接口。
@@ -68,18 +67,7 @@ public interface WorkflowService {
     /** 查询当前租户下指定流程标识的全部已部署版本。 */
     List<WorkflowDefinitionVersionVO> getDefinitionVersions(@NonNull String key);
 
-    /**
-     * 复制流程定义为新部署。
-     */
-    String copyDefinition(@NonNull WorkflowCopyVO copyVO);
-
     // ==================== 流程实例生命周期 ====================
-
-    /**
-     * 发起流程。
-     * <p>businessKey 建议格式：业务类型:业务ID，用于和业务系统关联。</p>
-     */
-    String startProcess(@NonNull WorkflowStartVO startVO);
 
     /**
      * 取消/撤回流程（仅发起人可操作）。
@@ -95,27 +83,6 @@ public interface WorkflowService {
      * 我发起的流程列表。
      */
     PageResult<WorkflowInstanceDetailVO> getMyStartedProcesses(@NonNull WorkflowInstanceQueryVO queryVO);
-
-    /**
-     * 流程实例分页（管理员视角，支持按发起人/状态/标题/流程定义筛选）。
-     */
-    PageResult<WorkflowInstanceDetailVO> getProcessPage(@NonNull WorkflowInstanceQueryVO queryVO);
-
-    /**
-     * 历史活动节点列表（流程轨迹）。
-     */
-    PageResult<WorkflowModelActivityVO> getHistoricActivities(@NonNull String processInstanceId,
-                                                              Integer pageNo, Integer pageSize);
-
-    /**
-     * 获取运行时流程变量。
-     */
-    List<WorkflowProcessVariableVO> getProcessVariables(@NonNull String processInstanceId);
-
-    /**
-     * 更新/新增运行时流程变量。
-     */
-    void updateProcessVariables(@NonNull String processInstanceId, @NonNull Map<String, Object> variables);
 
     // ==================== 任务操作 ====================
 

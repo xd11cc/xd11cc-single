@@ -1,6 +1,5 @@
 package com.xd11cc.single.service.impl;
 
-import com.alibaba.fastjson2.JSON;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -28,7 +27,6 @@ import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
-import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.Model;
@@ -45,8 +43,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -300,106 +296,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         if (definition == null) throw new ServiceException(SystemErrorEnum.PROCESS_DEFINITION_NOT_FOUND);
         return definition;
     }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public String copyDefinition(WorkflowCopyVO copyVO) {
-        // 必须限定当前租户：否则只要知道他租户的 deploymentId 就能复制其 BPMN
-        ProcessDefinition sourcePd = repositoryService.createProcessDefinitionQuery()
-                .deploymentId(copyVO.getSourceDeploymentId())
-                .processDefinitionTenantId(String.valueOf(SecurityUtils.getTenantId()))
-                .singleResult();
-        if (sourcePd == null) {
-            throw new ServiceException(SystemErrorEnum.PROCESS_DEFINITION_NOT_FOUND);
-        }
-        BpmnModel bpmnModel = repositoryService.getBpmnModel(sourcePd.getId());
-        BpmnXMLConverter converter = new BpmnXMLConverter();
-        byte[] xmlBytes = converter.convertToXML(bpmnModel);
-
-        Model model = repositoryService.newModel();
-        model.setTenantId(String.valueOf(SecurityUtils.getTenantId()));
-        model.setName(copyVO.getNewName());
-        model.setKey(sourcePd.getKey());
-        model.setCategory(sourcePd.getCategory());
-        repositoryService.saveModel(model);
-        repositoryService.addModelEditorSource(model.getId(), xmlBytes);
-        return model.getId();
-    }
-
     // ==================== 流程实例生命周期 ====================
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public String startProcess(WorkflowStartVO startVO) {
-        String processDefinitionKey = startVO.getProcessDefinitionKey();
-        AbstractWorkflowHandler handler = handlerFactory.getHandler(processDefinitionKey);
-
-        Long userId = SecurityUtils.getUserId();
-        String username = SecurityUtils.getUsername();
-        Long tenantId = SecurityUtils.getTenantId();
-        List<ProcessDefinition> activeDefinitions = repositoryService.createProcessDefinitionQuery()
-                .processDefinitionKey(processDefinitionKey)
-                .processDefinitionTenantId(String.valueOf(tenantId))
-                .active()
-                .list();
-        if (activeDefinitions.isEmpty()) throw new ServiceException(SystemErrorEnum.PROCESS_DEFINITION_NOT_FOUND);
-        if (activeDefinitions.size() > 1) throw new ServiceException(SystemErrorEnum.MULTIPLE_ACTIVE_DEFINITION);
-        ProcessDefinition activeDefinition = activeDefinitions.get(0);
-
-        WorkflowContextDTO context = new WorkflowContextDTO();
-        context.setProcessDefinitionKey(processDefinitionKey);
-        context.setBusinessKey(startVO.getBusinessKey());
-        context.setOperatorUserId(userId);
-        context.setOperatorUsername(username);
-        context.setTenantId(tenantId);
-        context.setVariables(startVO.getVariables());
-
-        handler.validateBeforeStart(context);
-
-        Map<String, Object> variables = startVO.getVariables() != null
-                ? new HashMap<>(startVO.getVariables()) : new HashMap<>();
-        try (InputStream resource = repositoryService.getResourceAsStream(
-                activeDefinition.getDeploymentId(), activeDefinition.getResourceName())) {
-            if (resource != null) expressionResolver.validateStartVariables(readStream(resource), variables);
-        } catch (java.io.IOException e) {
-            throw new ServiceException(SystemErrorEnum.PROCESS_RESOURCE_READ_FAILED);
-        }
-        variables.put("initiatorId", String.valueOf(userId));
-        variables.put("tenantId", tenantId);
-        variables.put("businessKey", startVO.getBusinessKey());
-        variables.put("startUserId", String.valueOf(userId));
-
-        ProcessInstance processInstance = runtimeService.startProcessInstanceById(
-                activeDefinition.getId(), startVO.getBusinessKey(), variables);
-
-        context.setProcessInstanceId(processInstance.getId());
-
-        WorkflowInstanceDO instance = new WorkflowInstanceDO();
-        instance.setTenantId(tenantId);
-        instance.setProcessDefinitionKey(processDefinitionKey);
-        instance.setProcessDefinitionId(processInstance.getProcessDefinitionId());
-        instance.setProcessInstanceId(processInstance.getId());
-        instance.setBusinessKey(startVO.getBusinessKey());
-        instance.setTitle(handler.resolveTitle(context));
-        instance.setStatus(WorkflowStatusEnum.RUNNING.getCode());
-        instance.setStarterUserId(userId);
-        instance.setStarterUsername(username);
-        instance.setVariables(JSON.toJSONString(variables));
-        workflowInstanceMapper.insert(instance);
-
-        handler.onProcessStart(context);
-
-        return processInstance.getId();
-    }
-
-    private String readStream(InputStream inputStream) throws java.io.IOException {
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
-        byte[] buffer = new byte[4096];
-        int length;
-        while ((length = inputStream.read(buffer)) != -1) output.write(buffer, 0, length);
-        return new String(output.toByteArray(), StandardCharsets.UTF_8);
-    }
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancelProcess(String processInstanceId, String reason) {
@@ -496,23 +393,6 @@ public class WorkflowServiceImpl implements WorkflowService {
         return selectInstancePage(wrapper, queryVO);
     }
 
-    @Override
-    public PageResult<WorkflowInstanceDetailVO> getProcessPage(WorkflowInstanceQueryVO queryVO) {
-        Long tenantId = SecurityUtils.getTenantId();
-
-        LambdaQueryWrapper<WorkflowInstanceDO> wrapper = new LambdaQueryWrapper<WorkflowInstanceDO>()
-                .eq(WorkflowInstanceDO::getTenantId, tenantId)
-                .eq(queryVO.getStatus() != null, WorkflowInstanceDO::getStatus, queryVO.getStatus())
-                .like(queryVO.getTitle() != null, WorkflowInstanceDO::getTitle, queryVO.getTitle())
-                .like(queryVO.getProcessDefinitionKey() != null,
-                        WorkflowInstanceDO::getProcessDefinitionKey, queryVO.getProcessDefinitionKey())
-                .eq(queryVO.getStarterUserId() != null,
-                        WorkflowInstanceDO::getStarterUserId, queryVO.getStarterUserId())
-                .orderByDesc(WorkflowInstanceDO::getCreateTime);
-
-        return selectInstancePage(wrapper, queryVO);
-    }
-
     /**
      * 统一分页查询：走 PageHelper（与项目其他模块的 PageUtils 同一套机制），
      * 不再手工拼接 {@code LIMIT}，避免分页逻辑散落和 SQL 注入风险。
@@ -529,72 +409,6 @@ public class WorkflowServiceImpl implements WorkflowService {
             return new PageResult<>(list, pageInfo.getTotal());
         } finally {
             PageHelper.clearPage();
-        }
-    }
-
-    @Override
-    public PageResult<WorkflowModelActivityVO> getHistoricActivities(String processInstanceId,
-                                                                     Integer pageNo, Integer pageSize) {
-        Long tenantId = SecurityUtils.getTenantId();
-
-        // 先校验流程属于当前租户
-        WorkflowInstanceDO instance = getInstanceByProcessId(processInstanceId);
-        if (!tenantId.equals(instance.getTenantId())) {
-            throw new ServiceException(SystemErrorEnum.ILLEGAL_VISIT);
-        }
-
-        long count = historyService.createHistoricActivityInstanceQuery()
-                .processInstanceId(processInstanceId)
-                .count();
-        if (count == 0) {
-            return PageResult.empty();
-        }
-
-        List<HistoricActivityInstance> activities = historyService.createHistoricActivityInstanceQuery()
-                .processInstanceId(processInstanceId)
-                .orderByHistoricActivityInstanceStartTime().asc()
-                .listPage((pageNo - 1) * pageSize, pageSize);
-
-        List<WorkflowModelActivityVO> list = activities.stream().map(a -> {
-            WorkflowModelActivityVO vo = new WorkflowModelActivityVO();
-            vo.setActivityId(a.getActivityId());
-            vo.setActivityName(a.getActivityName());
-            vo.setActivityType(a.getActivityType());
-            vo.setAssignee(a.getAssignee());
-            vo.setStartTime(a.getStartTime());
-            vo.setEndTime(a.getEndTime());
-            vo.setDurationMs(a.getDurationInMillis());
-            return vo;
-        }).collect(Collectors.toList());
-
-        return new PageResult<>(list, count);
-    }
-
-    @Override
-    public List<WorkflowProcessVariableVO> getProcessVariables(String processInstanceId) {
-        getInstanceByProcessId(processInstanceId); // 校验归属
-
-        Map<String, Object> variables = runtimeService.getVariables(processInstanceId);
-        if (variables == null || variables.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return variables.entrySet().stream()
-                .map(e -> {
-                    WorkflowProcessVariableVO vo = new WorkflowProcessVariableVO();
-                    vo.setName(e.getKey());
-                    vo.setValue(e.getValue());
-                    vo.setType(e.getValue() != null ? e.getValue().getClass().getSimpleName() : "null");
-                    return vo;
-                })
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void updateProcessVariables(String processInstanceId, Map<String, Object> variables) {
-        getInstanceByProcessId(processInstanceId); // 校验归属
-        if (variables != null && !variables.isEmpty()) {
-            runtimeService.setVariables(processInstanceId, variables);
         }
     }
 
