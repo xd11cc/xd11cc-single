@@ -4,7 +4,13 @@
 
 ![img.png](doc/img/img.png)
 
-A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7 with Java 8, providing out-of-the-box enterprise solutions for authentication, authorization, real-time messaging, and task scheduling.
+A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7 with Java 8, providing out-of-the-box enterprise solutions for authentication, authorization, real-time messaging, task scheduling, and workflow engine.
+
+## 🌐 Live Demo
+
+**Demo URL:** https://xd11ccc.cloud/xd11cc/login
+
+> Demo account: `TBD` / `TBD`
 
 ## Tech Stack
 
@@ -20,9 +26,10 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 | **Cache** | Redis + Redisson | 6.0+ / 3.36.0 | Distributed redisLock, rate limiting, session storage |
 | **Message Queue** | RabbitMQ | 2.7.x | Async decoupling, event notifications |
 | **Real-time** | Netty WebSocket | 4.1.x | Independent port, long-connection push |
-| **Task Scheduling** | XXL-JOB + Quartz | 2.4.0 / 2.7.x | Distributed cron tasks + local scheduling |
+| **Task Scheduling** | XXL-JOB | 2.4.0 | Distributed scheduling, failover, and retries |
 | **Object Storage** | MinIO | 8.6.0 | S3-compatible distributed storage |
 | **Payment** | Alipay SDK + WeChat Pay SDK | 4.40.831 / 4.8.0 | Multi-channel payment client abstraction |
+| **Workflow Engine** | Flowable | 6.7.2 | BPMN 2.0 engine with dedicated datasource |
 | **API Docs** | Swagger2 + Knife4j | 2.9.2 / 3.0.3 | Online API documentation |
 | **Containerization** | Docker + Docker Compose | - | One-command deployment |
 | **Utilities** | Hutool / Fastjson2 / MapStruct / EasyExcel / TTL | 5.8.16 / 2.0.39 / 1.6.3 / 3.3.2 / 2.13.2 | Utility library collection |
@@ -51,7 +58,6 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 - **WebSocket Push** — Netty-based WebSocket server on independent port (12001) with token authentication, heartbeat detection (30s), and idle connection cleanup
 - **Message Queue** — RabbitMQ with producer Confirm + Return callbacks to prevent message loss, manual consumer ACK for reliable consumption
 - **Distributed Scheduling** — XXL-JOB with shard broadcasting, failover, and retry capabilities
-- **Local Scheduling** — Quartz integration supporting memory mode + JDBC persistence dual modes, `AbstractQuartzJob` base class encapsulating execution context (tenant ID, execution params), supports `@DisallowConcurrentExecution` for concurrency control
 - **Distributed Lock** — `@RedisLock` annotation-driven, based on Redisson RLock, supports SpEL-based dynamic lock key granularity (ALL/KEY modes), configurable wait timeout, retry count, and auto-release time
 - **Payment Integration** — Unified `PayClient` interface abstracting multi-channel payment (Alipay PC/WAP/QR/App/Barcode + WeChat JSAPI/Native/WAP/App/Barcode), `@PayClientCode` annotation + factory pattern for auto-registration, supports unified order, refund, and callback parsing
 - **Object Storage** — MinIO file upload/download with pre-signed URL direct uploads to reduce backend bandwidth
@@ -68,106 +74,182 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 - **Thread Pool Management** — Dedicated thread pool isolation (Netty, operation log, notice push) with `DelegatingSecurityContextExecutor` for security context propagation
 - **Docker Deployment** — Docker Compose one-command deployment for app + middleware
 
+### Workflow Engine (Flowable)
+
+- **BPMN 2.0 Designer** — Visual process design based on bpmn.js, supporting user tasks, gateways, and multi-instance (countersign / or-sign)
+- **Dedicated Engine Datasource** — Flowable uses a separate schema (`xd11cc_flowable`) to keep engine tables out of the business database
+- **Expression Config Center** — Assignees, candidates, and conditions are configured via `expressionConfigKey`, decoupling BPMN from business users
+- **Process Definition Management** — Draft save/deploy/version/suspend/activate/copy
+- **Approval Flow** — Todo/Done lists, approve, reject (return to any historical node), delegate, cancel
+- **Candidate Tasks** — Supports `candidateUsers` / `candidateGroups`; groups map to system roles
+- **Real-time Notification** — Approval actions pushed via WebSocket (`WORKFLOW_APPROVED` / `WORKFLOW_REJECTED`, etc.)
+- **Multi-Tenant Isolation** — Explicit `tenantId` on deployment; engine tables carry tenant identifiers
+
 ### Business Modules
 
 - **System Management** — Users, roles, menus, departments, posts, dictionaries, configs, logs
 - **Tenant Management** — Tenant CRUD, domain binding, tenant isolation configuration
-- **Notifications** — System announcements, publish/revoke, read status management
+- **Notifications** — System announcements with publish/revoke, read status, WebSocket push and unread counters
+- **Workflow** — Categories, definitions, designer, expression config, todo/done approvals
 - **File Management** — File upload/download/preview (MinIO)
 - **Social Login Config** — Third-party login application configuration management
+- **Online Users** — View and force-logout active sessions
 
 ## Project Structure
 
 ```
 src/main/java/com/xd11cc/single/
-├── config/                       # Configuration & Infrastructure
-│   ├── annotation/               # Custom annotations
-│   │   ├── DataScope.java        #   Data permission control
-│   │   ├── DataSource.java       #   Dynamic datasource switching
-│   │   ├── RedisLock.java         #   Distributed lock
-│   │   ├── OperateLog.java       #   Operation log recording
-│   │   ├── PayClientCode.java    #   Payment channel marker
-│   │   ├── PayClientScan.java    #   Payment client scan registration
-│   │   ├── RequestLimit.java      #   API rate limiting
-│   │   └── TenantIgnore.java     #   Skip tenant filter
-│   ├── aspectj/                  # AOP aspect implementations
-│   ├── auth/                     # OAuth2 social login config (AuthRequestFactory)
-│   ├── context/                  # Context holders (Tenant/DataSource/Permission)
-│   ├── event/                    # Spring events (NoticeEvent/NoticeEventListener)
-│   ├── exception/                # Custom exceptions & ErrorCode interface
-│   ├── filter/                   # Servlet filters (JWT auth / Tenant identification)
-│   ├── handler/                  # Handlers (Security auth success/failure, MyBatis auto-fill, global exception)
-│   ├── initializer/              # Startup initializers (tenant cache warm-up)
-│   ├── interceptor/              # Spring MVC interceptors (tenant DB interceptor)
-│   ├── mq/                       # RabbitMQ queue configuration
-│   ├── netty/                    # Netty WebSocket server (Server/Channel/Handler)
-│   ├── pay/                      # Payment client abstraction layer (factory / Alipay / WeChat)
-│   ├── properties/               # @ConfigurationProperties classes
-│   ├── schedule/                 # Scheduled tasks (quartz / xxl)
-│   ├── MybatisPlusConfig.java    # MyBatis-Plus config (interceptors / pagination)
-│   ├── SecurityConfig.java       # Spring Security config
-│   ├── RedisConfig.java          # Redis serialization config
-│   ├── DruidConfig.java          # Druid connection pool + monitoring config
-│   ├── ThreadPoolConfig.java     # Thread pool config (netty / log / notice)
-│   ├── NettyServer.java          # Netty WebSocket startup class
-│   └── QuartzConfig.java         # Quartz scheduler config
-├── constants/                    # Application constants (CacheConstants/SecurityConstants)
-├── controller/                   # REST API controllers
-├── convert/                      # MapStruct object converters
+├── common/                            # Shared foundational capabilities
+│   ├── annotation/                    #   Custom annotations
+│   │   ├── DataScope.java             #     Data permission control
+│   │   ├── DataSource.java            #     Dynamic datasource switching
+│   │   ├── RedisLock.java             #     Distributed lock
+│   │   ├── RequestLimit.java          #     API rate limiting
+│   │   ├── OperateLog.java            #     Operation log recording
+│   │   ├── TenantIgnore.java          #     Skip tenant filtering
+│   │   ├── PayClientCode.java         #     Payment channel marker
+│   │   └── PayClientScan.java         #     Payment client scan registration
+│   ├── aspectj/                       #   Corresponding AOP aspects
+│   ├── base/                          #   Base classes/interfaces (ArrayValuable)
+│   ├── auth/                          #   OAuth2 authorization (AuthRequestFactory)
+│   ├── concurrency/                   #   Thread pool configuration
+│   ├── context/                       #   Context holders (Tenant/DataSource/Permission)
+│   ├── docs/                          #   Swagger / Knife4j
+│   ├── event/                         #   Spring events (NoticeEvent, etc.)
+│   ├── exception/                     #   ServiceException / ErrorCode
+│   ├── initializer/                   #   Startup initializers (tenant cache warm-up)
+│   ├── mq/                            #   RabbitMQ queue configuration
+│   ├── properties/                    #   @ConfigurationProperties beans
+│   ├── security/                      #   Spring Security configuration
+│   └── web/                           #   Filters / Interceptors / global exception / CORS
+├── infrastructure/                    # Middleware and infrastructure
+│   ├── datasource/                    #   Druid pool + dynamic datasource
+│   ├── mybatis/                       #   MyBatis-Plus interceptor config
+│   ├── netty/                         #   Netty WebSocket server
+│   ├── redis/                         #   Redis cache + serialization
+│   ├── schedule/                      #   XXL-JOB scheduled tasks
+│   └── storage/                       #   MinIO object storage
+├── modules/                           # Business modules (vertical slices)
+│   ├── pay/                           #   Payment (PayClient + Alipay/WeChat impls)
+│   └── workflow/                      #   Workflow engine wiring & extension points
+│       ├── FlowableConfig.java        #     Engine bootstrap (dedicated datasource)
+│       ├── FlowableWebMvcConfig.java  #     Interceptor registration
+│       ├── FlowableSecurityInterceptor.java  # Flowable identity context
+│       ├── AbstractWorkflowHandler.java      # Business extension point
+│       ├── WorkflowHandlerFactory.java       # Handler strategy factory
+│       ├── WorkflowEvent.java                # Domain event
+│       └── WorkflowEventListener.java        # Event → WebSocket push
+├── constants/                         # Application constants
+├── controller/                        # REST API controllers
+├── convert/                           # MapStruct object converters
 ├── entity/
-│   ├── base/                     # Base entities (BaseDO/BaseTenantDO/ResponseVO/PageVO/PageResult)
-│   ├── domain/                   # Database entities (DO)
-│   ├── dto/                      # Data transfer objects (internal flow)
-│   └── vo/                       # View objects (request/response)
-├── enums/                        # Business enumerations (SystemErrorEnum, etc.)
-├── mapper/                       # MyBatis-Plus mappers
-├── service/                      # Business logic interfaces
-│   └── impl/                     # Service implementations
-└── utils/                        # Utility classes
-    ├── SecurityUtils.java        #   Security utils (get current user / encryption)
-    ├── PageUtils.java            #   Pagination utils (unified pagination logic)
-    ├── TreeUtils.java            #   Tree structure utils (O(n) HashMap implementation)
-    ├── ExcelUtils.java           #   Excel import/export (EasyExcel)
-    ├── AssertUtils.java          #   Assertion utils (throws ServiceException on failure)
-    ├── JsonUtils.java            #   JSON serialization (Fastjson2)
-    ├── DateUtils.java            #   Date utilities
-    ├── MaskUtils.java            #   Data masking (phone / ID card / email)
-    └── ...                       #   Other utility classes
+│   ├── base/                          #   Base entities (BaseDO/BaseTenantDO/ResponseVO/PageResult)
+│   ├── domain/                        #   Database entities (DO)
+│   ├── dto/                           #   Data transfer objects (internal)
+│   └── vo/                            #   View objects (request/response)
+├── enums/                             # Business enums (SystemErrorEnum, etc.)
+├── mapper/                            # MyBatis-Plus mappers
+├── service/                           # Service interfaces
+│   └── impl/                          #   Service implementations
+└── utils/                             # Utilities
+    ├── SecurityUtils.java             #   Security helper (current user/password)
+    ├── PageUtils.java                 #   Pagination helper (PageHelper wrapper)
+    ├── TreeUtils.java                 #   Tree builder (O(n))
+    ├── ExcelUtils.java                #   Excel import/export (EasyExcel)
+    ├── JwtUtils.java                  #   JWT signing and parsing
+    ├── IpUtils.java                   #   IP resolution
+    ├── RSAUtils.java                  #   RSA encryption
+    ├── TenantUtils.java               #   Tenant context helper
+    └── ...                            #   Other utilities
 ```
+
+### Layered Dependency Rules
+
+```
+controller → service → mapper → entity
+     ↓           ↓
+   common / infrastructure / modules
+```
+
+- `entity`, `utils`, and `enums` depend only on `common` — never on `infrastructure` or `modules`
+- `common` and `infrastructure` stay one-directional and never depend on `service` / `controller`
+- New business modules go under `modules/<name>/`, not into `common` or `infrastructure`
 
 ## Quick Start
 
 ### Prerequisites
 
-- JDK 8+
-- MySQL 8.0+
-- Redis 6.0+
-- RabbitMQ 3.8+ (optional)
-- MinIO (optional)
+| Component | Version | Required |
+|------|------|------|
+| JDK | 8+ | ✅ Required |
+| MySQL | 8.0+ | ✅ Required |
+| Redis | 6.0+ | ✅ Required |
+| RabbitMQ | 3.8+ | Optional |
+| MinIO | - | Optional (file features) |
+
+> Flowable uses a **separate database** `xd11cc_flowable`. It is created automatically
+> on first startup through `createDatabaseIfNotExist=true` in the JDBC URL, and the
+> `ACT_*` tables are initialized by the engine itself.
 
 ### Local Development
 
-1. **Create database**
+**1. Create the business database and import the schema**
 
 ```sql
-CREATE DATABASE xd11cc_single DEFAULT CHARACTER SET utf8mb4;
+CREATE DATABASE xd11cc_single DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 ```
 
-Import the schema from `doc/sql/xd11cc_single.sql`.
+```bash
+mysql -uroot -p xd11cc_single < doc/sql/xd11cc_single.sql
+```
 
-2. **Configure application**
+**2. Configure the application**
 
-Update database, Redis, and other service credentials in `src/main/resources/application-dev.yml`.
+Update the following in `src/main/resources/application-dev.yml`:
 
-3. **Start**
+- `spring.datasource.druid.master` — business database
+- `spring.datasource.druid.flowable` — workflow engine database
+- `spring.redis` — Redis connection
+
+**3. Set the JWT secret (required)**
+
+For security reasons the JWT signing key **must not be hard-coded**. Inject it via an
+environment variable or startup argument, with a length of **at least 32 bytes**:
+
+```bash
+export SECURITY_TOKEN_SECRET="your-strong-secret-key-at-least-32-bytes"
+```
+
+The application fails fast with a clear message if the secret is missing or too short.
+
+**4. Start**
 
 ```bash
 mvn spring-boot:run
 ```
 
-Application URL: `http://localhost:10001/xd11cc`
+| URL | Description |
+|------|------|
+| `http://localhost:10001/xd11cc` | Application root |
+| `http://localhost:10001/xd11cc/doc.html` | Knife4j API docs |
+| `http://localhost:10001/xd11cc/swagger-ui.html` | Swagger UI |
+| `ws://localhost:12001/ws?token=xxx` | WebSocket endpoint |
 
-API documentation: `http://localhost:10001/xd11cc/swagger-ui.html`
+> **Note**: If you previously compiled with the old package layout, run `mvn clean` first.
+> Stale classes under `target/classes` from the old package paths can cause bean conflicts.
+
+### Database Scripts
+
+| Script | Purpose |
+|------|------|
+| `doc/sql/xd11cc_single.sql` | Full initialization (schema + dictionaries/menus/categories) |
+| `doc/sql/migration/` | Incremental migrations for existing environments |
+
+### Flowable on Existing Environments
+
+The `ACT_*` tables are created automatically when the engine first connects to the
+`xd11cc_flowable` database. To control the timing manually, temporarily set
+`flowable.database-schema-update` to `true`, start once, then revert it to `false`.
 
 ### Docker Deployment
 
@@ -378,29 +460,48 @@ public ResponseVO<PageResult<SystemUserVO>> page(...) { ... }
   - Department and below: `WHERE d.id IN (recursive sub-department query)`
   - Self only: `WHERE u.id = #{userId}`
 
-## Roadmap
+### Workflow Integration Architecture
 
-- [x] Organization architecture (User, Role, Menu, Dept, Post)
-- [x] Spring Security + JWT authentication
-- [x] RBAC permissions + data permission control
-- [x] Swagger2 API documentation
-- [x] Druid dynamic multi-datasource
-- [x] Redis + Redisson caching & rate limiting
-- [x] RabbitMQ message queue
-- [x] XXL-JOB task scheduling
-- [x] Netty WebSocket real-time push
-- [x] MinIO file storage
-- [x] OAuth2 social login (JustAuth)
-- [x] Docker containerization
-- [x] Freemarker code generator templates
-- [x] Multi-tenant data isolation
-- [x] Notification module
-- [x] Quartz scheduled tasks (memory + JDBC persistence)
-- [x] Distributed lock (@RedisLock annotation)
-- [x] Payment infrastructure (multi-channel client abstraction layer, business APIs in progress)
-- [ ] Payment business APIs (order creation / callback handling / refund flow)
-- [ ] Enhanced audit logs (field-level change tracking)
-- [ ] Internationalization (i18n)
+```
+                ┌─────────────────────────────┐
+ Designer ──────→│  /workflow/draft/save       │  draft → ACT_RE_MODEL
+ (bpmn.js)       │  expressionConfigKey parse  │  configurable assignees
+                └──────────────┬──────────────┘
+                               ↓ deploy
+                ┌─────────────────────────────┐
+                │  ACT_RE_PROCDEF (tenantId)  │  engine DB xd11cc_flowable
+                └──────────────┬──────────────┘
+                               ↓ start
+ Initiator ─────→│  workflow_instance (biz DB) │  business link + state machine
+                               ↓
+ Approver ──────→│  Todo query (assignee/candidate) │
+                │  approve / reject / delegate     │
+                └──────────────┬──────────────┘
+                               ↓ domain event
+                WorkflowEvent → WorkflowEventListener
+                               ↓ @Async + AFTER_COMMIT
+                        WebSocket approval notification
+```
+
+**Key design decisions**:
+
+- **Dual-datasource isolation** — Engine tables (`ACT_*`) live in `xd11cc_flowable`
+  while business tables stay in `xd11cc_single`, linked by `process_instance_id`.
+  This prevents engine upgrades from touching business data.
+- **Explicit tenant propagation** — Flowable 6.7.2 has no ThreadLocal tenant injection;
+  both deployment and queries pass `tenantId` explicitly, so engine rows are naturally
+  partitioned per tenant.
+- **Expression config center** — BPMN does not hard-code assignees. Nodes declare an
+  `expressionConfigKey`, which `WorkflowExpressionResolver` expands at deploy time,
+  letting business users maintain approval rules in the UI.
+- **Business extension points** — `AbstractWorkflowHandler` exposes `onProcessStart`,
+  `onTaskApprove`, `onProcessComplete`, etc. Register a handler per `processDefinitionKey`;
+  when none is registered a no-op implementation is used so the flow is never blocked.
+- **Explicit transaction boundary** — Approval events use
+  `@TransactionalEventListener(AFTER_COMMIT)` so notifications are only sent after the
+  database commit succeeds.
+- **Candidate support** — Todo queries cover `assignee`, `candidateUsers`, and
+  `candidateGroups` (groups map to system roles), preventing orphaned candidate tasks.
 
 ## License
 

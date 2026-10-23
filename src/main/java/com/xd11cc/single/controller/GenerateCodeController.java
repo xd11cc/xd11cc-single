@@ -36,7 +36,7 @@ public class GenerateCodeController {
 
     @ApiOperation("生成代码")
     @GetMapping
-    @PreAuthorize("ss.hasPermission('system:generate:code')")
+    @PreAuthorize("@ss.hasPermission('system:generate:code')")
     public ResponseVO<List<PreviewCodeVO>> generateCode(String tableName){
         return ResponseVO.success(generateCodeService.generateCode(tableName));
     }

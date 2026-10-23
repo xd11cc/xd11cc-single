@@ -2,7 +2,7 @@ package com.xd11cc.single.enums;
 
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
-import com.xd11cc.single.config.ArrayValuable;
+import com.xd11cc.single.common.base.ArrayValuable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;

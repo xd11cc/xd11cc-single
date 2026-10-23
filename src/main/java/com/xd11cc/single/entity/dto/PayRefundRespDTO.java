@@ -44,7 +44,7 @@ public class PayRefundRespDTO {
     /**
      * 调用渠道的错误码
      * 注意：这里返回的是业务异常，而不是系统异常
-     * 如果是系统异常，则会抛出 {@link com.xd11cc.single.config.exception.PayClientException}
+     * 如果是系统异常，则会抛出 {@link com.xd11cc.single.common.exception.PayClientException}
      */
     private String channelErrorCode;
 

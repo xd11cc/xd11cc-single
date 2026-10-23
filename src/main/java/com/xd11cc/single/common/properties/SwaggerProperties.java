@@ -1,0 +1,34 @@
+package com.xd11cc.single.common.properties;
+
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+/**
+ * @Author: xd11cc
+ * @Date: 2025/6/16 22:41
+ *
+ * swagger自定义参数
+ **/
+@Data
+@NoArgsConstructor
+@Component
+@ConfigurationProperties("swagger")
+public class SwaggerProperties {
+
+    /**
+     * 标题
+     */
+    private String title;
+
+    /**
+     * 描述
+     */
+    private String description;
+
+    /**
+     * 版本
+     */
+    private String version;
+}

@@ -1,8 +1,8 @@
 package com.xd11cc.single.controller;
 
-import com.xd11cc.single.config.annotation.RequestLimit;
+import com.xd11cc.single.common.annotation.RequestLimit;
 import com.xd11cc.single.enums.RequestLimitEnum;
-import com.xd11cc.single.config.RedisCache;
+import com.xd11cc.single.infrastructure.redis.RedisCache;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.entity.vo.*;
 import com.xd11cc.single.entity.base.ResponseVO;

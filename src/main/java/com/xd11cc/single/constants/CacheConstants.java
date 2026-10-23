@@ -58,6 +58,8 @@ public class CacheConstants {
      */
     public static final String SYSTEM_CONFIG_KEY = "system_config:";
 
+    public static final String WORKFLOW_EXPRESSION_CONFIG_OPTIONS = "workflow_expression_config:options";
+
     /**
      * 通知未读数key
      */

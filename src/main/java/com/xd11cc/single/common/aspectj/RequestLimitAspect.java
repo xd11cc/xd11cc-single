@@ -1,0 +1,116 @@
+package com.xd11cc.single.common.aspectj;
+
+import com.xd11cc.single.common.annotation.RequestLimit;
+import com.xd11cc.single.constants.CacheConstants;
+import com.xd11cc.single.common.exception.RateLimitException;
+import com.xd11cc.single.utils.IpUtils;
+import com.xd11cc.single.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
+import org.redisson.api.RRateLimiter;
+import org.redisson.api.RateIntervalUnit;
+import org.redisson.api.RateType;
+import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+
+import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
+
+@Aspect
+@Component
+@Slf4j
+@Order(5)
+public class RequestLimitAspect {
+
+    @Autowired
+    private RedissonClient redissonClient;
+
+    @Pointcut("@annotation(com.xd11cc.single.common.annotation.RequestLimit)")
+    public void pointCut() {}
+
+    @Around("pointCut()")
+    public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        Method method = signature.getMethod();
+        RequestLimit requestLimit = method.getAnnotation(RequestLimit.class);
+        if (requestLimit == null) {
+            return joinPoint.proceed();
+        }
+
+        validateRateLimitParams(requestLimit);
+
+        String rateLimitKey = buildRateLimitKey(method, requestLimit);
+
+        RRateLimiter rateLimiter = getOrCreateLimiter(rateLimitKey, requestLimit);
+
+        if (rateLimiter.tryAcquire(1)) {
+            log.debug("限流放行 -> key:{}，接口:{}.{}", rateLimitKey, method.getDeclaringClass().getName(), method.getName());
+            return joinPoint.proceed();
+        } else {
+            log.info("触发限流 -> key:{}, 限流规则:{}次/{}秒, 接口:{}.{}",
+                    rateLimitKey, requestLimit.count(), requestLimit.time(),
+                    method.getDeclaringClass().getName(), method.getName());
+            throw new RateLimitException(requestLimit.message());
+        }
+    }
+
+    private RRateLimiter getOrCreateLimiter(String key, RequestLimit requestLimit) {
+        RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
+        if (rateLimiter.trySetRate(
+                RateType.OVERALL,
+                requestLimit.count(),
+                requestLimit.time(),
+                converToRateIntervalUnit(requestLimit.timeUnit())
+        )) {
+            // 首次创建时设置过期时间，防止动态 key 残留
+            rateLimiter.expire(java.time.Duration.ofSeconds(requestLimit.time() * 2L));
+            log.debug("Rate limiter initialized: {}", key);
+        }
+        return rateLimiter;
+    }
+
+    private String buildRateLimitKey(Method method, RequestLimit requestLimit) {
+        StringBuilder sb = new StringBuilder(CacheConstants.REQUEST_LIMIT_KEY);
+        sb.append(requestLimit.key());
+        switch (requestLimit.type()) {
+            case IP:
+                sb.append("ip:").append(IpUtils.getIpAddr());
+                break;
+            case USER:
+                // 注意：USER 类型不能用于未登录的接口，否则会抛出未授权异常
+                sb.append("user:").append(SecurityUtils.getUserId());
+                break;
+            default:
+                sb.append("method:")
+                        .append(method.getDeclaringClass().getSimpleName())
+                        .append(".")
+                        .append(method.getName());
+                break;
+        }
+        return sb.toString();
+    }
+
+    private RateIntervalUnit converToRateIntervalUnit(TimeUnit timeUnit) {
+        switch (timeUnit) {
+            case MINUTES: return RateIntervalUnit.MINUTES;
+            case HOURS: return RateIntervalUnit.HOURS;
+            case DAYS: return RateIntervalUnit.DAYS;
+            default: return RateIntervalUnit.SECONDS;
+        }
+    }
+
+    private void validateRateLimitParams(RequestLimit requestLimit) {
+        if (requestLimit.count() <= 0) {
+            throw new IllegalArgumentException("限流配置错误：count必须大于0");
+        }
+        if (requestLimit.time() <= 0) {
+            throw new IllegalArgumentException("限流配置错误：time必须大于0");
+        }
+    }
+}

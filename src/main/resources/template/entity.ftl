@@ -11,8 +11,8 @@ import java.io.Serializable;
 import lombok.Data;
 <#if hasTimestamp>
 import java.util.Date;
-import org.springframework.format.annotation.DateTimeFormat;
-import com.fasterxml.jackson.annotation.JsonFormat;
+<#--import org.springframework.format.annotation.DateTimeFormat;-->
+<#--import com.fasterxml.jackson.annotation.JsonFormat;-->
 </#if>
 <#if hasBigDecimal>
 import java.math.BigDecimal;

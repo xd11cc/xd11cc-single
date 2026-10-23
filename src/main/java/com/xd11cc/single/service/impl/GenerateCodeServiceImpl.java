@@ -1,8 +1,8 @@
 package com.xd11cc.single.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
-import com.xd11cc.single.config.exception.ServiceException;
-import com.xd11cc.single.config.properties.TenantIgnoreProperties;
+import com.xd11cc.single.common.exception.ServiceException;
+import com.xd11cc.single.common.properties.TenantIgnoreProperties;
 import com.xd11cc.single.entity.dto.GenerateConfigDTO;
 import com.xd11cc.single.entity.vo.ColumnInfoVO;
 import com.xd11cc.single.entity.vo.PreviewCodeVO;

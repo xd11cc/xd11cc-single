@@ -2,7 +2,7 @@ package com.xd11cc.single.utils;
 
 import com.spire.pdf.FileFormat;
 import com.spire.pdf.PdfDocument;
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import lombok.extern.slf4j.Slf4j;
 

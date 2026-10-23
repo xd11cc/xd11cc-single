@@ -2,7 +2,7 @@ package com.xd11cc.single.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xd11cc.single.config.exception.ServiceException;
+import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.convert.SystemNoticeConvert;
 import com.xd11cc.single.entity.domain.SystemNoticeDO;
 import com.xd11cc.single.entity.domain.SystemNoticeUserDO;
@@ -10,7 +10,7 @@ import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.enums.NoticeScopeEnum;
 import com.xd11cc.single.enums.NoticeStatusEnum;
 import com.xd11cc.single.enums.SystemErrorEnum;
-import com.xd11cc.single.config.event.NoticeEvent;
+import com.xd11cc.single.common.event.NoticeEvent;
 import com.xd11cc.single.mapper.SystemNoticeMapper;
 import com.xd11cc.single.entity.vo.SystemNoticeAddVO;
 import com.xd11cc.single.entity.vo.SystemNoticeQueryVO;

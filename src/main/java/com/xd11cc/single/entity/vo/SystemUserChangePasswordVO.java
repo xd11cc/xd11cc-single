@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 /**
  * @author xd11cc
@@ -19,6 +20,7 @@ public class SystemUserChangePasswordVO {
     private String oldPassword;
 
     @NotBlank(message = "新密码不能为空")
+    @Size(min = 8, max = 16, message = "密码长度在8到16个字符之间")
     @ApiModelProperty("新密码")
     private String newPassword;
 }

@@ -10,6 +10,26 @@ spring:
   profiles:
 #    active: @profileActive@
     active: dev
+  autoconfigure:
+    exclude:
+      # 排除 Flowable starter 里用不到的引擎自动配置，保留 ProcessEngineAutoConfiguration
+      - org.flowable.spring.boot.app.AppEngineAutoConfiguration
+      - org.flowable.spring.boot.app.AppEngineServicesAutoConfiguration
+      - org.flowable.spring.boot.idm.IdmEngineAutoConfiguration
+      - org.flowable.spring.boot.idm.IdmEngineServicesAutoConfiguration
+      - org.flowable.spring.boot.cmmn.CmmnEngineAutoConfiguration
+      - org.flowable.spring.boot.cmmn.CmmnEngineServicesAutoConfiguration
+      - org.flowable.spring.boot.dmn.DmnEngineAutoConfiguration
+      - org.flowable.spring.boot.dmn.DmnEngineServicesAutoConfiguration
+      - org.flowable.spring.boot.form.FormEngineAutoConfiguration
+      - org.flowable.spring.boot.form.FormEngineServicesAutoConfiguration
+      - org.flowable.spring.boot.content.ContentEngineAutoConfiguration
+      - org.flowable.spring.boot.content.ContentEngineServicesAutoConfiguration
+      - org.flowable.spring.boot.eventregistry.EventRegistryAutoConfiguration
+      - org.flowable.spring.boot.eventregistry.EventRegistryServicesAutoConfiguration
+      - org.flowable.spring.boot.actuate.info.FlowableInfoAutoConfiguration
+      - org.flowable.spring.boot.EndpointAutoConfiguration
+      - org.flowable.spring.boot.RestApiAutoConfiguration
   jackson:
     time-zone: Asia/Shanghai
     date-format: yyyy-MM-dd HH:mm:ss
@@ -75,6 +95,7 @@ security:
     - /
     # druid监控地址
     - /druid/**
+    - /druid-flowable/**
     # 登录相关白名单
     - /login/loginByPassword
     - /login/getCaptcha
@@ -98,3 +119,10 @@ tenant:
     - system_menu
     - system_dict_type
   ignoreUrls:
+
+# Flowable 流程引擎配置
+# 多余引擎通过 spring.autoconfigure.exclude 排除（见上方 spring 段），此处只需保留引擎本体配置
+flowable:
+  database-schema-update: false            # 首次启动自动建/升级 ACT_* 表；建完后请手动改为 false
+  history-level: audit                    # 保留完整历史（变量、任务详情等）
+  async-executor-activate: false          # 关闭异步执行器；开启后需手动传递 TransmittableThreadLocal

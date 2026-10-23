@@ -1,6 +1,6 @@
 package com.xd11cc.single.enums;
 
-import com.xd11cc.single.config.ArrayValuable;
+import com.xd11cc.single.common.base.ArrayValuable;
 import com.xd11cc.single.utils.ObjectUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

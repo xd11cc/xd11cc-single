@@ -11,7 +11,7 @@ import com.xd11cc.single.entity.vo.SystemNoticeUserQueryVO;
 import com.xd11cc.single.enums.NoticeScopeEnum;
 import com.xd11cc.single.enums.NoticeStatusEnum;
 import com.xd11cc.single.enums.NoticeTypeEnum;
-import com.xd11cc.single.config.event.NoticeEvent;
+import com.xd11cc.single.common.event.NoticeEvent;
 import com.xd11cc.single.mapper.SystemNoticeMapper;
 import com.xd11cc.single.mapper.SystemNoticeUserMapper;
 import com.xd11cc.single.service.ISystemNoticeUserService;
