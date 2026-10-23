@@ -48,6 +48,7 @@ CREATE TABLE `auth_client_config` (
 BEGIN;
 COMMIT;
 
+
 -- ----------------------------
 -- Table structure for auth_social_user
 -- ----------------------------
@@ -762,6 +763,122 @@ CREATE TABLE `system_user_role` (
   UNIQUE KEY `uk_tenant_user_role` (`tenant_id`,`user_id`,`role_id`,`del_flag`),
   KEY `idx_tenant_role` (`tenant_id`,`role_id`,`del_flag`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色表';
+
+
+-- ----------------------------
+-- Table structure for workflow_category
+-- ----------------------------
+DROP TABLE IF EXISTS `workflow_category`;
+CREATE TABLE `workflow_category` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `category_code` varchar(64) NOT NULL COMMENT '分类编码，租户内唯一，供流程模型引用',
+  `category_name` varchar(100) NOT NULL COMMENT '分类名称',
+  `sort` int NOT NULL DEFAULT '0' COMMENT '显示排序，值越小越靠前',
+  `status` char(1) NOT NULL DEFAULT '0' COMMENT '状态：0正常，1停用',
+  `create_user_id` bigint NOT NULL COMMENT '创建人id',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_user_id` bigint NOT NULL COMMENT '更新人id',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识：0未删除，NULL已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_tenant_category_code` (`tenant_id`,`category_code`,`del_flag`),
+  KEY `idx_tenant_category_list` (`tenant_id`,`status`,`sort`,`id`,`del_flag`),
+  KEY `idx_tenant_category_name` (`tenant_id`,`category_name`,`del_flag`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Flowable流程分类';
+
+-- ----------------------------
+-- Table structure for workflow_expression_config
+-- ----------------------------
+DROP TABLE IF EXISTS `workflow_expression_config`;
+CREATE TABLE `workflow_expression_config` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `config_key` varchar(128) NOT NULL COMMENT '配置键',
+  `config_name` varchar(100) NOT NULL COMMENT '配置名称',
+  `expression_type` varchar(64) NOT NULL COMMENT '表达式使用场景',
+  `expression_template` text NOT NULL COMMENT '完整Flowable表达式模板',
+  `parameter_schema` text NOT NULL COMMENT '参数定义JSON数组',
+  `return_type` varchar(32) NOT NULL COMMENT '返回类型',
+  `status` varchar(1) NOT NULL DEFAULT '0' COMMENT '状态：0正常，1停用',
+  `create_user_id` bigint NOT NULL,
+  `create_time` datetime NOT NULL,
+  `update_user_id` bigint NOT NULL,
+  `update_time` datetime NOT NULL,
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL,
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_tenant_config_key` (`tenant_id`,`config_key`,`del_flag`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Flowable表达式配置';
+
+-- ----------------------------
+-- Table structure for workflow_instance
+-- ----------------------------
+DROP TABLE IF EXISTS `workflow_instance`;
+CREATE TABLE `workflow_instance` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+  `tenant_id` bigint NOT NULL COMMENT '租户ID',
+  `process_definition_key` varchar(255) NOT NULL COMMENT '流程定义Key',
+  `process_definition_id` varchar(64) NOT NULL COMMENT 'Flowable流程定义ID',
+  `process_instance_id` varchar(64) NOT NULL COMMENT 'Flowable流程实例ID',
+  `business_key` varchar(255) NOT NULL COMMENT '业务标识，格式建议为业务类型:业务ID',
+  `title` varchar(256) DEFAULT NULL COMMENT '流程标题',
+  `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态：0-进行中，1-已完成，2-已取消，3-已驳回',
+  `starter_user_id` bigint NOT NULL COMMENT '发起人ID',
+  `starter_username` varchar(64) DEFAULT NULL COMMENT '发起人用户名',
+  `variables` json DEFAULT NULL COMMENT '业务流程变量JSON快照',
+  `end_time` datetime DEFAULT NULL COMMENT '流程结束时间',
+  `create_user_id` bigint DEFAULT NULL COMMENT '创建人ID',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_user_id` bigint DEFAULT NULL COMMENT '更新人ID',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识：0-未删除，NULL-已删除',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_process_instance` (`process_instance_id`,`del_flag`),
+  KEY `idx_tenant_business` (`tenant_id`,`business_key`,`del_flag`),
+  KEY `idx_tenant_status_time` (`tenant_id`,`status`,`del_flag`,`create_time`,`id`),
+  KEY `idx_tenant_starter_status` (`tenant_id`,`starter_user_id`,`status`,`del_flag`),
+  KEY `idx_process_definition` (`tenant_id`,`process_definition_key`,`del_flag`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='工作流实例业务关联表';
+
+-- ----------------------------
+-- Table structure for workflow_task_record
+-- ----------------------------
+DROP TABLE IF EXISTS `workflow_task_record`;
+CREATE TABLE `workflow_task_record` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `tenant_id` bigint NOT NULL COMMENT '租户ID',
+  `process_instance_id` varchar(64) NOT NULL COMMENT 'Flowable流程实例ID',
+  `process_definition_key` varchar(128) NOT NULL COMMENT '流程定义Key',
+  `process_definition_name` varchar(128) DEFAULT NULL COMMENT '流程定义名称',
+  `business_key` varchar(255) DEFAULT NULL COMMENT '业务标识',
+  `title` varchar(256) DEFAULT NULL COMMENT '流程标题',
+  `task_id` varchar(64) NOT NULL COMMENT 'Flowable任务ID',
+  `task_definition_key` varchar(128) DEFAULT NULL COMMENT '任务节点Key',
+  `task_name` varchar(128) DEFAULT NULL COMMENT '任务节点名称',
+  `assignee_user_id` bigint DEFAULT NULL COMMENT '处理人ID',
+  `assignee_username` varchar(64) DEFAULT NULL COMMENT '处理人用户名',
+  `assignee_dept_id` bigint DEFAULT NULL COMMENT '处理人部门ID（冗余，便于统计免 JOIN）',
+  `action` varchar(32) NOT NULL COMMENT '动作：START/APPROVE/REJECT/DELEGATE/CANCEL/COMPLETE',
+  `comment` varchar(1000) DEFAULT NULL COMMENT '审批意见',
+  `start_time` datetime NOT NULL COMMENT '任务开始时间',
+  `end_time` datetime DEFAULT NULL COMMENT '任务结束时间',
+  `duration_ms` bigint DEFAULT NULL COMMENT '处理耗时(毫秒)，预计算',
+  `result` varchar(16) DEFAULT NULL COMMENT '结果：APPROVED/REJECTED/DELEGATED',
+  `create_user_id` bigint NOT NULL,
+  `create_time` datetime NOT NULL,
+  `update_user_id` bigint NOT NULL,
+  `update_time` datetime NOT NULL,
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识：0未删除，NULL已删除',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_task_id_action` (`task_id`,`action`,`del_flag`),
+  KEY `idx_tenant_assignee_time` (`tenant_id`,`assignee_user_id`,`end_time`),
+  KEY `idx_tenant_dept_time` (`tenant_id`,`assignee_dept_id`,`end_time`),
+  KEY `idx_tenant_proc_time` (`tenant_id`,`process_definition_key`,`end_time`),
+  KEY `idx_tenant_time` (`tenant_id`,`end_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Flowable任务记录表（审批流水宽表）';
+
 
 -- ----------------------------
 -- Records of system_user_role
