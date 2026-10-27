@@ -64,7 +64,7 @@ spring:
         allow:
         url-pattern: /druid/*
         # 控制台管理用户名和密码
-        login-username: xd11cc
+        login-username: admin
         login-password: xd11cc@1216
       filter:
         stat:
@@ -98,7 +98,9 @@ spring:
         max-wait: 2000ms
   # rabbitmq配置
   rabbitmq:
-    host: localhost
+    # 使用 127.0.0.1 而非 localhost：Docker 端口映射在 IPv6 回环(::1)上连接不稳定，
+    # 会导致消费者反复重连（Socket closed）
+    host: 127.0.0.1
     port: 5672
     username: admin
     password: xd11cc@1216
@@ -108,26 +110,20 @@ spring:
     # 消费者配置（手动确认消息，避免消息丢失）
     listener:
       simple:
-        acknowledge-mode: manual # 手动ACK
-        concurrency: 1 # 消费者并发数
-        max-concurrency: 5 # 最大并发数
-# rabbitmq自定义队列、交换机、路由键配置
-rabbitmq:
-  queue:
-    direct-queue: dev_direct_queue # Direct队列名
-    topic-queue1: dev_topic_queue1 # Topic1队列1
-    topic-queue2: dev_topic_queue2 # Topic2队列2
-    fanout-queue1: dev_fanout_queue1 # Fanout队列1
-    fanout-queue2: dev_fanout_queue2 # Fanout队列2
-  exchange:
-    direct-exchange: dev_direct_exchange # Direct交换机
-    topic-exchange: dev_topic_exchange # Topic交换机
-    fanout-exchange: dev_fanout_exchange # Fanout交换机
-  routing-key:
-    direct-key: dev_direct_key # Direct路由键
-    topic-key1: dev_topic_key1 # Topic路由键1
-    topic-key2: dev_topic_key2 # Topic路由键2
-
+        acknowledge-mode: manual # 手动ACK，由 MqConsumeTemplate 控制 basicAck / basicNack
+        # 初始消费者线程数。不要设为 1：MqConsumeTemplate 重试会阻塞线程
+        # （1s+5s+15s 约 21 秒），单线程时整条队列会在此期间停摆
+        concurrency: 3
+        # 积压时自动扩容的上限。受业务库连接池约束（max-active=20），取一半
+        max-concurrency: 10
+        # 每个消费者最多预取多少条未确认消息。默认 250 在手写 ACK 场景下会让
+        # 单个消费者独占大量消息，导致其它消费者空转、该消费者崩溃时大量重投
+        prefetch: 1
+        # 设为 false 表示「处理失败的默认丢弃、不重新入队」，失败消息走 DLX 进死信队列。
+        # 框架默认是 true，会让未捕获的异常触发无限重新入队（毒消息循环）
+        default-requeue-rejected: false
+        # 注意：不要开启 retry.enabled。重试已由 MqConsumeTemplate 统一负责，
+        # 两者叠加会形成「外层 Spring Retry × 内层模板重试」的乘数效应
 # xxl-job配置
 xxl:
   job:

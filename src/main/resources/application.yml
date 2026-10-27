@@ -1,12 +1,15 @@
 server:
   port: 10001
-  shutdown: graceful
+  shutdown: graceful          # 收到 SIGTERM 后排空在途请求（依赖 Dockerfile 里的 exec）
   servlet:
     context-path: /xd11cc
 
 spring:
   application:
     name: xd11cc-single
+  lifecycle:
+    # 排空最长等待，必须小于容器 stop_grace_period（stack 里配的是 45s）
+    timeout-per-shutdown-phase: 30s
   profiles:
 #    active: @profileActive@
     active: dev

@@ -93,6 +93,22 @@ public enum SystemErrorEnum implements ErrorCode {
     BPMN_PROCESS_COUNT_INVALID(1002043, "BPMN 必须且只能包含一个 process，当前数量：{}"),
     BPMN_PROCESS_ID_MISMATCH(1002044, "流程标识与 BPMN 中 processId 不一致：modelKey={}, bpmnProcessId={}"),
 
+    // ==================== 004 - 消息队列模块 ====================
+    MQ_TENANT_CONTEXT_MISSING(1002050, "发送MQ消息失败：当前上下文无租户信息"),
+    MQ_MESSAGE_EMPTY(1002051, "发送MQ消息失败：消息体为空"),
+    MQ_TENANT_ID_REQUIRED(1002052, "发送MQ消息失败：tenantId 不能为空"),
+    MQ_HEADER_TENANT_MISSING(1002053, "MQ消费失败：消息头缺少 tenantId"),
+    MQ_TENANT_ID_EMPTY(1002054, "MQ消费失败：租户ID为空"),
+    MQ_TENANT_NOT_EXISTS(1002055, "MQ消费失败：租户不存在或已停用"),
+    MQ_FAIL_RECORD_NOT_FOUND(1002056, "MQ失败消息不存在"),
+    MQ_FAIL_REPLAY_NOT_ALLOWED(1002057, "仅待处理状态的消息允许重放"),
+    MQ_QUEUE_UNDEFINED(1002058, "队列未定义，无法重放"),
+    MQ_DELAY_QUEUE_REQUIRED(1002059, "发送延迟消息失败：目标队列未声明为延迟队列"),
+    MQ_DELAY_VALUE_INVALID(1002060, "发送延迟消息失败：延迟时长必须大于 0"),
+    MQ_DELAY_UNIT_REQUIRED(1002061, "发送延迟消息失败：时间单位不能为空"),
+    MQ_FAIL_DATA_EMPTY(1002062, "消息内容不能为空"),
+    MQ_FAIL_DATA_INVALID(1002063, "消息内容不是合法的JSON"),
+
     // ==================== 003 - 字典模块 ====================
     DICT_TYPE_HAVE_DATA(1003001, "{}字典类型下存在字典数据"),
     DICT_TYPE_EXISTS(1003002, "字典类型已存在"),

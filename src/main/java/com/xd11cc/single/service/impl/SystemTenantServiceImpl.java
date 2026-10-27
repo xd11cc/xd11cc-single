@@ -124,6 +124,6 @@ public class SystemTenantServiceImpl extends ServiceImpl<SystemTenantMapper, Sys
         if (!tenantMap.isEmpty()) {
             TenantContextHolder.runWithoutTenantAwareness(() -> redisCache.setCacheMap(CacheConstants.TENANT_DOMAIN_KEY, tenantMap));
         }
-        log.info("租户缓存刷新完成，共加载 {} 个租户", tenantMap.size());
+        log.info("租户缓存刷新完成，共加载 {} 个租户", tenantList.size());
     }
 }

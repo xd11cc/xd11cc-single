@@ -766,6 +766,32 @@ CREATE TABLE `system_user_role` (
 
 
 -- ----------------------------
+-- Table structure for mq_fail_message
+-- ----------------------------
+DROP TABLE IF EXISTS `mq_fail_message`;
+CREATE TABLE `mq_fail_message` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `message_id` varchar(64) NOT NULL COMMENT '消息唯一标识（发送端生成）',
+  `queue_name` varchar(128) NOT NULL COMMENT '来源队列名',
+  `data` text COMMENT '原始业务消息JSON',
+  `message_type` varchar(255) DEFAULT NULL COMMENT '消息体全限定类名（Jackson __TypeId__），重放时用于还原类型',
+  `error_msg` varchar(2000) DEFAULT NULL COMMENT '最后一次异常摘要',
+  `retry_count` int NOT NULL DEFAULT '0' COMMENT '首次失败时的实际重试次数',
+  `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态：0-待处理，1-已重放，2-已忽略',
+  `create_user_id` bigint NOT NULL COMMENT '创建人id',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_user_id` bigint NOT NULL COMMENT '更新人id',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识：0-未删除，NULL-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`),
+  KEY `idx_tenant_message` (`tenant_id`,`message_id`,`del_flag`),
+  KEY `idx_tenant_status_time` (`tenant_id`,`status`,`create_time`,`id`,`del_flag`),
+  KEY `idx_queue_time` (`queue_name`,`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='MQ消费失败消息表';
+
+-- ----------------------------
 -- Table structure for workflow_category
 -- ----------------------------
 DROP TABLE IF EXISTS `workflow_category`;
