@@ -1,5 +1,7 @@
 package com.xd11cc.single.common.event;
 
+import com.xd11cc.single.enums.NoticeScopeEnum;
+import com.xd11cc.single.enums.NoticeTypeEnum;
 import com.xd11cc.single.infrastructure.netty.ChannelManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +33,7 @@ class NoticeEventListenerTest {
 
     @Test
     void newNotice_范围全部_调用租户广播() {
-        NoticeEvent event = NoticeEvent.publish(this, 1L, "通知标题", 1, 1, 10L, "管理员", null);
+        NoticeEvent event = NoticeEvent.publish(this, 1L, "通知标题", NoticeTypeEnum.NOTICE.getCode(), NoticeScopeEnum.ALL.getCode(), 10L, "管理员", null);
 
         listener.onNoticeEvent(event);
 
@@ -40,7 +42,7 @@ class NoticeEventListenerTest {
 
     @Test
     void newNotice_范围指定用户_调用逐用户推送() {
-        NoticeEvent event = NoticeEvent.publish(this, 1L, "通知标题", 1, 2, 10L, "管理员", Arrays.asList(101L, 102L));
+        NoticeEvent event = NoticeEvent.publish(this, 1L, "通知标题", NoticeTypeEnum.NOTICE.getCode(), NoticeScopeEnum.DEPT.getCode(), 10L, "管理员", Arrays.asList(101L, 102L));
 
         listener.onNoticeEvent(event);
 
@@ -52,7 +54,7 @@ class NoticeEventListenerTest {
 
     @Test
     void revokeNotice_调用租户广播撤回消息() {
-        NoticeEvent event = NoticeEvent.revoke(this, 1L, 1, 10L);
+        NoticeEvent event = NoticeEvent.revoke(this, 1L, NoticeTypeEnum.NOTICE.getCode(), 10L);
 
         listener.onNoticeEvent(event);
 
@@ -63,7 +65,7 @@ class NoticeEventListenerTest {
 
     @Test
     void onNoticeEvent_处理异常时不抛出让上层感知() {
-        NoticeEvent event = NoticeEvent.publish(this, 1L, "通知标题", 1, 1, 10L, "管理员", null);
+        NoticeEvent event = NoticeEvent.publish(this, 1L, "通知标题", NoticeTypeEnum.NOTICE.getCode(), NoticeScopeEnum.ALL.getCode(), 10L, "管理员", null);
         // ChannelManager is a mock, won't throw
         listener.onNoticeEvent(event);
         // 验证不抛异常

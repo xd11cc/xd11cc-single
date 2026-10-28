@@ -27,7 +27,7 @@ public class NoticeWebSocketDTO implements Serializable {
     private String title;
 
     @ApiModelProperty("类型 1-通知 2-消息 3-待办")
-    private Integer type;
+    private String type;
 
     @ApiModelProperty("发送人姓名")
     private String senderName;

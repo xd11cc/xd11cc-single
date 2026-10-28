@@ -192,14 +192,16 @@ controller → service → mapper → entity
 
 ### 本地开发
 
-**1. 创建业务库并导入表结构**
+**1. 创建业务库并导入结构与数据**
 
 ```sql
 CREATE DATABASE xd11cc_single DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 ```
 
 ```bash
+# 先建表，再灌种子数据（两个脚本顺序执行，缺一不可）
 mysql -uroot -p xd11cc_single < doc/sql/xd11cc_single.sql
+mysql -uroot -p xd11cc_single < doc/sql/xd11cc_single_data.sql
 ```
 
 **2. 修改配置**
@@ -239,8 +241,12 @@ mvn spring-boot:run
 
 | 脚本 | 用途 |
 |------|------|
-| `doc/sql/xd11cc_single.sql` | 完整初始化（建表 + 字典/菜单/分类等基础数据） |
-| `doc/sql/migration/` | 增量迁移脚本，供已有环境按需执行 |
+| `doc/sql/xd11cc_single.sql` | **仅表结构**（24 张表的 DROP + CREATE + 索引），不含任何 INSERT |
+| `doc/sql/xd11cc_single_data.sql` | **种子数据**（租户/用户/角色/菜单/字典/配置/工作流分类等 16 张表） |
+| `doc/sql/template.sql` | 建表模板（业务表 / 树形表 / 关联表三种范式） |
+
+> 结构脚本与运行库已逐列、逐索引比对一致；两个脚本执行后可与运行库完全对齐。
+> 结构脚本刻意不含 INSERT，便于在空库或测试库中反复重建。
 
 ### 已有环境升级 Flowable
 

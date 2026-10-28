@@ -65,7 +65,7 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
 
     @Test
     void add_成功_返回插入行数() {
-        SystemNoticeAddVO vo = buildAddVO("测试通知", "内容", 1, NoticeScopeEnum.ALL.getCode(), null, null);
+        SystemNoticeAddVO vo = buildAddVO("测试通知", "内容", "1", NoticeScopeEnum.ALL.getCode(), null, null);
         given(baseMapper.insert(any(SystemNoticeDO.class))).willReturn(1);
 
         try (MockedStatic<SecurityUtils> mock = mockStatic(SecurityUtils.class)) {
@@ -81,7 +81,7 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
 
     @Test
     void add_重复键_抛异常() {
-        SystemNoticeAddVO vo = buildAddVO("测试通知", "内容", 1, NoticeScopeEnum.ALL.getCode(), null, null);
+        SystemNoticeAddVO vo = buildAddVO("测试通知", "内容", "1", NoticeScopeEnum.ALL.getCode(), null, null);
         willThrow(new DuplicateKeyException("dup")).given(baseMapper).insert(any(SystemNoticeDO.class));
 
         try (MockedStatic<SecurityUtils> mock = mockStatic(SecurityUtils.class)) {
@@ -96,7 +96,7 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
 
     @Test
     void modifyById_通知不存在_抛通知不存在() {
-        SystemNoticeUpdateVO vo = buildUpdateVO(99L, "标题", "内容", 1, NoticeScopeEnum.ALL.getCode(), null, null);
+        SystemNoticeUpdateVO vo = buildUpdateVO(99L, "标题", "内容", "1", NoticeScopeEnum.ALL.getCode(), null, null);
         given(baseMapper.selectById(99L)).willReturn(null);
 
         ServiceException ex = assertThrows(ServiceException.class, () -> noticeService.modifyById(vo));
@@ -105,10 +105,10 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
 
     @Test
     void modifyById_非草稿状态_抛通知已发布() {
-        SystemNoticeDO existing = buildNotice(1L, "标题", 1, NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.PUBLISHED.getCode(), null, null);
+        SystemNoticeDO existing = buildNotice(1L, "标题", "1", NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.PUBLISHED.getCode(), null, null);
         given(baseMapper.selectById(1L)).willReturn(existing);
 
-        SystemNoticeUpdateVO vo = buildUpdateVO(1L, "新标题", "新内容", 1, NoticeScopeEnum.ALL.getCode(), null, null);
+        SystemNoticeUpdateVO vo = buildUpdateVO(1L, "新标题", "新内容", "1", NoticeScopeEnum.ALL.getCode(), null, null);
 
         ServiceException ex = assertThrows(ServiceException.class, () -> noticeService.modifyById(vo));
         assertThat(ex.getErrorCode()).isEqualTo(SystemErrorEnum.NOTICE_ALREADY_PUBLISHED);
@@ -117,11 +117,11 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
 
     @Test
     void modifyById_成功_返回行数() {
-        SystemNoticeDO existing = buildNotice(1L, "标题", 1, NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.DRAFT.getCode(), null, null);
+        SystemNoticeDO existing = buildNotice(1L, "标题", "1", NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.DRAFT.getCode(), null, null);
         given(baseMapper.selectById(1L)).willReturn(existing);
         given(baseMapper.updateById(any(SystemNoticeDO.class))).willReturn(1);
 
-        SystemNoticeUpdateVO vo = buildUpdateVO(1L, "新标题", "新内容", 1, NoticeScopeEnum.ALL.getCode(), null, null);
+        SystemNoticeUpdateVO vo = buildUpdateVO(1L, "新标题", "新内容", "1", NoticeScopeEnum.ALL.getCode(), null, null);
 
         int row = noticeService.modifyById(vo);
 
@@ -147,9 +147,9 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
     void getList_带标题筛选_拼接like() {
         SystemNoticeQueryVO vo = new SystemNoticeQueryVO();
         vo.setTitle("测试");
-        vo.setType(1);
+        vo.setType("1");
         vo.setStatus(NoticeStatusEnum.DRAFT.getCode());
-        SystemNoticeDO expected = buildNotice(1L, "测试通知", 1, NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.DRAFT.getCode(), null, null);
+        SystemNoticeDO expected = buildNotice(1L, "测试通知", "1", NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.DRAFT.getCode(), null, null);
         given(baseMapper.selectList(any())).willReturn(Collections.singletonList(expected));
 
         List<SystemNoticeDO> result = noticeService.getList(vo);
@@ -162,7 +162,7 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
     void getList_带类型筛选_拼接eq() {
         SystemNoticeQueryVO vo = new SystemNoticeQueryVO();
         vo.setTitle(null);
-        vo.setType(2);
+        vo.setType("2");
         vo.setStatus(null);
         given(baseMapper.selectList(any())).willReturn(Collections.emptyList());
 
@@ -174,8 +174,8 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
     @Test
     void getList_空筛选_返回全部() {
         SystemNoticeQueryVO vo = new SystemNoticeQueryVO();
-        SystemNoticeDO n1 = buildNotice(1L, "通知1", 1, NoticeScopeEnum.ALL.getCode(), 0, null, null);
-        SystemNoticeDO n2 = buildNotice(2L, "通知2", 2, NoticeScopeEnum.DEPT.getCode(), 1, "1,2", null);
+        SystemNoticeDO n1 = buildNotice(1L, "通知1", "1", NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.DRAFT.getCode(), null, null);
+        SystemNoticeDO n2 = buildNotice(2L, "通知2", "2", NoticeScopeEnum.DEPT.getCode(), NoticeStatusEnum.PUBLISHED.getCode(), "1,2", null);
         given(baseMapper.selectList(any())).willReturn(Arrays.asList(n1, n2));
 
         List<SystemNoticeDO> result = noticeService.getList(vo);
@@ -187,7 +187,7 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
 
     @Test
     void getDetailById_存在_返回详情() {
-        SystemNoticeDO notice = buildNotice(1L, "标题", 1, NoticeScopeEnum.ALL.getCode(), 0, null, null);
+        SystemNoticeDO notice = buildNotice(1L, "标题", "1", NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.DRAFT.getCode(), null, null);
         given(baseMapper.selectById(1L)).willReturn(notice);
 
         SystemNoticeDO result = noticeService.getDetailById(1L);
@@ -209,7 +209,7 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
 
     @Test
     void publish_草稿状态_更新为已发布并创建notice_user() {
-        SystemNoticeDO draft = buildNotice(1L, "测试", 1, NoticeScopeEnum.USER.getCode(), NoticeStatusEnum.DRAFT.getCode(), null, "1,2,3");
+        SystemNoticeDO draft = buildNotice(1L, "测试", "1", NoticeScopeEnum.USER.getCode(), NoticeStatusEnum.DRAFT.getCode(), null, "1,2,3");
         given(baseMapper.selectById(1L)).willReturn(draft);
         given(baseMapper.updateById(any(SystemNoticeDO.class))).willReturn(1);
 
@@ -227,7 +227,7 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
 
     @Test
     void publish_草稿无目标用户_仅更新状态() {
-        SystemNoticeDO draft = buildNotice(1L, "测试", 1, NoticeScopeEnum.USER.getCode(), NoticeStatusEnum.DRAFT.getCode(), null, "");
+        SystemNoticeDO draft = buildNotice(1L, "测试", "1", NoticeScopeEnum.USER.getCode(), NoticeStatusEnum.DRAFT.getCode(), null, "");
         given(baseMapper.selectById(1L)).willReturn(draft);
         given(baseMapper.updateById(any(SystemNoticeDO.class))).willReturn(1);
 
@@ -255,7 +255,7 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
 
     @Test
     void publish_已发布_抛通知已发布异常() {
-        SystemNoticeDO published = buildNotice(1L, "测试", 1, NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.PUBLISHED.getCode(), null, null);
+        SystemNoticeDO published = buildNotice(1L, "测试", "1", NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.PUBLISHED.getCode(), null, null);
         given(baseMapper.selectById(1L)).willReturn(published);
 
         ServiceException ex = assertThrows(ServiceException.class, () -> noticeService.publish(1L));
@@ -268,7 +268,7 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
 
     @Test
     void revoke_已发布状态_撤回并清理notice_user() {
-        SystemNoticeDO published = buildNotice(1L, "测试", 1, NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.PUBLISHED.getCode(), null, null);
+        SystemNoticeDO published = buildNotice(1L, "测试", "1", NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.PUBLISHED.getCode(), null, null);
         given(baseMapper.selectById(1L)).willReturn(published);
         given(baseMapper.updateById(any(SystemNoticeDO.class))).willReturn(1);
 
@@ -291,7 +291,7 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
 
     @Test
     void revoke_草稿状态_抛通知未发布异常() {
-        SystemNoticeDO draft = buildNotice(1L, "测试", 1, NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.DRAFT.getCode(), null, null);
+        SystemNoticeDO draft = buildNotice(1L, "测试", "1", NoticeScopeEnum.ALL.getCode(), NoticeStatusEnum.DRAFT.getCode(), null, null);
         given(baseMapper.selectById(1L)).willReturn(draft);
 
         ServiceException ex = assertThrows(ServiceException.class, () -> noticeService.revoke(1L));
@@ -314,8 +314,8 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
         return dto;
     }
 
-    private static SystemNoticeDO buildNotice(Long id, String title, Integer type, Integer scope,
-                                               Integer status, String scopeDeptIds, String scopeUserIds) {
+    private static SystemNoticeDO buildNotice(Long id, String title, String type, String scope,
+                                               String status, String scopeDeptIds, String scopeUserIds) {
         SystemNoticeDO notice = new SystemNoticeDO();
         notice.setId(id);
         notice.setTitle(title);
@@ -327,13 +327,14 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
         notice.setSenderId(SENDER_ID);
         notice.setSenderName(SENDER_NAME);
         notice.setStatus(status);
-        notice.setPublishTime(status != null && status == 1 ? new Date() : null);
+        // status 已是 String，发布判断改用枚举比较
+        notice.setPublishTime(NoticeStatusEnum.PUBLISHED.getCode().equals(status) ? new Date() : null);
         notice.setRemark("备注");
         return notice;
     }
 
-    private static SystemNoticeAddVO buildAddVO(String title, String content, Integer type,
-                                                Integer scope, List<Long> scopeDeptIds,
+    private static SystemNoticeAddVO buildAddVO(String title, String content, String type,
+                                                String scope, List<Long> scopeDeptIds,
                                                 List<Long> scopeUserIds) {
         SystemNoticeAddVO vo = new SystemNoticeAddVO();
         vo.setTitle(title);
@@ -346,8 +347,8 @@ class SystemNoticeServiceImplTest extends BaseUnitTest {
         return vo;
     }
 
-    private static SystemNoticeUpdateVO buildUpdateVO(Long id, String title, String content, Integer type,
-                                                       Integer scope, List<Long> scopeDeptIds,
+    private static SystemNoticeUpdateVO buildUpdateVO(Long id, String title, String content, String type,
+                                                       String scope, List<Long> scopeDeptIds,
                                                        List<Long> scopeUserIds) {
         SystemNoticeUpdateVO vo = new SystemNoticeUpdateVO();
         vo.setId(id);

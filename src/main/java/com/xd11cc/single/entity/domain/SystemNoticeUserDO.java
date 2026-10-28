@@ -35,7 +35,7 @@ public class SystemNoticeUserDO extends BaseTenantDO implements Serializable {
     private Long userId;
 
     @ApiModelProperty("已读状态 0-未读 1-已读")
-    private Integer readStatus;
+    private String readStatus;
 
     @ApiModelProperty("已读时间")
     private Date readTime;

@@ -23,5 +23,5 @@ public class MqFailMessageQueryVO extends BasePageVO {
     private String queueName;
 
     @ApiModelProperty("状态：0-待处理，1-已重放，2-已忽略")
-    private Integer status;
+    private String status;
 }

@@ -16,10 +16,10 @@ import lombok.EqualsAndHashCode;
 public class SystemNoticeUserQueryVO extends BasePageVO {
 
     @ApiModelProperty("类型 1-通知 2-消息 3-待办")
-    private Integer type;
+    private String type;
 
     @ApiModelProperty("已读状态 0-未读 1-已读")
-    private Integer readStatus;
+    private String readStatus;
 
     @ApiModelProperty("标题关键字")
     private String title;

@@ -41,15 +41,15 @@ class SystemNoticeUserServiceImplTest extends BaseUnitTest {
     void getMyNoticeList_返回当前用户的通知列表() {
         try (MockedStatic<SecurityUtils> mock = mockStatic(SecurityUtils.class)) {
             mock.when(SecurityUtils::getUserId).thenReturn(USER_ID);
-            SystemNoticeUserDTO dto = buildDTO(1L, 1L, 0, "通知标题", "内容", NoticeTypeEnum.NOTICE.getCode(), "发送人", new Date());
-            given(baseMapper.selectMyNoticeList(USER_ID, 1, 0, "标题")).willReturn(Collections.singletonList(dto));
+            SystemNoticeUserDTO dto = buildDTO(1L, 1L, "0", "通知标题", "内容", NoticeTypeEnum.NOTICE.getCode(), "发送人", new Date());
+            given(baseMapper.selectMyNoticeList(USER_ID, "1", "0", "标题")).willReturn(Collections.singletonList(dto));
 
-            List<SystemNoticeUserDTO> result = noticeUserService.getMyNoticeList(buildQueryVO(1, 0, "标题"));
+            List<SystemNoticeUserDTO> result = noticeUserService.getMyNoticeList(buildQueryVO("1", "0", "标题"));
 
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getType()).isEqualTo(NoticeTypeEnum.NOTICE.getCode());
             assertThat(result.get(0).getTitle()).isEqualTo("通知标题");
-            then(baseMapper).should().selectMyNoticeList(USER_ID, 1, 0, "标题");
+            then(baseMapper).should().selectMyNoticeList(USER_ID, "1", "0", "标题");
         }
     }
 
@@ -107,7 +107,7 @@ class SystemNoticeUserServiceImplTest extends BaseUnitTest {
 
     // ==================== 辅助方法 ====================
 
-    private static SystemNoticeUserQueryVO buildQueryVO(Integer type, Integer readStatus, String title) {
+    private static SystemNoticeUserQueryVO buildQueryVO(String type, String readStatus, String title) {
         SystemNoticeUserQueryVO vo = new SystemNoticeUserQueryVO();
         vo.setType(type);
         vo.setReadStatus(readStatus);
@@ -115,14 +115,14 @@ class SystemNoticeUserServiceImplTest extends BaseUnitTest {
         return vo;
     }
 
-    private static SystemNoticeUserDTO buildDTO(Long id, Long noticeId, Integer readStatus,
-                                                 String title, String content, Integer type,
+    private static SystemNoticeUserDTO buildDTO(Long id, Long noticeId, String readStatus,
+                                                 String title, String content, String type,
                                                  String senderName, Date publishTime) {
         SystemNoticeUserDTO dto = new SystemNoticeUserDTO();
         dto.setId(id);
         dto.setNoticeId(noticeId);
         dto.setReadStatus(readStatus);
-        dto.setReadTime(readStatus == 1 ? new Date() : null);
+        dto.setReadTime("1".equals(readStatus) ? new Date() : null);
         dto.setTitle(title);
         dto.setContent(content);
         dto.setType(type);
@@ -132,7 +132,7 @@ class SystemNoticeUserServiceImplTest extends BaseUnitTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, Object> row(Integer typeCode, Integer count) {
+    private static Map<String, Object> row(String typeCode, Integer count) {
         Map<String, Object> map = new java.util.HashMap<>();
         map.put("type", typeCode);
         map.put("count", count);

@@ -15,8 +15,8 @@ import java.util.Map;
 public interface SystemNoticeUserMapper extends BaseMapper<SystemNoticeUserDO> {
 
     List<SystemNoticeUserDTO> selectMyNoticeList(@Param("userId") Long userId,
-                                                 @Param("type") Integer type,
-                                                 @Param("readStatus") Integer readStatus,
+                                                 @Param("type") String type,
+                                                 @Param("readStatus") String readStatus,
                                                  @Param("title") String title);
 
     List<Map<String, Object>> selectUnreadCount(@Param("userId") Long userId);

@@ -25,11 +25,11 @@ public class SystemNoticeAddVO {
 
     @NotNull(message = "类型不能为空")
     @ApiModelProperty("类型 1-通知 2-消息 3-待办")
-    private Integer type;
+    private String type;
 
     @NotNull(message = "范围不能为空")
     @ApiModelProperty("范围 1-全部 2-指定部门 3-指定用户")
-    private Integer scope;
+    private String scope;
 
     @ApiModelProperty("范围部门id列表")
     private List<Long> scopeDeptIds;

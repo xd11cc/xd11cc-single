@@ -35,10 +35,10 @@ public class SystemNoticeDO extends BaseTenantDO implements Serializable {
     private String content;
 
     @ApiModelProperty("类型 1-通知 2-消息 3-待办")
-    private Integer type;
+    private String type;
 
     @ApiModelProperty("范围 1-全部 2-指定部门 3-指定用户")
-    private Integer scope;
+    private String scope;
 
     @ApiModelProperty("范围部门id列表，逗号分隔")
     private String scopeDeptIds;
@@ -53,7 +53,7 @@ public class SystemNoticeDO extends BaseTenantDO implements Serializable {
     private String senderName;
 
     @ApiModelProperty("状态 0-草稿 1-已发布 2-已撤回")
-    private Integer status;
+    private String status;
 
     @ApiModelProperty("发布时间")
     private Date publishTime;

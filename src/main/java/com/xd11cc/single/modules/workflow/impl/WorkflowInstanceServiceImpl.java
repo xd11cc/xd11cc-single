@@ -33,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -72,8 +73,10 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         if (!instance.getStarterUserId().equals(SecurityUtils.getUserId())) {
             throw new ServiceException(SystemErrorEnum.TASK_NOT_ASSIGNEE);
         }
-        if (instance.getStatus() != WorkflowStatusEnum.RUNNING.getCode()
-                && instance.getStatus() != WorkflowStatusEnum.REJECTED.getCode()) {
+        // 注意：status 已是 String，必须用 equals 比较。
+        // 若写成 != 会退化为引用比较，两个条件恒为 true，导致任何状态都无法取消流程。
+        if (!Objects.equals(instance.getStatus(), WorkflowStatusEnum.RUNNING.getCode())
+                && !Objects.equals(instance.getStatus(), WorkflowStatusEnum.REJECTED.getCode())) {
             throw new ServiceException(SystemErrorEnum.PROCESS_CANNOT_CANCEL);
         }
 

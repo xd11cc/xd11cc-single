@@ -38,7 +38,7 @@
         INNER JOIN system_notice n ON nu.notice_id = n.id AND n.del_flag = 0
         WHERE nu.user_id = #{userId}
           AND nu.del_flag = 0
-          AND nu.read_status = 0
+          AND nu.read_status = '0'
           AND n.status = 1
         GROUP BY n.type
     </select>

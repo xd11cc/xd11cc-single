@@ -9,6 +9,7 @@ import com.xd11cc.single.entity.domain.SystemNoticeUserDO;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.enums.NoticeScopeEnum;
 import com.xd11cc.single.enums.NoticeStatusEnum;
+import com.xd11cc.single.enums.ReadStatusEnum;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.common.event.NoticeEvent;
 import com.xd11cc.single.mapper.SystemNoticeMapper;
@@ -121,7 +122,7 @@ public class SystemNoticeServiceImpl extends ServiceImpl<SystemNoticeMapper, Sys
                     SystemNoticeUserDO nu = new SystemNoticeUserDO();
                     nu.setNoticeId(id);
                     nu.setUserId(userId);
-                    nu.setReadStatus(0);
+                    nu.setReadStatus(ReadStatusEnum.UNREAD.getCode());
                     return nu;
                 }).collect(Collectors.toList());
         systemNoticeUserService.saveBatch(noticeUserList, 500);
@@ -156,7 +157,7 @@ public class SystemNoticeServiceImpl extends ServiceImpl<SystemNoticeMapper, Sys
     }
 
     private List<Long> resolveTargetUserIds(SystemNoticeDO notice) {
-        Integer scope = notice.getScope();
+        String scope = notice.getScope();
         if (NoticeScopeEnum.ALL.getCode().equals(scope)) {
             LambdaQueryWrapper<SystemUserDO> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(SystemUserDO::getStatus, "0");

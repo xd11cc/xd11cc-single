@@ -36,7 +36,7 @@ class SystemNoticeUserControllerTest {
         SystemNoticeUserQueryVO vo = new SystemNoticeUserQueryVO();
         vo.setCurrentPage(1);
         vo.setPageSize(10);
-        List<SystemNoticeUserDTO> dtos = Collections.singletonList(buildDTO(1L, "标题", "内容", 1, 0));
+        List<SystemNoticeUserDTO> dtos = Collections.singletonList(buildDTO(1L, "标题", "内容", "1", "0"));
         given(systemNoticeUserService.getMyNoticeList(vo)).willReturn(dtos);
 
         ResponseVO<PageResult<SystemNoticeUserDTO>> result = noticeUserController.myPage(vo);
@@ -109,7 +109,7 @@ class SystemNoticeUserControllerTest {
 
     // ==================== 辅助方法 ====================
 
-    private static SystemNoticeUserDTO buildDTO(Long id, String title, String content, Integer type, Integer readStatus) {
+    private static SystemNoticeUserDTO buildDTO(Long id, String title, String content, String type, String readStatus) {
         SystemNoticeUserDTO dto = new SystemNoticeUserDTO();
         dto.setId(id);
         dto.setTitle(title);

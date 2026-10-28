@@ -40,7 +40,7 @@ public class WorkflowInstanceDO extends BaseTenantDO implements Serializable {
     private String title;
 
     @ApiModelProperty(value = "状态：0-进行中，1-已完成，2-已取消，3-已驳回", required = true)
-    private Integer status;
+    private String status;
 
     @ApiModelProperty(value = "发起人ID", required = true)
     private Long starterUserId;

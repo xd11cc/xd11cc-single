@@ -14,7 +14,7 @@ public class WorkflowInstanceQueryVO extends BasePageVO {
 
     private String processDefinitionKey;
 
-    private Integer status;
+    private String status;
 
     private String title;
 

@@ -9,6 +9,7 @@ import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.enums.WorkflowStatusEnum;
 import com.xd11cc.single.mapper.WorkflowInstanceMapper;
 import com.xd11cc.single.modules.workflow.WorkflowHandlerFactory;
+import com.xd11cc.single.modules.workflow.AbstractWorkflowHandler;
 import com.xd11cc.single.modules.workflow.WorkflowQuerySupport;
 import com.xd11cc.single.util.BaseUnitTest;
 import org.flowable.engine.HistoryService;
@@ -32,6 +33,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
@@ -105,4 +108,46 @@ class WorkflowInstanceServiceImplTest extends BaseUnitTest {
         then(runtimeService).should(never()).deleteProcessInstance(anyString(), anyString());
         then(workflowInstanceMapper).should(never()).updateById(any());
     }
+    @Test
+    @DisplayName("cancelProcess：流程已完成时抛 PROCESS_CANNOT_CANCEL")
+    void cancelProcess_completedStatus() {
+        WorkflowInstanceDO instance = new WorkflowInstanceDO();
+        instance.setId(1L);
+        instance.setProcessInstanceId("proc-1");
+        instance.setProcessDefinitionKey("leave");
+        instance.setTenantId(TENANT_ID);
+        // 发起人是自己，才能走到状态校验分支
+        instance.setStarterUserId(CURRENT_USER_ID);
+        instance.setStatus(WorkflowStatusEnum.COMPLETED.getCode());
+        given(querySupport.getInstanceByProcessId("proc-1")).willReturn(instance);
+
+        assertThatThrownBy(() -> workflowInstanceService.cancelProcess("proc-1", "想撤回"))
+                .isInstanceOf(ServiceException.class)
+                .satisfies(e -> assertThat(((ServiceException) e).getErrorCode().getErrorCode())
+                        .isEqualTo(SystemErrorEnum.PROCESS_CANNOT_CANCEL.getErrorCode()));
+        then(runtimeService).should(never()).deleteProcessInstance(anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("cancelProcess：已驳回状态允许取消")
+    void cancelProcess_rejectedStatusAllowed() {
+        WorkflowInstanceDO instance = new WorkflowInstanceDO();
+        instance.setId(1L);
+        instance.setProcessInstanceId("proc-1");
+        instance.setProcessDefinitionKey("leave");
+        instance.setTenantId(TENANT_ID);
+        instance.setStarterUserId(CURRENT_USER_ID);
+        instance.setStatus(WorkflowStatusEnum.REJECTED.getCode());
+        given(querySupport.getInstanceByProcessId("proc-1")).willReturn(instance);
+        given(workflowInstanceMapper.updateById(any())).willReturn(1);
+        AbstractWorkflowHandler handler = mock(AbstractWorkflowHandler.class);
+        given(handlerFactory.getHandler("leave")).willReturn(handler);
+
+        workflowInstanceService.cancelProcess("proc-1", "不再申请");
+
+        // 取消后状态必须置为 CANCELLED，且引擎实例被删除
+        assertThat(instance.getStatus()).isEqualTo(WorkflowStatusEnum.CANCELLED.getCode());
+        then(runtimeService).should().deleteProcessInstance(eq("proc-1"), anyString());
+    }
+
 }

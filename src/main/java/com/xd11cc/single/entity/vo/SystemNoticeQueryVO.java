@@ -19,8 +19,8 @@ public class SystemNoticeQueryVO extends BasePageVO {
     private String title;
 
     @ApiModelProperty("类型 1-通知 2-消息 3-待办")
-    private Integer type;
+    private String type;
 
     @ApiModelProperty("状态 0-草稿 1-已发布 2-已撤回")
-    private Integer status;
+    private String status;
 }

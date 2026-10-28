@@ -366,16 +366,16 @@ class ConvertTest {
         SystemNoticeAddVO addVO = new SystemNoticeAddVO();
         addVO.setTitle("系统通知");
         addVO.setContent("这是一条通知内容");
-        addVO.setType(1);
-        addVO.setScope(2);
+        addVO.setType("1");
+        addVO.setScope("2");
         addVO.setRemark("通知备注");
 
         SystemNoticeDO noticeDO = SystemNoticeConvert.INSTANCE.addVO2DO(addVO);
 
         assertThat(noticeDO.getTitle()).isEqualTo("系统通知");
         assertThat(noticeDO.getContent()).isEqualTo("这是一条通知内容");
-        assertThat(noticeDO.getType()).isEqualTo(1);
-        assertThat(noticeDO.getScope()).isEqualTo(2);
+        assertThat(noticeDO.getType()).isEqualTo("1");
+        assertThat(noticeDO.getScope()).isEqualTo("2");
         assertThat(noticeDO.getRemark()).isEqualTo("通知备注");
     }
 

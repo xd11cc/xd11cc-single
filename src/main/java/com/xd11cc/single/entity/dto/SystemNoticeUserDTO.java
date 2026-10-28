@@ -24,7 +24,7 @@ public class SystemNoticeUserDTO implements Serializable {
     private Long noticeId;
 
     @ApiModelProperty("已读状态 0-未读 1-已读")
-    private Integer readStatus;
+    private String readStatus;
 
     @ApiModelProperty("已读时间")
     private Date readTime;
@@ -36,7 +36,7 @@ public class SystemNoticeUserDTO implements Serializable {
     private String content;
 
     @ApiModelProperty("类型 1-通知 2-消息 3-待办")
-    private Integer type;
+    private String type;
 
     @ApiModelProperty("发送人姓名")
     private String senderName;

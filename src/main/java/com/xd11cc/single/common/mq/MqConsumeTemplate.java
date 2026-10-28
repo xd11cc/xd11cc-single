@@ -3,6 +3,7 @@ package com.xd11cc.single.common.mq;
 import com.xd11cc.single.common.context.TenantContextHolder;
 import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.common.mq.enums.MqQueueEnum;
+import com.xd11cc.single.enums.MqFailStatus;
 import com.xd11cc.single.entity.domain.MqFailMessageDO;
 import com.xd11cc.single.mapper.MqFailMessageMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -271,7 +272,8 @@ public class MqConsumeTemplate {
         record.setMessageType(delivery.getMessageType());
         record.setErrorMsg(buildErrorMsg(error));
         record.setRetryCount(retryCount);
-        record.setStatus(0);
+        // 状态默认「待处理」，与 mq_fail_status 字典的 "0" 对齐
+        record.setStatus(MqFailStatus.PENDING.getCode());
         record.setTenantId(delivery.getTenantId());
         failMessageMapper.insert(record);
         log.error("[MQ] 消费最终失败，已落表 messageId={}, queue={}",

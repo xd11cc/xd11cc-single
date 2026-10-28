@@ -33,7 +33,7 @@ class SystemNoticeControllerTest {
 
     @Test
     void add_成功_返回行数() {
-        SystemNoticeAddVO vo = buildAddVO("通知标题", "内容", 1, 1, null, null, "备注");
+        SystemNoticeAddVO vo = buildAddVO("通知标题", "内容", "1", "1", null, null, "备注");
         given(systemNoticeService.add(vo)).willReturn(1);
 
         ResponseVO<Integer> result = noticeController.add(vo);
@@ -45,7 +45,7 @@ class SystemNoticeControllerTest {
 
     @Test
     void add_失败_返回失败消息() {
-        SystemNoticeAddVO vo = buildAddVO("通知标题", "内容", 1, 1, null, null, "备注");
+        SystemNoticeAddVO vo = buildAddVO("通知标题", "内容", "1", "1", null, null, "备注");
         given(systemNoticeService.add(vo)).willReturn(0);
 
         ResponseVO<Integer> result = noticeController.add(vo);
@@ -59,7 +59,7 @@ class SystemNoticeControllerTest {
 
     @Test
     void modifyById_成功_返回行数() {
-        SystemNoticeUpdateVO vo = buildUpdateVO(1L, "新标题", "新内容", 1, 1, null, null, "备注");
+        SystemNoticeUpdateVO vo = buildUpdateVO(1L, "新标题", "新内容", "1", "1", null, null, "备注");
         given(systemNoticeService.modifyById(vo)).willReturn(1);
 
         ResponseVO<Integer> result = noticeController.modifyById(vo);
@@ -71,7 +71,7 @@ class SystemNoticeControllerTest {
 
     @Test
     void modifyById_失败_返回失败消息() {
-        SystemNoticeUpdateVO vo = buildUpdateVO(1L, "新标题", "新内容", 1, 1, null, null, "备注");
+        SystemNoticeUpdateVO vo = buildUpdateVO(1L, "新标题", "新内容", "1", "1", null, null, "备注");
         given(systemNoticeService.modifyById(vo)).willReturn(0);
 
         ResponseVO<Integer> result = noticeController.modifyById(vo);
@@ -101,7 +101,7 @@ class SystemNoticeControllerTest {
         SystemNoticeQueryVO vo = new SystemNoticeQueryVO();
         vo.setCurrentPage(1);
         vo.setPageSize(10);
-        List<SystemNoticeDO> notices = Collections.singletonList(buildNotice(1L, "通知", "内容", 1));
+        List<SystemNoticeDO> notices = Collections.singletonList(buildNotice(1L, "通知", "内容", "1"));
         given(systemNoticeService.getList(vo)).willReturn(notices);
 
         ResponseVO<PageResult<SystemNoticeDO>> result = noticeController.page(vo);
@@ -115,7 +115,7 @@ class SystemNoticeControllerTest {
 
     @Test
     void getById_存在_返回通知详情() {
-        SystemNoticeDO notice = buildNotice(1L, "通知标题", "内容", 1);
+        SystemNoticeDO notice = buildNotice(1L, "通知标题", "内容", "1");
         given(systemNoticeService.getDetailById(1L)).willReturn(notice);
 
         ResponseVO<SystemNoticeDO> result = noticeController.getById(1L);
@@ -156,7 +156,7 @@ class SystemNoticeControllerTest {
 
     // ==================== 辅助方法 ====================
 
-    private static SystemNoticeAddVO buildAddVO(String title, String content, Integer type, Integer scope,
+    private static SystemNoticeAddVO buildAddVO(String title, String content, String type, String scope,
                                                 List<Long> scopeDeptIds, List<Long> scopeUserIds, String remark) {
         SystemNoticeAddVO vo = new SystemNoticeAddVO();
         vo.setTitle(title);
@@ -169,7 +169,7 @@ class SystemNoticeControllerTest {
         return vo;
     }
 
-    private static SystemNoticeUpdateVO buildUpdateVO(Long id, String title, String content, Integer type, Integer scope,
+    private static SystemNoticeUpdateVO buildUpdateVO(Long id, String title, String content, String type, String scope,
                                                        List<Long> scopeDeptIds, List<Long> scopeUserIds, String remark) {
         SystemNoticeUpdateVO vo = new SystemNoticeUpdateVO();
         vo.setId(id);
@@ -183,7 +183,7 @@ class SystemNoticeControllerTest {
         return vo;
     }
 
-    private static SystemNoticeDO buildNotice(Long id, String title, String content, Integer type) {
+    private static SystemNoticeDO buildNotice(Long id, String title, String content, String type) {
         SystemNoticeDO notice = new SystemNoticeDO();
         notice.setId(id);
         notice.setTitle(title);

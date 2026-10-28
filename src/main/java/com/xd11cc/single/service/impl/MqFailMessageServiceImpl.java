@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xd11cc.single.common.context.TenantContextHolder;
 import com.xd11cc.single.common.exception.ServiceException;
+import com.xd11cc.single.enums.MqFailStatus;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.common.mq.MqMessageSender;
 import com.xd11cc.single.common.mq.enums.MqQueueEnum;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * MQ 失败消息服务实现。
@@ -38,17 +40,17 @@ public class MqFailMessageServiceImpl extends ServiceImpl<MqFailMessageMapper, M
     /**
      * 状态：待处理
      */
-    private static final int STATUS_PENDING = 0;
+    private static final String STATUS_PENDING = MqFailStatus.PENDING.getCode();
 
     /**
      * 状态：已重放
      */
-    private static final int STATUS_REPLAYED = 1;
+    private static final String STATUS_REPLAYED = MqFailStatus.REPLAYED.getCode();
 
     /**
      * 状态：已忽略
      */
-    private static final int STATUS_IGNORED = 2;
+    private static final String STATUS_IGNORED = MqFailStatus.IGNORED.getCode();
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -121,7 +123,9 @@ public class MqFailMessageServiceImpl extends ServiceImpl<MqFailMessageMapper, M
         if (record == null) {
             throw new ServiceException(SystemErrorEnum.MQ_FAIL_RECORD_NOT_FOUND);
         }
-        if (record.getStatus() == null || record.getStatus() != STATUS_PENDING) {
+        // 注意：status 已是 String，必须用 equals 比较。
+        // 若写成 != 会退化为引用比较、条件恒真，导致所有记录都无法重投。
+        if (!Objects.equals(record.getStatus(), STATUS_PENDING)) {
             throw new ServiceException(SystemErrorEnum.MQ_FAIL_REPLAY_NOT_ALLOWED);
         }
         return record;

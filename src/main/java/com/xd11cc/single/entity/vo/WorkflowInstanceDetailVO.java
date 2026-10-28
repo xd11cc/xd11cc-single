@@ -20,7 +20,7 @@ public class WorkflowInstanceDetailVO {
 
     private String title;
 
-    private Integer status;
+    private String status;
 
     private Long starterUserId;
 

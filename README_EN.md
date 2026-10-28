@@ -193,14 +193,16 @@ controller → service → mapper → entity
 
 ### Local Development
 
-**1. Create the business database and import the schema**
+**1. Create the business database and import schema + data**
 
 ```sql
 CREATE DATABASE xd11cc_single DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 ```
 
 ```bash
+# Schema first, then seed data — both are required
 mysql -uroot -p xd11cc_single < doc/sql/xd11cc_single.sql
+mysql -uroot -p xd11cc_single < doc/sql/xd11cc_single_data.sql
 ```
 
 **2. Configure the application**
@@ -241,8 +243,12 @@ mvn spring-boot:run
 
 | Script | Purpose |
 |------|------|
-| `doc/sql/xd11cc_single.sql` | Full initialization (schema + dictionaries/menus/categories) |
-| `doc/sql/migration/` | Incremental migrations for existing environments |
+| `doc/sql/xd11cc_single.sql` | **Schema only** (DROP + CREATE + indexes for 24 tables); no INSERT statements |
+| `doc/sql/xd11cc_single_data.sql` | **Seed data** (tenant/users/roles/menus/dictionaries/config/workflow, 16 tables) |
+| `doc/sql/template.sql` | Table templates (business / tree / association patterns) |
+
+> The schema script has been verified column-by-column and index-by-index against a running
+> database. Running both scripts reproduces it exactly.
 
 ### Flowable on Existing Environments
 

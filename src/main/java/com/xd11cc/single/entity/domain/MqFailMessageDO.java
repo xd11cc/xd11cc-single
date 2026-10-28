@@ -45,5 +45,5 @@ public class MqFailMessageDO extends BaseTenantDO implements Serializable {
     private Integer retryCount;
 
     @ApiModelProperty("状态：0-待处理，1-已重放，2-已忽略")
-    private Integer status;
+    private String status;
 }
