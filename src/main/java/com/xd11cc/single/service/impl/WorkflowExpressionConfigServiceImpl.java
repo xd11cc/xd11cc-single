@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xd11cc.single.infrastructure.redis.RedisCache;
+import com.xd11cc.single.common.context.TenantContextHolder;
 import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.entity.domain.WorkflowExpressionConfigDO;
@@ -15,7 +16,6 @@ import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.enums.SystemStatusEnum;
 import com.xd11cc.single.mapper.WorkflowExpressionConfigMapper;
 import com.xd11cc.single.service.IWorkflowExpressionConfigService;
-import com.xd11cc.single.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +70,7 @@ public class WorkflowExpressionConfigServiceImpl extends ServiceImpl<WorkflowExp
      * </p>
      */
     private String cacheKey() {
-        Long tenantId = SecurityUtils.getTenantId();
+        Long tenantId = TenantContextHolder.getTenantId();
         return CacheConstants.WORKFLOW_EXPRESSION_CONFIG_OPTIONS + ":" + (tenantId == null ? "none" : tenantId);
     }
 

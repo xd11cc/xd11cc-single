@@ -5,11 +5,11 @@ import com.xd11cc.single.entity.domain.WorkflowCategoryDO;
 import com.xd11cc.single.entity.vo.WorkflowCategoryAddVO;
 import com.xd11cc.single.entity.vo.WorkflowCategoryQueryVO;
 import com.xd11cc.single.entity.vo.WorkflowCategoryUpdateVO;
+import com.xd11cc.single.common.context.TenantContextHolder;
 import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.service.IWorkflowCategoryService;
 import com.xd11cc.single.mapper.WorkflowCategoryMapper;
-import com.xd11cc.single.utils.SecurityUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class WorkflowCategoryServiceImpl extends ServiceImpl<WorkflowCategoryMap
         category.setSort(addVO.getSort() == null ? 0 : addVO.getSort());
         category.setStatus(StringUtils.defaultIfBlank(addVO.getStatus(), "0"));
         category.setRemark(addVO.getRemark());
-        category.setTenantId(SecurityUtils.getTenantId());
+        category.setTenantId(TenantContextHolder.getTenantId());
         try {
             return baseMapper.insert(category);
         } catch (DuplicateKeyException e) {

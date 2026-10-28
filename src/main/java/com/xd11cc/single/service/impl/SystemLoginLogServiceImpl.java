@@ -71,6 +71,7 @@ public class SystemLoginLogServiceImpl extends ServiceImpl<SystemLoginLogMapper,
     @Override
     public List<SystemLoginLogDO> getList(SystemLoginLogQueryVO queryVO) {
         LambdaQueryWrapper<SystemLoginLogDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SystemLoginLogDO::getTenantId, TenantContextHolder.getTenantId());
         wrapper.like(StringUtils.isNotEmpty(queryVO.getUsername()),
                 SystemLoginLogDO::getUsername, queryVO.getUsername());
         wrapper.eq(StringUtils.isNotEmpty(queryVO.getLoginType()),

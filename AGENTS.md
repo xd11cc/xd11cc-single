@@ -103,7 +103,7 @@ controller → service → mapper → entity
 7. **断言**：`AssertUtils` 校验失败抛异常
 8. **脱敏**：`MaskUtils`（手机/身份证/邮箱）
 9. **异步上下文传播**：关键线程池配合 `DelegatingSecurityContextExecutor` 传递安全上下文，Tenant 用 `TransmittableThreadLocal`
-10. **Swagger**：接口地址前缀 `/xd11cc`，knif4j 访问 `/doc.html`
+10. **Swagger**：接口地址前缀 `/xd11cc`，文档入口 `/swagger-ui.html`（springfox，项目未引入 knife4j）
 
 ## 快捷命令
 

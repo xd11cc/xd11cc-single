@@ -21,7 +21,6 @@
         <mysql.version>8.0.33</mysql.version>
         <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <knif4j.version>3.0.3</knif4j.version>
         <swagger.version>2.9.2</swagger.version>
         <swagger.models.version>1.6.2</swagger.models.version>
         <redisson.version>3.36.0</redisson.version>

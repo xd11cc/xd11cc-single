@@ -231,8 +231,7 @@ mvn spring-boot:run
 | URL | Description |
 |------|------|
 | `http://localhost:10001/xd11cc` | Application root |
-| `http://localhost:10001/xd11cc/doc.html` | Knife4j API docs |
-| `http://localhost:10001/xd11cc/swagger-ui.html` | Swagger UI |
+| `http://localhost:10001/xd11cc/swagger-ui.html` | Swagger UI (API docs) |
 | `ws://localhost:12001/ws?token=xxx` | WebSocket endpoint |
 
 > **Note**: If you previously compiled with the old package layout, run `mvn clean` first.

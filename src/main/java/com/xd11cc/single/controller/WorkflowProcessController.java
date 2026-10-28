@@ -4,7 +4,7 @@ import com.xd11cc.single.entity.base.PageResult;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.entity.vo.WorkflowInstanceDetailVO;
 import com.xd11cc.single.entity.vo.WorkflowInstanceQueryVO;
-import com.xd11cc.single.service.WorkflowService;
+import com.xd11cc.single.modules.workflow.WorkflowInstanceService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +30,13 @@ import javax.validation.constraints.NotBlank;
 public class WorkflowProcessController {
 
     @Autowired
-    private WorkflowService workflowService;
+    private WorkflowInstanceService workflowInstanceService;
 
     @PostMapping("/process/cancel")
     @ApiOperation("取消/撤回流程（仅发起人）")
     public ResponseVO<Void> cancelProcess(@RequestParam @NotBlank String processInstanceId,
                                           @RequestParam(required = false) String reason) {
-        workflowService.cancelProcess(processInstanceId, reason);
+        workflowInstanceService.cancelProcess(processInstanceId, reason);
         return ResponseVO.success();
     }
 
@@ -44,13 +44,13 @@ public class WorkflowProcessController {
     @ApiOperation("流程详情（含审批历史 + 当前活动任务）")
     public ResponseVO<WorkflowInstanceDetailVO> getProcessDetail(
             @PathVariable @NotBlank String processInstanceId) {
-        return ResponseVO.success(workflowService.getProcessDetail(processInstanceId));
+        return ResponseVO.success(workflowInstanceService.getProcessDetail(processInstanceId));
     }
 
     @PostMapping("/process/mine")
     @ApiOperation("我发起的流程列表")
     public ResponseVO<PageResult<WorkflowInstanceDetailVO>> getMyStartedProcesses(
             @Valid @RequestBody WorkflowInstanceQueryVO queryVO) {
-        return ResponseVO.success(workflowService.getMyStartedProcesses(queryVO));
+        return ResponseVO.success(workflowInstanceService.getMyStartedProcesses(queryVO));
     }
 }

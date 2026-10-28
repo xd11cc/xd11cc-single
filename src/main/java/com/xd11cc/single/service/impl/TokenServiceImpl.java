@@ -4,6 +4,7 @@ import cn.hutool.http.useragent.UserAgent;
 import cn.hutool.http.useragent.UserAgentUtil;
 import com.xd11cc.single.infrastructure.redis.RedisCache;
 import com.xd11cc.single.common.annotation.RedisLock;
+import com.xd11cc.single.common.context.TenantContextHolder;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.constants.SecurityConstants;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
@@ -125,7 +126,17 @@ public class TokenServiceImpl implements TokenService {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put(SecurityConstants.LOGIN_USER_KEY, token);
-        claims.put(SecurityConstants.TENANT_ID, loginUserDTO.getSystemUserDO().getTenantId());
+        // 租户以"会话所属租户"为准（即请求域名解析出的租户），而不是用户档案上的租户。
+        // 两者在普通登录时相等；SSO 场景下平台管理员档案挂在租户 0，进入租户 X 时会话归属 X，
+        // 若此处仍写档案租户，WebSocket 握手会按错误的 key 去 Redis 取会话，导致 401。
+        Long tenantId = TenantContextHolder.getTenantId();
+        if (tenantId == null) {
+            // 兜底：当前所有调用点都在请求线程内（TenantFilter 已绑定租户），正常不会走到这里
+            tenantId = loginUserDTO.getSystemUserDO().getTenantId();
+            log.warn("[token] 创建会话时无租户上下文，回退到用户档案租户: userId={}, tenantId={}",
+                    loginUserDTO.getUserId(), tenantId);
+        }
+        claims.put(SecurityConstants.TENANT_ID, tenantId);
         claims.put(Claims.SUBJECT, loginUserDTO.getUsername());
         return jwtUtils.createToken(claims);
     }

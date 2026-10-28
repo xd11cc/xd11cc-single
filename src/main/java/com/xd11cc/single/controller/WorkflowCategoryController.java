@@ -12,6 +12,7 @@ import com.xd11cc.single.service.IWorkflowCategoryService;
 import com.xd11cc.single.utils.PageUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +37,7 @@ public class WorkflowCategoryController {
 
     @ApiOperation("新增流程分类")
     @PostMapping("/add")
+    @PreAuthorize("@ss.hasPermission('workflow:category:add')")
     @OperateLog(module = "流程分类", operateType = OperateTypeEnum.ADD)
     public ResponseVO<Integer> add(@Valid @RequestBody WorkflowCategoryAddVO addVO) {
         int row = workflowCategoryService.add(addVO);
@@ -44,6 +46,7 @@ public class WorkflowCategoryController {
 
     @ApiOperation("修改流程分类")
     @PostMapping("/modifyById")
+    @PreAuthorize("@ss.hasPermission('workflow:category:update')")
     @OperateLog(module = "流程分类", operateType = OperateTypeEnum.UPDATE)
     public ResponseVO<Integer> modifyById(@Valid @RequestBody WorkflowCategoryUpdateVO updateVO) {
         int row = workflowCategoryService.modifyById(updateVO);
@@ -52,6 +55,7 @@ public class WorkflowCategoryController {
 
     @ApiOperation("删除流程分类")
     @GetMapping("/removeByIds/{ids}")
+    @PreAuthorize("@ss.hasPermission('workflow:category:delete')")
     @OperateLog(module = "流程分类", operateType = OperateTypeEnum.DELETE)
     public ResponseVO<Integer> removeByIds(@PathVariable("ids") List<Long> ids) {
         int row = workflowCategoryService.deleteByIds(ids);

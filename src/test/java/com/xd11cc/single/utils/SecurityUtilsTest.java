@@ -121,15 +121,4 @@ class SecurityUtilsTest {
         );
         assertThat(ex.getErrorCode().getErrorCode()).isEqualTo(401);
     }
-
-    @Test
-    void getTenantId_已登录_返回租户ID() {
-        mockLoginUser(1L, "admin", 99L);
-        assertThat(SecurityUtils.getTenantId()).isEqualTo(99L);
-    }
-
-    @Test
-    void getTenantId_未登录_返回null() {
-        assertThat(SecurityUtils.getTenantId()).isNull();
-    }
 }

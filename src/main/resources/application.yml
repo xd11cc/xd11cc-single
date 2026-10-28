@@ -87,18 +87,15 @@ security:
     - /**/**.html
     - /**/**.css
     - /**/**.js
-    # swagger白名单配置
-    - /doc.html
+    # swagger白名单配置（springfox，入口 /swagger-ui.html；项目未引入 knife4j）
     - /swagger-ui.html
     - /webjars/**
     - /swagger-resources/**
     - /v2/api-docs/**
     - /favicon.ico
-    - /csrf
     - /
     # druid监控地址
     - /druid/**
-    - /druid-flowable/**
     # 登录相关白名单
     - /login/loginByPassword
     - /login/getCaptcha
@@ -121,6 +118,7 @@ tenant:
   ignoreTables:
     - system_menu
     - system_dict_type
+    - system_login_log
   ignoreUrls:
 
 # Flowable 流程引擎配置

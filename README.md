@@ -229,8 +229,7 @@ mvn spring-boot:run
 | 地址 | 说明 |
 |------|------|
 | `http://localhost:10001/xd11cc` | 应用根路径 |
-| `http://localhost:10001/xd11cc/doc.html` | Knife4j 接口文档 |
-| `http://localhost:10001/xd11cc/swagger-ui.html` | Swagger UI |
+| `http://localhost:10001/xd11cc/swagger-ui.html` | Swagger UI（接口文档） |
 | `ws://localhost:12001/ws?token=xxx` | WebSocket 连接 |
 
 > **注意**：若此前用旧包结构编译过，请先执行 `mvn clean`，避免 `target/classes`

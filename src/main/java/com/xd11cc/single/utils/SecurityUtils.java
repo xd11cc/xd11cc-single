@@ -52,14 +52,6 @@ public class SecurityUtils {
         return loginUser != null ? loginUser.getUsername() : null;
     }
 
-    public static Long getTenantId() {
-        LoginUserDTO loginUser = getLoginUser();
-        if (loginUser == null || loginUser.getSystemUserDO() == null) {
-            return null;
-        }
-        return loginUser.getSystemUserDO().getTenantId();
-    }
-
     public static Authentication getAuthentication() {
         return SecurityContextHolder.getContext().getAuthentication();
     }
