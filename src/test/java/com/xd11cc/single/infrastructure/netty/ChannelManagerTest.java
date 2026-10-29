@@ -4,6 +4,8 @@ import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
+import com.xd11cc.single.entity.dto.WsPushMessage;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.ChannelMatcher;
@@ -16,6 +18,10 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
 class ChannelManagerTest {
@@ -33,6 +39,11 @@ class ChannelManagerTest {
         Channel channel = mock(Channel.class);
         io.netty.channel.ChannelId fixedId = io.netty.channel.DefaultChannelId.newInstance();
         org.mockito.BDDMockito.given(channel.id()).willReturn(fixedId);
+        // 默认视为可写；积压用例里单独改为 false
+        org.mockito.BDDMockito.given(channel.isWritable()).willReturn(true);
+        // 写帧后生产代码会 addListener，必须返回非 null 的 future
+        org.mockito.BDDMockito.given(channel.writeAndFlush(org.mockito.ArgumentMatchers.any()))
+                .willReturn(mock(io.netty.channel.ChannelFuture.class));
         return channel;
     }
 
@@ -50,18 +61,14 @@ class ChannelManagerTest {
     private void replaceInternalStateWithEmpty() throws Exception {
         Field tenantField = ChannelManager.class.getDeclaredField("tenantChannelsGroups");
         Field userField = ChannelManager.class.getDeclaredField("userChannelsGroups");
-        Field globalField = ChannelManager.class.getDeclaredField("globalChannelGroup");
         Field countField = ChannelManager.class.getDeclaredField("currentConnCount");
         Field metadataField = ChannelManager.class.getDeclaredField("channelMetadataMap");
         tenantField.setAccessible(true);
         userField.setAccessible(true);
-        globalField.setAccessible(true);
         countField.setAccessible(true);
         metadataField.setAccessible(true);
         tenantField.set(channelManager, new java.util.concurrent.ConcurrentHashMap<>());
         userField.set(channelManager, new java.util.concurrent.ConcurrentHashMap<>());
-        // 使用 FakeChannelGroup 替换 globalChannelGroup，避免 DefaultChannelGroup + mock Channel 的 compareTo 问题
-        globalField.set(channelManager, new FakeChannelGroup("global"));
         countField.set(channelManager, new java.util.concurrent.atomic.AtomicInteger(0));
         metadataField.set(channelManager, new java.util.concurrent.ConcurrentHashMap<>());
     }
@@ -86,9 +93,8 @@ class ChannelManagerTest {
         boolean result = channelManager.addChannel(channel, loginUser);
 
         assertThat(result).isTrue();
-        assertThat(channelManager.getOnlineCount()).isEqualTo(1);
-        assertThat(channelManager.isUserOnline(1L)).isTrue();
-        assertThat(channelManager.getOnlineUserIds()).containsExactly(1L);
+        assertThat(metadataMap()).hasSize(1);
+        assertThat(userMap).containsKey(1L);
         assertThat(tenantGroup.size()).isEqualTo(1);
         assertThat(userGroup.size()).isEqualTo(1);
     }
@@ -112,7 +118,7 @@ class ChannelManagerTest {
 
         assertThat(first).isTrue();
         assertThat(second).isFalse();
-        assertThat(channelManager.getOnlineCount()).isEqualTo(1);
+        assertThat(metadataMap()).hasSize(1);
     }
 
     @Test
@@ -141,16 +147,16 @@ class ChannelManagerTest {
 
         channelManager.removeChannel(channel);
 
-        assertThat(channelManager.getOnlineCount()).isEqualTo(0);
-        assertThat(channelManager.isUserOnline(1L)).isFalse();
+        assertThat(metadataMap()).isEmpty();
+        assertThat(userGroups()).doesNotContainKey(1L);
     }
 
     @Test
-    void removeChannel_不存在的通道_不做处理() {
+    void removeChannel_不存在的通道_不做处理() throws Exception {
         Channel channel = mockChannel(1L);
         // Should not throw
         channelManager.removeChannel(channel);
-        assertThat(channelManager.getOnlineCount()).isEqualTo(0);
+        assertThat(metadataMap()).isEmpty();
     }
 
     // ==================== 多租户隔离 ====================
@@ -178,13 +184,13 @@ class ChannelManagerTest {
         channelManager.addChannel(tenant1Channel, user1);
         channelManager.addChannel(tenant2Channel, user2);
 
-        assertThat(channelManager.getOnlineCount()).isEqualTo(2);
-        assertThat(channelManager.getOnlineUserIds()).containsExactlyInAnyOrder(1L, 2L);
+        assertThat(metadataMap()).hasSize(2);
+        assertThat(userGroups().keySet()).containsExactlyInAnyOrder(1L, 2L);
 
         channelManager.removeChannel(tenant1Channel);
-        assertThat(channelManager.getOnlineCount()).isEqualTo(1);
-        assertThat(channelManager.isUserOnline(1L)).isFalse();
-        assertThat(channelManager.isUserOnline(2L)).isTrue();
+        assertThat(metadataMap()).hasSize(1);
+        assertThat(userGroups()).doesNotContainKey(1L);
+        assertThat(userGroups()).containsKey(2L);
     }
 
     // ==================== 多端登录 ====================
@@ -207,8 +213,8 @@ class ChannelManagerTest {
         channelManager.addChannel(channel1, loginUser);
         channelManager.addChannel(channel2, loginUser);
 
-        assertThat(channelManager.getOnlineCount()).isEqualTo(2);
-        assertThat(channelManager.isUserOnline(1L)).isTrue();
+        assertThat(metadataMap()).hasSize(2);
+        assertThat(userGroups()).containsKey(1L);
     }
 
     @Test
@@ -231,40 +237,110 @@ class ChannelManagerTest {
 
         channelManager.removeChannel(channel1);
 
-        assertThat(channelManager.getOnlineCount()).isEqualTo(1);
-        assertThat(channelManager.isUserOnline(1L)).isTrue();
-    }
-
-    // ==================== getChannelMetadata ====================
-
-    @Test
-    void getChannelMetadata_存在_返回元数据() throws Exception {
-        Channel channel = mockChannel(1L);
-        LoginUserDTO loginUser = mockLoginUser(1L, 10L);
-
-        java.util.concurrent.ConcurrentHashMap<Long, ChannelGroup> tenantMap =
-                (java.util.concurrent.ConcurrentHashMap<Long, ChannelGroup>) getField("tenantChannelsGroups");
-        java.util.concurrent.ConcurrentHashMap<Long, ChannelGroup> userMap =
-                (java.util.concurrent.ConcurrentHashMap<Long, ChannelGroup>) getField("userChannelsGroups");
-        tenantMap.put(10L, new FakeChannelGroup("tenant-10"));
-        userMap.put(1L, new FakeChannelGroup("user-1"));
-
-        channelManager.addChannel(channel, loginUser);
-
-        ChannelManager.ChannelExtMetadata metadata = channelManager.getChannelMetadata(channel);
-
-        assertThat(metadata).isNotNull();
-        assertThat(metadata.getTenantId()).isEqualTo(10L);
-        assertThat(metadata.getUserId()).isEqualTo(1L);
-    }
-
-    @Test
-    void getChannelMetadata_不存在_返回null() {
-        Channel channel = mockChannel(1L);
-        assertThat(channelManager.getChannelMetadata(channel)).isNull();
+        assertThat(metadataMap()).hasSize(1);
+        assertThat(userGroups()).containsKey(1L);
     }
 
     // ==================== Reflection helper ====================
+
+    // ==================== pushToUser（同租户不变式）====================
+
+    @Test
+    void pushToUser_同租户_推送成功并返回true() throws Exception {
+        Channel channel = mockChannel(1L);
+        ChannelGroup group = mockUserGroupWith(channel, 1L);
+        putMetadata(channel, 10L, 1L);
+
+        boolean result = channelManager.pushToUser(1L, 10L, WsPushMessage.of("BUSINESS", "hello"));
+
+        assertThat(result).isTrue();
+        // 现在是逐通道写，断言落在通道上
+        then(channel).should().writeAndFlush(any(TextWebSocketFrame.class));
+    }
+
+    @Test
+    void pushToUser_跨租户_拒绝且不写帧() throws Exception {
+        Channel channel = mockChannel(1L);
+        ChannelGroup group = mockUserGroupWith(channel, 1L);
+        // 目标用户属于租户 20，发送方来自租户 10
+        putMetadata(channel, 20L, 1L);
+
+        boolean result = channelManager.pushToUser(1L, 10L, WsPushMessage.of("BUSINESS", "hello"));
+
+        assertThat(result).isFalse();
+        then(group).should(never()).writeAndFlush(any());
+    }
+
+    @Test
+    void pushToUser_连接积压_跳过且返回false() throws Exception {
+        Channel channel = mockChannel(1L);
+        given(channel.isWritable()).willReturn(false);
+        ChannelGroup group = mockUserGroupWith(channel, 1L);
+        putMetadata(channel, 10L, 1L);
+
+        boolean result = channelManager.pushToUser(1L, 10L, WsPushMessage.of("BUSINESS", "hello"));
+
+        assertThat(result).isFalse();
+        then(channel).should(never()).writeAndFlush(any());
+    }
+
+    @Test
+    void pushToUser_部分连接积压_只写给可写的() throws Exception {
+        Channel healthy = mockChannel(1L);
+        Channel backedUp = mockChannel(2L);
+        given(backedUp.isWritable()).willReturn(false);
+        ChannelGroup group = mockUserGroupWith(java.util.Arrays.asList(healthy, backedUp), 1L);
+        putMetadata(healthy, 10L, 1L);
+        putMetadata(backedUp, 10L, 1L);
+
+        boolean result = channelManager.pushToUser(1L, 10L, WsPushMessage.of("BUSINESS", "hello"));
+
+        assertThat(result).isTrue();
+        then(healthy).should().writeAndFlush(any(TextWebSocketFrame.class));
+        then(backedUp).should(never()).writeAndFlush(any());
+    }
+
+    @Test
+    void pushToUser_目标离线_返回false() {
+        boolean result = channelManager.pushToUser(999L, 10L, WsPushMessage.of("BUSINESS", "hello"));
+
+        assertThat(result).isFalse();
+    }
+
+    /**
+     * 构造一个已注册到 userChannelsGroups 的 mock 通道组
+     */
+    @SuppressWarnings("unchecked")
+    private ChannelGroup mockUserGroupWith(Channel channel, Long userId) throws Exception {
+        return mockUserGroupWith(java.util.Collections.singletonList(channel), userId);
+    }
+
+    private ChannelGroup mockUserGroupWith(java.util.List<Channel> channels, Long userId) throws Exception {
+        ChannelGroup group = mock(ChannelGroup.class);
+        given(group.isEmpty()).willReturn(false);
+        // 每次调用都返回新的迭代器：pushToUser 内部会遍历两次（取租户元数据 + 写帧）
+        given(group.iterator()).willAnswer(inv -> channels.iterator());
+        given(group.writeAndFlush(any())).willReturn(mock(ChannelGroupFuture.class));
+        ((java.util.concurrent.ConcurrentHashMap<Long, ChannelGroup>) getField("userChannelsGroups"))
+                .put(userId, group);
+        return group;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void putMetadata(Channel channel, Long tenantId, Long userId) throws Exception {
+        ((java.util.concurrent.ConcurrentHashMap<Channel, ChannelManager.ChannelExtMetadata>) getField("channelMetadataMap"))
+                .put(channel, new ChannelManager.ChannelExtMetadata(tenantId, userId));
+    }
+
+    @SuppressWarnings("unchecked")
+    private java.util.Map<Channel, ChannelManager.ChannelExtMetadata> metadataMap() throws Exception {
+        return (java.util.Map<Channel, ChannelManager.ChannelExtMetadata>) getField("channelMetadataMap");
+    }
+
+    @SuppressWarnings("unchecked")
+    private java.util.Map<Long, ChannelGroup> userGroups() throws Exception {
+        return (java.util.Map<Long, ChannelGroup>) getField("userChannelsGroups");
+    }
 
     private Object getField(String fieldName) throws Exception {
         Field field = ChannelManager.class.getDeclaredField(fieldName);

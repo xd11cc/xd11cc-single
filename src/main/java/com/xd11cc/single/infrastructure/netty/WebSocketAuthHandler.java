@@ -6,7 +6,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
-import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +24,8 @@ import java.util.Map;
 @ChannelHandler.Sharable
 public class WebSocketAuthHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-    private static final AttributeKey<LoginUserDTO> LOGIN_USER_KEY = AttributeKey.valueOf("LOGIN_USER");
-
     @Autowired
     private TokenService tokenService;
-    @Autowired
-    private ChannelManager channelManager;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request)  {
@@ -49,7 +44,11 @@ public class WebSocketAuthHandler extends SimpleChannelInboundHandler<FullHttpRe
         LoginUserDTO loginUser;
         try {
             loginUser= tokenService.getLoginUser(token);
-            if (loginUser == null || loginUser.getUserId() == null || loginUser.getSystemUserDO().getTenantId() == null) {
+            // systemUserDO 可能为空：必须先判空再取租户，否则这里会 NPE，
+            // 被外层 catch 吞成「token验证失败」，排查时会误导方向
+            if (loginUser == null || loginUser.getUserId() == null
+                    || loginUser.getSystemUserDO() == null
+                    || loginUser.getSystemUserDO().getTenantId() == null) {
                 sendErrorResponse(ctx, HttpResponseStatus.UNAUTHORIZED, "token无效，用户信息缺失");
                 return;
             }
@@ -58,8 +57,9 @@ public class WebSocketAuthHandler extends SimpleChannelInboundHandler<FullHttpRe
             return;
         }
 
-        channelManager.addChannel(ctx.channel(), loginUser);
-        ctx.channel().attr(LOGIN_USER_KEY).set(loginUser);
+        // 通道注册延后到握手完成（见 WebSocketServerHandler#userEventTriggered），
+        // 避免把未升级的 HTTP 连接塞进推送组导致「看似推送成功、实际没人收到」
+        ctx.channel().attr(ChannelManager.LOGIN_USER).set(loginUser);
         ctx.fireChannelRead(request.retain());
         ctx.pipeline().remove(this);
     }

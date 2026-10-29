@@ -148,8 +148,8 @@ DROP TABLE IF EXISTS `system_dict_data`;
 CREATE TABLE `system_dict_data` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `dict_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '字典类型',
-  `label` varchar(100) NOT NULL COMMENT '标签',
-  `value` varchar(100) NOT NULL COMMENT '键值',
+  `label` varchar(100) NOT NULL COMMENT '展示文案',
+  `value` varchar(100) NOT NULL COMMENT '编码，与业务列取值对应',
   `css_class` varchar(100) DEFAULT NULL COMMENT '键值颜色',
   `list_class` varchar(100) DEFAULT NULL COMMENT '背景颜色',
   `sort` int NOT NULL COMMENT '排序',

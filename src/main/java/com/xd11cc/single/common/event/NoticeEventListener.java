@@ -1,6 +1,5 @@
 package com.xd11cc.single.common.event;
 
-import com.alibaba.fastjson2.JSON;
 import com.xd11cc.single.infrastructure.netty.ChannelManager;
 import com.xd11cc.single.entity.dto.NoticeWebSocketDTO;
 import com.xd11cc.single.entity.dto.WsPushMessage;
@@ -51,15 +50,13 @@ public class NoticeEventListener {
         dto.setSenderName(event.getSenderName());
         dto.setSendTime(new Date());
 
-        String message = JSON.toJSONString(WsPushMessage.of("NEW_NOTICE", dto));
+        WsPushMessage message = WsPushMessage.of("NEW_NOTICE", dto);
 
         if (NoticeScopeEnum.ALL.getCode().equals(event.getScope())) {
             channelManager.broadcastToTenant(event.getTenantId(), message);
-        } else {
-            if (event.getTargetUserIds() != null) {
-                for (Long userId : event.getTargetUserIds()) {
-                    channelManager.pushToUser(userId, message);
-                }
+        } else if (event.getTargetUserIds() != null) {
+            for (Long userId : event.getTargetUserIds()) {
+                channelManager.pushToUser(userId, event.getTenantId(), message);
             }
         }
     }
@@ -70,7 +67,7 @@ public class NoticeEventListener {
         dto.setNoticeId(event.getNoticeId());
         dto.setType(event.getType());
 
-        String message = JSON.toJSONString(WsPushMessage.of("REVOKE_NOTICE", dto));
+        WsPushMessage message = WsPushMessage.of("REVOKE_NOTICE", dto);
         channelManager.broadcastToTenant(event.getTenantId(), message);
     }
 }

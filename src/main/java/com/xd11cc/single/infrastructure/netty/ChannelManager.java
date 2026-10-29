@@ -1,6 +1,8 @@
 package com.xd11cc.single.infrastructure.netty;
 
+import com.alibaba.fastjson2.JSON;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
+import com.xd11cc.single.entity.dto.WsPushMessage;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -11,7 +13,6 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,12 +25,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class ChannelManager {
 
+    /**
+     * 连接上的登录用户属性。
+     * <p>
+     * 认证处理器写入、业务处理器读取发送者身份；两处在同一包内，故用包级可见，
+     * 避免身份信息被复制到多个地方。
+     * </p>
+     */
+    static final io.netty.util.AttributeKey<LoginUserDTO> LOGIN_USER =
+            io.netty.util.AttributeKey.valueOf("LOGIN_USER");
+
     // 租户id -> 该租户所有通道（租户广播）
     private final ConcurrentHashMap<Long, ChannelGroup> tenantChannelsGroups = new ConcurrentHashMap<>();
     // 用户id -> 该用户所有通道（多端登陆，用户级推送）
     private final ConcurrentHashMap<Long, ChannelGroup> userChannelsGroups = new ConcurrentHashMap<>();
-    // 全局所有通道（全局广播）
-    private final ChannelGroup globalChannelGroup = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
     // 通道 -> 租户/用户元数据（反向映射，用于断开时清理）
     private final ConcurrentHashMap<Channel, ChannelExtMetadata> channelMetadataMap = new ConcurrentHashMap<>();
     // 当前连接数
@@ -69,8 +78,6 @@ public class ChannelManager {
             // 添加到用户组
             userChannelsGroups.computeIfAbsent(userId, k ->
                     new DefaultChannelGroup(GlobalEventExecutor.INSTANCE)).add(channel);
-            // 添加到全局组
-            globalChannelGroup.add(channel);
             // 记录元数据
             channelMetadataMap.put(channel, new ChannelExtMetadata(tenantId, userId));
             // 连接数 +1
@@ -78,6 +85,8 @@ public class ChannelManager {
             log.info("[netty] 通道添加成功，租户：{}，用户：{}，通道：{}，当前连接数：{}", tenantId, userId, channel.id(), currentConnCount.get());
             return true;
         } catch (Exception e) {
+            // 注册失败会让连接「已连上但永远收不到推送」，必须留下线索
+            log.error("[netty] 通道添加异常，租户：{}，用户：{}", tenantId, userId, e);
             return false;
         }
     }
@@ -108,114 +117,120 @@ public class ChannelManager {
             return group.isEmpty() ? null : group;
         });
 
-        // 清理全局通道组
-        globalChannelGroup.remove(channel);
         // 连接数 -1
         currentConnCount.decrementAndGet();
         log.info("[netty] 通道移除成功，租户：{}，用户：{}，通道：{}，当前连接数：{}", tenantId, userId, channel.id(), currentConnCount.get());
     }
 
     /**
-     * 精确到用户推送
-     * @param userId
-     * @param message
+     * 精确到用户推送（同租户）。
+     * <p>
+     * {@code tenantId} 是发送方所属租户，用于校验目标用户是否同租户。
+     * 跨租户推送一律丢弃并记 warn 日志——不向调用方区分「目标离线」与「租户不符」，
+     * 避免把目标用户是否存在泄露给发送方。
+     * </p>
+     *
+     * @param userId   目标用户
+     * @param tenantId 发送方租户
+     * @param message  推送信封
+     * @return 是否真正写入通道（false 表示目标离线或租户不符）
      */
-    public void pushToUser(Long userId, String message){
-        if (userId == null || message == null) {
-            log.warn("[netty] 消息推送失败：参数为空userId={}, message={}", userId, message);
-            return;
+    public boolean pushToUser(Long userId, Long tenantId, WsPushMessage message) {
+        if (userId == null || tenantId == null || message == null) {
+            log.warn("[netty] 消息推送失败：参数为空userId={}, tenantId={}", userId, tenantId);
+            return false;
         }
         ChannelGroup userChannels = userChannelsGroups.get(userId);
-        if (userChannels == null) {
-            log.debug("[netty] 用户{}无在线通道，推送失败", userId);
-            return;
+        if (userChannels == null || userChannels.isEmpty()) {
+            log.debug("[netty] 用户{}无在线通道，推送跳过", userId);
+            return false;
         }
-        // 构建webSocket帧
-        TextWebSocketFrame frame = new TextWebSocketFrame(message);
-        // 异步推送
-        userChannels.writeAndFlush(frame).addListener(future -> {
-            if (!future.isSuccess()) {
-                log.warn("[netty] 推送用户{}部分通道失败", userId, future.cause());
-            }
-        });
+        ChannelExtMetadata target = firstMetadata(userChannels);
+        if (target == null || !tenantId.equals(target.getTenantId())) {
+            log.warn("[netty] 跨租户推送已拒绝：发送方租户={}，目标用户={}，目标租户={}",
+                    tenantId, userId, target == null ? null : target.getTenantId());
+            return false;
+        }
+        int written = writeSkippingBackpressure(userChannels, serialize(message));
+        if (written == 0) {
+            log.debug("[netty] 用户{}的通道全部积压，本条消息丢弃", userId);
+            return false;
+        }
+        return true;
     }
 
     /**
-     * 租户内广播
-     * @param tenantId
-     * @param message
+     * 取通道组中任一通道的元数据，用于判断整组的租户归属
      */
-    public void broadcastToTenant(Long tenantId, String message) {
+    private ChannelExtMetadata firstMetadata(ChannelGroup group) {
+        for (Channel channel : group) {
+            ChannelExtMetadata metadata = channelMetadataMap.get(channel);
+            if (metadata != null) {
+                return metadata;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 向通道组写入，跳过积压到高水位的慢连接。
+     * <p>
+     * 慢消费者不会让 {@code writeAndFlush} 失败，帧只是堆在出站缓冲区里；
+     * 不设闸门的话，一个网络差的客户端就能把服务端堆内存拖垮。
+     * 超过高水位的连接本就不该再灌数据，跳过即可（它通常会因为读空闲超时被断开）。
+     * </p>
+     * <p>
+     * <b>每个通道必须构造独立的帧实例</b>：{@link TextWebSocketFrame} 背后是引用计数的 ByteBuf，
+     * 同一实例写给多个通道会导致重复释放。{@code ChannelGroup.writeAndFlush} 内部做了复制，
+     * 这里手写遍历就得自己保证。
+     * </p>
+     *
+     * @return 实际写入的通道数
+     */
+    private int writeSkippingBackpressure(ChannelGroup group, String json) {
+        int written = 0;
+        int skipped = 0;
+        for (Channel channel : group) {
+            if (!channel.isWritable()) {
+                skipped++;
+                continue;
+            }
+            channel.writeAndFlush(new TextWebSocketFrame(json)).addListener(future -> {
+                if (!future.isSuccess()) {
+                    log.debug("[netty] 通道写出失败 channel={}", channel.id(), future.cause());
+                }
+            });
+            written++;
+        }
+        if (skipped > 0) {
+            log.warn("[netty] {} 个连接积压超过高水位，本次跳过；写出 {} 个", skipped, written);
+        }
+        return written;
+    }
+
+    /**
+     * 序列化信封。放在实现内，调用方不需要知道线上格式。
+     */
+    private String serialize(WsPushMessage message) {
+        return JSON.toJSONString(message);
+    }
+
+    /**
+     * 租户内广播（服务端内部使用）
+     *
+     * @param tenantId 租户
+     * @param message  推送信封
+     */
+    public void broadcastToTenant(Long tenantId, WsPushMessage message) {
         if (tenantId == null || message == null) {
-            log.warn("[netty] 租户广播失败：参数为空tenantId={}, message={}", tenantId, message);
+            log.warn("[netty] 租户广播失败：参数为空tenantId={}", tenantId);
             return;
         }
         ChannelGroup tenantChannels = tenantChannelsGroups.get(tenantId);
         if (tenantChannels == null) {
-            log.debug("[netty] 租户{}无在线通道，广播失败", tenantId);
+            log.debug("[netty] 租户{}无在线通道，广播跳过", tenantId);
             return;
         }
-        TextWebSocketFrame frame = new TextWebSocketFrame(message);
-        tenantChannels.writeAndFlush(frame).addListener(future -> {
-            if (!future.isSuccess()) {
-                log.warn("[netty] 租户{}广播部分通道失败", tenantId, future.cause());
-            }
-        });
-    }
-
-    /**
-     * 全局广播
-     * @param message
-     */
-    public void broadcastToGlobal(String message) {
-        if (message == null) {
-            log.warn("[netty] 全局广播失败：消息为空");
-            return;
-        }
-        if (globalChannelGroup.isEmpty()) {
-            log.debug("[netty] 全局无在线通道，广播失败");
-            return;
-        }
-        TextWebSocketFrame frame = new TextWebSocketFrame(message);
-        globalChannelGroup.writeAndFlush(frame).addListener(future -> {
-            if (!future.isSuccess()) {
-                log.warn("[netty] 全局广播部分通道失败", future.cause());
-            }
-        });
-    }
-
-    /**
-     * 获取通道元数据
-     * @param channel
-     * @return
-     */
-    public ChannelExtMetadata getChannelMetadata(Channel channel) {
-        return channelMetadataMap.get(channel);
-    }
-
-    /**
-     * 判断用户是否在线
-     * @param userId
-     * @return
-     */
-    public boolean isUserOnline(Long userId) {
-        ChannelGroup group = userChannelsGroups.get(userId);
-        return group != null && !group.isEmpty();
-    }
-
-    /**
-     * 获取当前在线连接数
-     * @return
-     */
-    public int getOnlineCount() {
-        return currentConnCount.get();
-    }
-
-    /**
-     * 获取所有在线用户id
-     * @return
-     */
-    public Set<Long> getOnlineUserIds() {
-        return userChannelsGroups.keySet();
+        writeSkippingBackpressure(tenantChannels, serialize(message));
     }
 }

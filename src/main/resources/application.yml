@@ -71,6 +71,21 @@ netty:
     port: 12001
     reader-idle-time: 30
     writer-idle-time: 60
+    # 连续读空闲多少次后断开：30s × 3 = 90s 判定为死连接
+    read-idle-close-count: 3
+    # 写缓冲水位线（字节）：超过高水位的慢连接会被跳过，避免堆积
+    write-buffer-low-water-mark: 32768
+    write-buffer-high-water-mark: 262144
+    # 每连接帧速率守卫：心跳与非法帧也计入，超限直接断开
+    frame-limit:
+      enabled: true
+      count: 100
+      interval-second: 10
+    # 按发送者限流：同一用户多端共享额度，防刷屏
+    rate-limit:
+      enabled: true
+      count: 20
+      interval-second: 10
     web-socket-path: /ws
     max-frame-length: 65536
 

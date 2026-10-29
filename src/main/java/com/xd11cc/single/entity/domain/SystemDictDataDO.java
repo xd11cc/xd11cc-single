@@ -21,10 +21,10 @@ public class SystemDictDataDO extends BaseTenantDO {
     @ApiModelProperty("字典类型")
     private String dictType;
 
-    @ApiModelProperty("标签")
+    @ApiModelProperty("展示文案")
     private String label;
 
-    @ApiModelProperty("键值")
+    @ApiModelProperty("编码，与业务列取值对应")
     private String value;
 
     @ApiModelProperty("css样式")

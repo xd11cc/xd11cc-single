@@ -9,6 +9,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
+import io.netty.channel.WriteBufferWaterMark;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.util.concurrent.Executor;
 
 /**
  * @author xd11cc
@@ -36,42 +36,51 @@ public class NettyServer {
     private WebSocketChannelInitializer webSocketChannelInitializer;
     @Autowired
     private NettyProperties nettyProperties;
-    @Autowired
-    private Executor nettyTaskExecutor;
 
     @PostConstruct
     public void start() {
-        // 异步启动，避免阻塞Spring上下文初始化
-        nettyTaskExecutor.execute(() -> {
-            try {
-                ServerBootstrap bootstrap = new ServerBootstrap();
-                bootstrap.group(bossGroup, workerGroup)
-                        .channel(NioServerSocketChannel.class)
-                        .handler(new LoggingHandler(LogLevel.INFO))
-                        .childHandler(webSocketChannelInitializer)
-                        // 优化TCP参数
-                        .option(ChannelOption.SO_BACKLOG, 1024) // 连接队列大小
-                        .childOption(ChannelOption.SO_KEEPALIVE, true) // 开启TCP爆火
-                        .childOption(ChannelOption.TCP_NODELAY, true) // 禁用Nagle算法，降低延迟
-                        .childOption(ChannelOption.SO_REUSEADDR, true); // 允许端口复用
+        // 同步绑定：端口不可用时让 Spring 上下文启动失败。
+        // 早先是「丢进线程池异步启动」，绑定异常抛在任务线程里，
+        // 应用照常启动成功但 WebSocket 静默不可用——比启动失败更难排查。
+        try {
+            ServerBootstrap bootstrap = new ServerBootstrap();
+            bootstrap.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .handler(new LoggingHandler(LogLevel.INFO))
+                    .childHandler(webSocketChannelInitializer)
+                    // 优化TCP参数
+                    .option(ChannelOption.SO_BACKLOG, 1024) // 连接队列大小
+                    .childOption(ChannelOption.SO_KEEPALIVE, true) // 开启TCP保活
+                    .childOption(ChannelOption.TCP_NODELAY, true) // 禁用Nagle算法，降低延迟
+                    .childOption(ChannelOption.SO_REUSEADDR, true) // 允许端口复用
+                    // 写缓冲水位线：超过高水位的连接会被标记为不可写，推送时跳过
+                    .childOption(ChannelOption.WRITE_BUFFER_WATER_MARK,
+                            new WriteBufferWaterMark(nettyProperties.getWriteBufferLowWaterMark(),
+                                    nettyProperties.getWriteBufferHighWaterMark()));
 
-                ChannelFuture future = bootstrap.bind(nettyProperties.getPort()).sync();
-                log.info("netty webSocket server 启动成功，端口： {}", nettyProperties.getPort());
-                future.channel().closeFuture().addListener(f ->{
-                    shutdownGracefully();
-                    log.info("netty webSocket server 已关闭");
-                });
-            } catch (InterruptedException e) {
-                log.error("netty webSocket server 启动失败，端口: {}", nettyProperties.getPort(), e);
-                Thread.currentThread().interrupt();
+            ChannelFuture future = bootstrap.bind(nettyProperties.getPort()).sync();
+            log.info("netty webSocket server 启动成功，端口： {}，写缓冲水位：{}/{} 字节，"
+                            + "消息限流：{}条/{}秒（{}）",
+                    nettyProperties.getPort(),
+                    nettyProperties.getWriteBufferLowWaterMark(),
+                    nettyProperties.getWriteBufferHighWaterMark(),
+                    nettyProperties.getRateLimit().getCount(),
+                    nettyProperties.getRateLimit().getIntervalSecond(),
+                    nettyProperties.getRateLimit().isEnabled() ? "启用" : "关闭");
+            future.channel().closeFuture().addListener(f -> {
                 shutdownGracefully();
-                throw new RuntimeException("WebSocket 服务启动失败", e);
-            } catch (Exception e) {
-                log.error("netty webSocket server 启动异常，端口 {} 可能被占用", nettyProperties.getPort(), e);
-                shutdownGracefully();
-                throw new RuntimeException("WebSocket 服务启动失败", e);
-            }
-        });
+                log.info("netty webSocket server 已关闭");
+            });
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            shutdownGracefully();
+            throw new IllegalStateException(
+                    "WebSocket 服务启动被中断，端口：" + nettyProperties.getPort(), e);
+        } catch (Exception e) {
+            shutdownGracefully();
+            throw new IllegalStateException(
+                    "WebSocket 服务启动失败，端口 " + nettyProperties.getPort() + " 不可用（可能被占用）", e);
+        }
     }
 
     @PreDestroy

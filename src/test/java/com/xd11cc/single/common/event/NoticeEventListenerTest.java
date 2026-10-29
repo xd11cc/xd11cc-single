@@ -1,5 +1,6 @@
 package com.xd11cc.single.common.event;
 
+import com.xd11cc.single.entity.dto.WsPushMessage;
 import com.xd11cc.single.enums.NoticeScopeEnum;
 import com.xd11cc.single.enums.NoticeTypeEnum;
 import com.xd11cc.single.infrastructure.netty.ChannelManager;
@@ -10,6 +11,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.then;
@@ -37,7 +39,7 @@ class NoticeEventListenerTest {
 
         listener.onNoticeEvent(event);
 
-        then(channelManager).should().broadcastToTenant(eq(10L), anyString());
+        then(channelManager).should().broadcastToTenant(eq(10L), any(WsPushMessage.class));
     }
 
     @Test
@@ -46,8 +48,8 @@ class NoticeEventListenerTest {
 
         listener.onNoticeEvent(event);
 
-        then(channelManager).should().pushToUser(eq(101L), anyString());
-        then(channelManager).should().pushToUser(eq(102L), anyString());
+        then(channelManager).should().pushToUser(eq(101L), eq(10L), any(WsPushMessage.class));
+        then(channelManager).should().pushToUser(eq(102L), eq(10L), any(WsPushMessage.class));
     }
 
     // ==================== onNoticeEvent - REVOKE_NOTICE ====================
@@ -58,7 +60,7 @@ class NoticeEventListenerTest {
 
         listener.onNoticeEvent(event);
 
-        then(channelManager).should().broadcastToTenant(eq(10L), anyString());
+        then(channelManager).should().broadcastToTenant(eq(10L), any(WsPushMessage.class));
     }
 
     // ==================== 异常处理 ====================

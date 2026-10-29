@@ -20,20 +20,6 @@ public class ThreadPoolConfig {
 
     private static final int CPU_CORES = Runtime.getRuntime().availableProcessors();
 
-    @Bean(name = "nettyTaskExecutor")
-    public Executor nettyTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(CPU_CORES);
-        executor.setMaxPoolSize(CPU_CORES * 2);
-        executor.setQueueCapacity(100);
-        executor.setKeepAliveSeconds(300);
-        executor.setThreadNamePrefix("netty-server-");
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(15);
-        executor.initialize();
-        return TtlExecutors.getTtlExecutor(executor);
-    }
 
     @Bean(name = "operateLogExecutor")
     public Executor operateLogExecutor() {

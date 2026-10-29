@@ -1,6 +1,5 @@
 package com.xd11cc.single.modules.workflow;
 
-import com.alibaba.fastjson2.JSON;
 import com.xd11cc.single.infrastructure.netty.ChannelManager;
 import com.xd11cc.single.entity.dto.WorkflowWebSocketDTO;
 import com.xd11cc.single.entity.dto.WsPushMessage;
@@ -68,11 +67,11 @@ public class WorkflowEventListener {
             dto.setTargetUserId(event.getTargetUserId());
             dto.setSendTime(new Date());
 
-            String message = JSON.toJSONString(WsPushMessage.of(pushAction, dto));
+            WsPushMessage message = WsPushMessage.of(pushAction, dto);
 
             // 定向推送优先；COMPLETED/CANCELLED 这类“通知发起人”的事件同样走单播
             if (event.getTargetUserId() != null) {
-                channelManager.pushToUser(event.getTargetUserId(), message);
+                channelManager.pushToUser(event.getTargetUserId(), event.getTenantId(), message);
                 log.debug("[工作流事件] 已推送给用户 {}，action={}, processInstanceId={}",
                         event.getTargetUserId(), pushAction, event.getProcessInstanceId());
             } else if (event.getTenantId() != null) {
