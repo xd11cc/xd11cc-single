@@ -76,7 +76,7 @@ public class GeneratorUtil {
     }
 
     /**
-     * 渲染模版通用方法
+     * 渲染模板通用方法
      * @param templateName
      * @param params
      * @return
@@ -93,7 +93,7 @@ public class GeneratorUtil {
     }
 
     /**
-     * 封装模版参数
+     * 封装模板参数
      * @param columnInfos
      * @param generateConfigDTO
      * @return

@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * @author xd11cc
  * @date 2026-06-05 16:54:05
- * @description 支付客户端的抽象类，提供模版方法，减少子类的代码冗余
+ * @description 支付客户端的抽象类，提供模板方法，减少子类的代码冗余
  */
 @Slf4j
 public abstract class AbstractPayClient<Config extends PayClientConfig> implements PayClient<Config> {

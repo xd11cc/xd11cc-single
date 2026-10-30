@@ -11,7 +11,7 @@ import lombok.Getter;
  * </p>
  * <p>
  * 此前该状态在 Service 中以 {@code 0}/{@code 1} 字面量散落 7 处，
- * 现收敛为本枚举，与其它状态枚举形态一致。
+ * 现收敛为本枚举，与其他状态枚举形态一致。
  * </p>
  *
  * @author xd11cc

@@ -398,7 +398,7 @@ public abstract class AbstractWxPayClient extends AbstractPayClient<WxPayClientC
             case "PROCESSING":
                 return PayRefundRespDTO.waitingOf(refund.getRefundId(),
                         outRefundNo, response);
-            case "CHANGE": // 退款到银行发现用户的卡作废或者冻结了，导致原路退款银行卡失败，资金回流到商户的现金帐号，需要商户人工干预，通过线下或者财付通转账的方式进行退款
+            case "CHANGE": // 退款到银行发现用户的卡作废或者冻结了，导致原路退款银行卡失败，资金回流到商户的现金账户，需要商户人工干预，通过线下或者财付通转账的方式进行退款
             case "FAIL":
                 return PayRefundRespDTO.failureOf(outRefundNo, response);
             default:

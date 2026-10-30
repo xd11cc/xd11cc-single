@@ -179,7 +179,7 @@ public class SocialLoginServiceImpl implements SocialLoginService {
             String uuid = authUser.getUuid();
             AuthSocialUserDO existSocialUser = authSocialUserService.getBySourceAndUuid(sourceType, uuid);
             if (existSocialUser != null) {
-                throw new ServiceException(SystemErrorEnum.SOCIAL_USER_BINDEDE);
+                throw new ServiceException(SystemErrorEnum.SOCIAL_USER_ALREADY_BOUND);
             }
 
             AuthSocialUserDO authSocialUserDO = new AuthSocialUserDO();

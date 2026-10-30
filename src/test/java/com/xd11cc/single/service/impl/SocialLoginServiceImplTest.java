@@ -327,7 +327,7 @@ class SocialLoginServiceImplTest {
                 .isInstanceOf(ServiceException.class)
                 .satisfies(ex -> {
                     ServiceException se = (ServiceException) ex;
-                    assertThat(se.getErrorCode()).isEqualTo(SystemErrorEnum.SOCIAL_USER_BINDEDE);
+                    assertThat(se.getErrorCode()).isEqualTo(SystemErrorEnum.SOCIAL_USER_ALREADY_BOUND);
                 });
     }
 

@@ -112,7 +112,7 @@ class SystemRoleServiceImplTest extends BaseUnitTest {
 
         ServiceException ex = assertThrows(ServiceException.class,
                 () -> roleService.deleteByIds(Arrays.asList(1L, 2L)));
-        assertThat(ex.getErrorCode()).isEqualTo(SystemErrorEnum.ROLE_BINDEDE_USER);
+        assertThat(ex.getErrorCode()).isEqualTo(SystemErrorEnum.ROLE_BOUND_USER);
         then(baseMapper).should(org.mockito.BDDMockito.never()).deleteBatchIds(any());
         then(systemRoleMenuService).should(org.mockito.BDDMockito.never()).remove(any());
         then(systemRoleDeptService).should(org.mockito.BDDMockito.never()).removeByRoleIds(any());

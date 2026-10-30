@@ -37,7 +37,7 @@ public class ChannelManager {
 
     // 租户id -> 该租户所有通道（租户广播）
     private final ConcurrentHashMap<Long, ChannelGroup> tenantChannelsGroups = new ConcurrentHashMap<>();
-    // 用户id -> 该用户所有通道（多端登陆，用户级推送）
+    // 用户id -> 该用户所有通道（多端登录，用户级推送）
     private final ConcurrentHashMap<Long, ChannelGroup> userChannelsGroups = new ConcurrentHashMap<>();
     // 通道 -> 租户/用户元数据（反向映射，用于断开时清理）
     private final ConcurrentHashMap<Channel, ChannelExtMetadata> channelMetadataMap = new ConcurrentHashMap<>();

@@ -107,20 +107,20 @@ public enum SystemErrorEnum implements ErrorCode {
     MENU_HAVE_CHILDREN(1004001, "当前目录或菜单下存在子集"),
 
     // ==================== 005 - 文件模块 ====================
-    INIT_MINIO_ERROR(1005001, "初始化Minio失败"),
+    INIT_MINIO_ERROR(1005001, "初始化 MinIO 失败"),
     MINIO_UPLOAD_FILE(1005002, "文件上传失败"),
-    MINIO_GET_FILE_FILE(1005003, "获取预览文件失败"),
-    MINIO_DELETE_FILE_FILE(1005004, "删除文件失败"),
-    MINIO_DOWNLOAD_FILE_FILE(1005005, "文件下载失败"),
-    PDF_TO_WORD_ERROR(1005006, "pdf转word失败"),
+    MINIO_GET_FILE(1005003, "获取预览文件失败"),
+    MINIO_DELETE_FILE(1005004, "删除文件失败"),
+    MINIO_DOWNLOAD_FILE(1005005, "文件下载失败"),
+    PDF_TO_WORD_ERROR(1005006, "PDF 转 Word 失败"),
 
     // ==================== 006 - 代码生成模块 ====================
-    TEMPLATE_LOADING_ERROR(1006001, "模版加载失败"),
+    TEMPLATE_LOADING_ERROR(1006001, "模板加载失败"),
     GENERATE_CODE_ERROR(1006002, "代码生成失败"),
 
     // ==================== 007 - 社交登录模块 ====================
     AUTH_SOURCE_FORBIDDEN(1007001, "{}授权方式已被禁用"),
-    SOCIAL_USER_BINDEDE(1007002, "该社交账号已绑定其他用户"),
+    SOCIAL_USER_ALREADY_BOUND(1007002, "该社交账号已绑定其他用户"),
     SOCIAL_USER_NOT_FOUND(1007003, "社交用户信息不存在"),
     SOCIAL_AUTH_NOT_SUPPORT(1007004, "社交登录不支持"),
     AUTH_SOURCE_EXISTS(1007005, "该应用类型已存在"),
@@ -140,7 +140,7 @@ public enum SystemErrorEnum implements ErrorCode {
 
     // ==================== 010 - 角色模块 ====================
     ROLE_CODE_EXISTS(1010001, "角色编码已存在"),
-    ROLE_BINDEDE_USER(1010002, "角色已分配用户，不允许删除"),
+    ROLE_BOUND_USER(1010002, "角色已分配用户，不允许删除"),
 
     // ==================== 011 - 岗位模块 ====================
     POST_CODE_EXISTS(1011001, "岗位编码已存在"),
@@ -159,8 +159,8 @@ public enum SystemErrorEnum implements ErrorCode {
     // ==================== 015 - 定时任务 ====================
     JOB_NOT_FOUND(1015001, "定时任务不存在"),
     JOB_EXISTS(1015002, "定时任务已存在"),
-    CRON_EXPRESSION_ERROR(1015003, "Cron表达式格式错误"),
-    JOB_RUN_FAILURE(1015004, "任务执行异常: {}"),
+    CRON_EXPRESSION_ERROR(1015003, "Cron 表达式格式错误"),
+    JOB_RUN_FAILURE(1015004, "任务执行异常：{}"),
 
     // ==================== 016 - 消息队列模块 ====================
     MQ_TENANT_CONTEXT_MISSING(1016001, "发送MQ消息失败：当前上下文无租户信息"),

@@ -125,7 +125,7 @@ public class LoginUserDTO implements UserDetails {
     }
 
     /**
-     * 用户是否锁定，锁定无法登陆
+     * 用户是否锁定，锁定无法登录
      * @return
      */
     @Override

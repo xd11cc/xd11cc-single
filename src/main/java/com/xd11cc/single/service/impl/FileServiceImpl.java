@@ -63,7 +63,7 @@ public class FileServiceImpl implements FileService {
                             .build()
             );
         } catch (Exception e) {
-            throw new ServiceException(SystemErrorEnum.MINIO_GET_FILE_FILE, e);
+            throw new ServiceException(SystemErrorEnum.MINIO_GET_FILE, e);
         }
     }
 
@@ -79,7 +79,7 @@ public class FileServiceImpl implements FileService {
                                 .build()
                 );
             } catch (Exception e) {
-                throw new ServiceException(SystemErrorEnum.MINIO_DELETE_FILE_FILE, e);
+                throw new ServiceException(SystemErrorEnum.MINIO_DELETE_FILE, e);
             }
         });
     }
@@ -105,13 +105,13 @@ public class FileServiceImpl implements FileService {
                 os.write(buffer, 0, bytesRead);
             }
         }catch (Exception e){
-            throw new ServiceException(SystemErrorEnum.MINIO_DOWNLOAD_FILE_FILE, e);
+            throw new ServiceException(SystemErrorEnum.MINIO_DOWNLOAD_FILE, e);
         }
     }
 
     private void validateFileId(String fileId) {
         if (fileId == null || fileId.contains("..") || fileId.contains("/") || fileId.contains("\\")) {
-            throw new ServiceException(SystemErrorEnum.MINIO_DOWNLOAD_FILE_FILE);
+            throw new ServiceException(SystemErrorEnum.MINIO_DOWNLOAD_FILE);
         }
     }
 }

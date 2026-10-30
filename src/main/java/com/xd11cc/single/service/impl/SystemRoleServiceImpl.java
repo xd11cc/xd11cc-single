@@ -66,7 +66,7 @@ public class SystemRoleServiceImpl extends ServiceImpl<SystemRoleMapper, SystemR
         long userCount = systemUserRoleService.count(new LambdaQueryWrapper<SystemUserRoleDO>()
                 .in(SystemUserRoleDO::getRoleId, ids));
         if (userCount > 0) {
-            throw new ServiceException(SystemErrorEnum.ROLE_BINDEDE_USER);
+            throw new ServiceException(SystemErrorEnum.ROLE_BOUND_USER);
         }
         int row = baseMapper.deleteBatchIds(ids);
         if (row > 0) {
