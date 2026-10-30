@@ -3,9 +3,10 @@ package com.xd11cc.single.common.web;
 import com.xd11cc.single.entity.base.ResponseVO;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.common.exception.ErrorCode;
-import com.xd11cc.single.common.exception.RateLimitException;
 import com.xd11cc.single.common.exception.ServiceException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -80,17 +81,6 @@ public class GlobalExceptionHandler {
         return ResponseVO.fail(SystemErrorEnum.BAD_REQUEST.getErrorCode(), String.format("请求参数有误：%s", next.getMessage()));
     }
 
-    @ExceptionHandler(RateLimitException.class)
-    public ResponseVO<?> handleRateLimitException(RateLimitException e){
-        log.error(e.getMessage(), e);
-        return ResponseVO.fail(e.getMessage());
-    }
-
-    /**
-     * 处理业务逻辑上的异常
-     * @param e
-     * @return
-     */
     @ExceptionHandler(ServiceException.class)
     public ResponseVO<?> handleServiceException(ServiceException e){
         log.error(e.getMessage(), e);
@@ -114,6 +104,37 @@ public class GlobalExceptionHandler {
      * @param e
      * @return
      */
+    /**
+     * 无权限访问（@PreAuthorize 拒绝）
+     * <p>
+     * 必须单独处理：否则会被下面的兜底 {@code Exception} 处理器接住，
+     * 变成 500「系统异常」，用户看到的和真实原因完全对不上。
+     * </p>
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseVO<?> handleAccessDenied(AccessDeniedException e, HttpServletRequest request) {
+        // 正常业务拒绝，不是系统故障，用 warn 避免污染错误告警
+        log.warn("无权限访问：{}", request.getRequestURI());
+        return ResponseVO.fail(SystemErrorEnum.NO_PERMISSION);
+    }
+
+    /**
+     * 认证失败（令牌无效、密码错误等）
+     * <p>
+     * 认证链路抛出的异常自带原因（可能包在 cause 里），优先取业务错误码，
+     * 取不到才退回「未授权」。
+     * </p>
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseVO<?> handleAuthentication(AuthenticationException e, HttpServletRequest request) {
+        log.warn("认证失败：{}，原因：{}", request.getRequestURI(), e.getMessage());
+        Throwable cause = e.getCause();
+        if (cause instanceof ServiceException) {
+            return ResponseVO.fail(((ServiceException) cause).getErrorCode());
+        }
+        return ResponseVO.fail(SystemErrorEnum.UNAUTHORIZED);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseVO<?> handleException(Exception e, HttpServletRequest request){
         String requestURI = request.getRequestURI();

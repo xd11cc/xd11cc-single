@@ -1,11 +1,10 @@
 package com.xd11cc.single.infrastructure.netty;
 
 import com.xd11cc.single.common.properties.NettyProperties;
+import com.xd11cc.single.common.ratelimit.RateLimitSpec;
+import com.xd11cc.single.common.ratelimit.RateLimiter;
+import com.xd11cc.single.common.ratelimit.RateLimiterUnavailableException;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RRateLimiter;
-import org.redisson.api.RateIntervalUnit;
-import org.redisson.api.RateType;
-import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -30,11 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WsRateLimiter {
 
     /**
-     * 与 HTTP 限流共用前缀，便于统一查看 Redis 里的限流 key
-     */
-    private static final String KEY_PREFIX = "request_limit:ws:";
-
-    /**
      * 同一 key 的超限日志间隔，避免日志被打爆
      */
     private static final long WARN_INTERVAL_MS = 10_000L;
@@ -44,7 +38,7 @@ public class WsRateLimiter {
      */
     private static final int WARN_CACHE_LIMIT = 10_000;
 
-    private final RedissonClient redissonClient;
+    private final RateLimiter rateLimiter;
 
     private final NettyProperties nettyProperties;
 
@@ -53,8 +47,8 @@ public class WsRateLimiter {
      */
     private final ConcurrentHashMap<String, Long> lastWarnAt = new ConcurrentHashMap<>();
 
-    public WsRateLimiter(RedissonClient redissonClient, NettyProperties nettyProperties) {
-        this.redissonClient = redissonClient;
+    public WsRateLimiter(RateLimiter rateLimiter, NettyProperties nettyProperties) {
+        this.rateLimiter = rateLimiter;
         this.nettyProperties = nettyProperties;
     }
 
@@ -75,20 +69,17 @@ public class WsRateLimiter {
             return true;
         }
 
-        String key = KEY_PREFIX + tenantId + ":" + userId;
+        String key = "ws:user:" + tenantId + ":" + userId;
+        RateLimitSpec spec = new RateLimitSpec(config.getCount(),
+                Duration.ofSeconds(config.getIntervalSecond()));
         try {
-            RRateLimiter limiter = redissonClient.getRateLimiter(key);
-            if (limiter.trySetRate(RateType.OVERALL, config.getCount(),
-                    config.getIntervalSecond(), RateIntervalUnit.SECONDS)) {
-                // 首次创建时设过期，避免动态 key 长期残留
-                limiter.expire(Duration.ofSeconds(config.getIntervalSecond() * 2L));
-            }
-            boolean allowed = limiter.tryAcquire(1);
+            boolean allowed = rateLimiter.tryAcquire(key, spec);
             if (!allowed) {
                 logThrottled(key, tenantId, userId, config);
             }
             return allowed;
-        } catch (Exception e) {
+        } catch (RateLimiterUnavailableException e) {
+            // fail-open：聊天不该因为限流组件抖动而整体中断
             log.error("[netty] 限流组件异常，本条消息放行 tenantId={}, userId={}", tenantId, userId, e);
             return true;
         }

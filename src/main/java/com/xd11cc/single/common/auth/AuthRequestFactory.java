@@ -8,7 +8,6 @@ import com.xd11cc.single.entity.domain.AuthClientConfigDO;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.enums.SystemStatusEnum;
 import com.xd11cc.single.service.IAuthClientConfigService;
-import lombok.extern.slf4j.Slf4j;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.enums.AuthResponseStatus;
@@ -16,14 +15,12 @@ import me.zhyd.oauth.exception.AuthException;
 import me.zhyd.oauth.request.*;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Constructor;
 
 /**
  * @author xd11cc
  * @date 2026-04-29 13:39:09
  * @description JustAuth动态工厂
  */
-@Slf4j
 @Component
 public class AuthRequestFactory {
 
@@ -63,14 +60,8 @@ public class AuthRequestFactory {
      * @return
      */
     private AuthRequest buildRequest(AuthExtendSource source, AuthConfig config) {
-        Class<? extends AuthDefaultRequest> targetClass = source.getTargetClass();
-        try {
-            Constructor<? extends AuthDefaultRequest> constructor = targetClass.getConstructor(AuthConfig.class, AuthStateCache.class);
-            return constructor.newInstance(config, this.authStateCache);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new AuthException("创建认证请求失败: " + source.name());
-        }
+        // 构造方式由枚举常量自带（函数引用），不再反射
+        return source.create(config, this.authStateCache);
     }
 
     /**

@@ -1,27 +1,19 @@
 package com.xd11cc.single.service.impl;
 
-import com.xd11cc.single.infrastructure.redis.RedisCache;
-import com.xd11cc.single.constants.CacheConstants;
-import com.xd11cc.single.constants.UserConstants;
 import com.xd11cc.single.entity.domain.SystemUserDO;
 import com.xd11cc.single.entity.dto.LoginUserDTO;
 import com.xd11cc.single.enums.SystemErrorEnum;
-import com.xd11cc.single.enums.SystemStatusEnum;
 import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.service.ISystemMenuService;
 import com.xd11cc.single.service.ISystemUserService;
 import com.xd11cc.single.service.DataScopeService;
-import com.xd11cc.single.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.TimeUnit;
 
 /**
  * @Author: xd11cc
@@ -36,48 +28,19 @@ public class UserDetailServiceImpl implements UserDetailsService {
     @Autowired
     private ISystemMenuService systemMenuService;
     @Autowired
-    private RedisCache redisCache;
-    @Autowired
     private DataScopeService dataScopeService;
     
-    private static String getPasswordErrorCountKey(Long userId){
-        return CacheConstants.PASSWORD_ERROR_COUNT_KEY + userId;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         SystemUserDO systemUserDO = systemUserService.getByUsername(username);
-        // 校验用户信息
+        // 用户不存在与密码错误返回同一个错误码，避免暴露用户名是否存在。
+        // 账户禁用不在这一层判断：它在密码校验通过之后才检查（见 PasswordAuthenticationProvider），
+        // 否则任何人不带正确密码就能探测出「该账号存在但被禁用」。
         if (systemUserDO == null) {
-            throw new ServiceException(SystemErrorEnum.USER_NOT_FOUND);
+            throw new ServiceException(SystemErrorEnum.LOGIN_FAILED);
         }
-        if (SystemStatusEnum.FORBIDDEN.getCode().equals(systemUserDO.getStatus())) {
-            throw new ServiceException(SystemErrorEnum.USER_FORBIDDEN);
-        }
-        Long userId = systemUserDO.getId();
-        // 判断密码是否正确或超过最大重试次数
-        Integer retryCount = redisCache.getCacheObject(getPasswordErrorCountKey(userId));
-        if (retryCount == null) {
-            retryCount = 0;
-        }
-        if (retryCount >= UserConstants.PASSWORD_MAX_RETRY_COUNT) {
-            throw new ServiceException(SystemErrorEnum.USER_LOCKED, new Object[]{UserConstants.PASSWORD_MAX_RETRY_COUNT});
-        }
-        // 获取上下文中用户输入的密码凭证
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getCredentials() == null) {
-            throw new ServiceException(SystemErrorEnum.UNAUTHORIZED);
-        }
-        String password = authentication.getCredentials().toString();
-        if (!SecurityUtils.matchPassword(password, systemUserDO.getPassword())) {
-            retryCount += 1;
-            redisCache.setCacheObject(getPasswordErrorCountKey(userId), retryCount, 30, TimeUnit.MINUTES);
-            throw new ServiceException(SystemErrorEnum.PASSWORD_ERROR);
-        }
-        if (redisCache.hasKey(getPasswordErrorCountKey(userId))) {
-            redisCache.removeCacheObject(getPasswordErrorCountKey(userId));
-        }
-        // 构建用户信息
+        // 构建用户信息；密码校验、错误计数与状态校验由 PasswordAuthenticationProvider 负责
         LoginUserDTO loginUserDTO = new LoginUserDTO(systemMenuService.getPermission(systemUserDO.getId()), systemUserDO);
         dataScopeService.resolveDataScope(loginUserDTO);
         return loginUserDTO;

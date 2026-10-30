@@ -98,3 +98,7 @@ minio:
   connectTimeout: 30000
   writeTimeout: 3600000
   readTimeout: 3600000
+
+# 本地/测试为 HTTP，HSTS 无意义
+security:
+  hsts-enabled: false

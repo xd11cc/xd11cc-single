@@ -1,7 +1,6 @@
 package com.xd11cc.single.common.web;
 
 import com.xd11cc.single.common.exception.ErrorCode;
-import com.xd11cc.single.common.exception.RateLimitException;
 import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.entity.base.ResponseVO;
@@ -106,19 +105,6 @@ class GlobalExceptionHandlerTest {
         assertThat(result.getMsg()).contains("手机号格式不正确");
     }
 
-    // ==================== RateLimitException ====================
-
-    @Test
-    void rateLimitException_返回限流消息() {
-        RateLimitException ex = new RateLimitException("操作过于频繁，请稍后再试");
-
-        ResponseVO<?> result = handler.handleRateLimitException(ex);
-
-        assertThat(result.getCode()).isEqualTo(500);
-        assertThat(result.getData()).isNull();
-        assertThat(result.getMsg()).isEqualTo("操作过于频繁，请稍后再试");
-    }
-
     // ==================== ServiceException with ErrorCode ====================
 
     @Test
@@ -168,5 +154,58 @@ class GlobalExceptionHandlerTest {
 
         assertThat(result.getCode()).isEqualTo(4004);
         assertThat(result.getMsg()).isEqualTo("数据不存在");
+    }
+    // ==================== AccessDeniedException（@PreAuthorize 拒绝）====================
+
+    @Test
+    void handleAccessDenied_返回没有操作权限() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        given(request.getRequestURI()).willReturn("/system/user/add");
+
+        ResponseVO<?> result = handler.handleAccessDenied(
+                new org.springframework.security.access.AccessDeniedException("denied"), request);
+
+        assertThat(result.getCode()).isEqualTo(SystemErrorEnum.NO_PERMISSION.getErrorCode());
+        assertThat(result.getMsg()).isEqualTo(SystemErrorEnum.NO_PERMISSION.getErrorMsg());
+    }
+
+    @Test
+    void handleAccessDenied_不再被兜底处理器吞成系统错误() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        given(request.getRequestURI()).willReturn("/system/user/add");
+
+        ResponseVO<?> result = handler.handleAccessDenied(
+                new org.springframework.security.access.AccessDeniedException("denied"), request);
+
+        assertThat(result.getCode()).isNotEqualTo(SystemErrorEnum.SYSTEM_ERROR.getErrorCode());
+    }
+
+    // ==================== AuthenticationException（认证失败）====================
+
+    @Test
+    void handleAuthentication_ServiceException原因_返回业务错误码() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        given(request.getRequestURI()).willReturn("/login/loginByPassword");
+
+        ServiceException cause = new ServiceException(SystemErrorEnum.PASSWORD_ERROR);
+        org.springframework.security.core.AuthenticationException ex =
+                new org.springframework.security.authentication.BadCredentialsException("bad", cause);
+
+        ResponseVO<?> result = handler.handleAuthentication(ex, request);
+
+        assertThat(result.getCode()).isEqualTo(SystemErrorEnum.PASSWORD_ERROR.getErrorCode());
+    }
+
+    @Test
+    void handleAuthentication_无原因_返回未授权() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        given(request.getRequestURI()).willReturn("/login/loginByPassword");
+
+        org.springframework.security.core.AuthenticationException ex =
+                new org.springframework.security.authentication.BadCredentialsException("bad");
+
+        ResponseVO<?> result = handler.handleAuthentication(ex, request);
+
+        assertThat(result.getCode()).isEqualTo(SystemErrorEnum.UNAUTHORIZED.getErrorCode());
     }
 }

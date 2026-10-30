@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,14 +75,12 @@ public class LoginServiceImpl implements LoginService {
         }
         Authentication authentication;
         try {
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginPasswordVO.getUsername(), loginPasswordVO.getPassword());
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(loginPasswordVO.getUsername(), loginPasswordVO.getPassword());
             authentication = authenticationManager.authenticate(authenticationToken);
         } catch (Exception e) {
             systemLoginLogService.recordLoginLog(loginPasswordVO.getUsername(), LoginTypeEnum.PASSWORD, OperateStatusEnum.FAIL, e.getMessage());
             throw e;
-        } finally {
-            SecurityContextHolder.clearContext();
         }
         LoginUserDTO loginUserDTO = (LoginUserDTO) authentication.getPrincipal();
         String token = tokenService.createToken(loginUserDTO);

@@ -7,19 +7,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.web.filter.CorsFilter;
 
@@ -34,9 +33,9 @@ import org.springframework.web.filter.CorsFilter;
 public class SecurityConfig {
 
     @Autowired
-    private UserDetailsService userDetailsService;
-    @Autowired
     private AuthenticationEntryPoint authenticationEntryPoint;
+    @Autowired
+    private AccessDeniedHandler accessDeniedHandler;
     @Autowired
     private LogoutSuccessHandler logoutSuccessHandler;
     @Autowired
@@ -47,11 +46,9 @@ public class SecurityConfig {
     private SecurityProperties securityProperties;
 
     @Bean
-    public AuthenticationManager authenticationManagerBean() {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-        return new ProviderManager(daoAuthenticationProvider);
+    public AuthenticationManager authenticationManagerBean(PasswordAuthenticationProvider passwordAuthenticationProvider) {
+        // 密码比对与错误次数锁定都在自定义 provider 内完成
+        return new ProviderManager(passwordAuthenticationProvider);
     }
 
     @Bean
@@ -65,11 +62,16 @@ public class SecurityConfig {
                     headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin);
                     // X-Content-Type-Options: nosniff（Spring Security 默认以 DENY 开启）
                     headers.contentTypeOptions();
-                    // HSTS（生产环境配合 HTTPS；本地/测试环境可通过 profile 关闭）
-                    headers.httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000));
+                    // HSTS（仅 HTTPS 部署有意义，本地/测试由 profile 关闭）
+                    if (securityProperties.isHstsEnabled()) {
+                        headers.httpStrictTransportSecurity(
+                                hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000));
+                    }
                 })
-                // 异常处理类（此处处理认证失败异常）
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint))
+                // 异常处理：未登录走 401，已登录无权限走 403
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
                 // 给予token，所以不需要session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 注解标记允许匿名访问的url

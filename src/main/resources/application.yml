@@ -123,10 +123,11 @@ security:
     # minio域名白名单
     - /system/config/getConfig/minio-domain
 
-# CORS跨域配置
+# CORS跨域配置：默认只允许本地前端，生产由 application-prod.yml 覆盖
 cors:
   allowed-origins:
-    - "*"
+    - "http://localhost:20001"
+    - "http://127.0.0.1:20001"
 
 # 需要忽略租户的表
 tenant:

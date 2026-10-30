@@ -1,7 +1,7 @@
 package com.xd11cc.single.controller;
 
-import com.xd11cc.single.common.annotation.RequestLimit;
-import com.xd11cc.single.enums.RequestLimitEnum;
+import com.xd11cc.single.common.annotation.RateLimit;
+import com.xd11cc.single.common.ratelimit.Subject;
 import com.xd11cc.single.infrastructure.redis.RedisCache;
 import com.xd11cc.single.constants.CacheConstants;
 import com.xd11cc.single.entity.vo.*;
@@ -51,7 +51,8 @@ public class LoginController {
 
     @PostMapping("/loginByPassword")
     @ApiOperation("账号密码登录")
-    @RequestLimit(key = "login:pwd", type = RequestLimitEnum.IP, count = 5, time = 1, timeUnit = TimeUnit.MINUTES)
+    @RateLimit(permits = 5, windowSeconds = 60,
+            subject = {Subject.IP, Subject.EXPRESSION}, expression = "#p0.username")
     public ResponseVO<String> loginByPassword(@Valid @RequestBody LoginPasswordVO loginPasswordVO){
         return ResponseVO.success(loginService.loginByPassword(loginPasswordVO));
     }

@@ -164,7 +164,6 @@ public class SocialLoginServiceImpl implements SocialLoginService {
         try {
             UsernamePasswordAuthenticationToken authenticationToken =
                     new UsernamePasswordAuthenticationToken(socialUserBindVO.getUsername(), socialUserBindVO.getPassword());
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             authentication = authenticationManager.authenticate(authenticationToken);
         } catch (Exception e) {
             SecurityContextHolder.clearContext();

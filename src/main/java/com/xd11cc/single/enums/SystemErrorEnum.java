@@ -47,6 +47,10 @@ public enum SystemErrorEnum implements ErrorCode {
     USERNAME_EXISTS(1001008, "用户名已存在"),
     ADMIN_NOT_ALLOW_DELETE(1001009, "管理员账号不允许删除"),
     OLD_PASSWORD_ERROR(1001010, "旧密码错误"),
+    NO_PERMISSION(1001011, "没有操作权限"),
+    LOGIN_FAILED(1001012, "用户名或密码错误"),
+    TOO_MANY_REQUESTS(1001013, "请求过于频繁，请稍后重试"),
+    RATE_LIMIT_UNAVAILABLE(1001014, "限流服务暂不可用，请稍后重试"),
 
     // ==================== 002 - 工作流模块 ====================
     HANDLER_NOT_FOUND(1002001, "未找到对应的工作流处理器"),
