@@ -4,7 +4,8 @@
 
 ![img.png](doc/img/img.png)
 
-A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7 with Java 8, providing out-of-the-box enterprise solutions for authentication, authorization, real-time messaging, task scheduling, and workflow engine.
+A production-grade multi-tenant SaaS backend framework built on Spring Boot 2.7 and Java 8, providing
+authentication and authorization, real-time messaging, task scheduling, and a workflow engine out of the box.
 
 ## 🌐 Live Demo
 
@@ -14,152 +15,178 @@ A production-ready, multi-tenant SaaS backend framework built on Spring Boot 2.7
 
 ## Tech Stack
 
-| Layer | Technology | Version | Description |
+| Layer | Technology | Version | Notes |
 |------|------|------|------|
-| **Core Framework** | Spring Boot | 2.7.18 | Application framework |
-| **Security** | Spring Security + JWT | 5.7.x + 0.11.5 | Stateless authentication, Redis session management |
-| **Social Login** | JustAuth | 1.16.7 | OAuth2 third-party login (GitHub/Google/WeChat, etc.) |
-| **ORM** | MyBatis-Plus | 3.5.3.1 | Enhanced CRUD + auto-fill + multi-tenant interceptor |
+| **Core framework** | Spring Boot | 2.7.18 | Application framework |
+| **Security** | Spring Security + JWT | 5.7.x + 0.11.5 | Stateless auth, Redis-backed sessions |
+| **Social login** | JustAuth | 1.16.7 | OAuth2 login (GitHub / Gitee wired up) |
+| **ORM** | MyBatis-Plus | 3.5.3.1 | Enhanced CRUD + auto-fill + tenant interceptor |
 | **Pagination** | PageHelper | 1.4.6 | ThreadLocal-based pagination interceptor |
 | **Database** | MySQL | 8.0.33 | utf8mb4 + utf8mb4_0900_ai_ci |
-| **Connection Pool** | Druid | 1.2.24 | SQL monitoring + slow query detection + dynamic multi-datasource |
-| **Cache** | Redis + Redisson | 6.0+ / 3.36.0 | Distributed redisLock, rate limiting, session storage |
-| **Message Queue** | RabbitMQ | 2.7.x | Async decoupling, event notifications |
-| **Real-time** | Netty WebSocket | 4.1.x | Independent port, long-connection push |
-| **Task Scheduling** | XXL-JOB | 2.4.0 | Distributed scheduling, failover, and retries |
-| **Object Storage** | MinIO | 8.6.0 | S3-compatible distributed storage |
-| **Payment** | Alipay SDK + WeChat Pay SDK | 4.40.831 / 4.8.0 | Multi-channel payment client abstraction |
-| **Workflow Engine** | Flowable | 6.7.2 | BPMN 2.0 engine with dedicated datasource |
-| **API Docs** | Swagger2 + Knife4j | 2.9.2 / 3.0.3 | Online API documentation |
+| **Connection pool** | Druid | 1.2.24 | SQL monitoring + slow query detection + dynamic data sources |
+| **Cache** | Redis + Redisson | 6.0+ / 3.36.0 | Distributed locks, rate limiting, session storage |
+| **Message queue** | RabbitMQ | 2.7.x | Async decoupling, event notification |
+| **Real-time** | Netty WebSocket | 4.1.x | Dedicated port, long-lived connections |
+| **Scheduling** | XXL-JOB | 2.4.0 | Distributed jobs, failover, retry |
+| **Object storage** | MinIO | 8.6.0 | S3-compatible distributed storage |
+| **Payments** | Alipay SDK + WeChat Pay SDK | 4.40.831 / 4.8.0 | Multi-channel payment client abstraction |
+| **Workflow** | Flowable | 6.7.2 | BPMN 2.0 engine on a separate datasource |
+| **API docs** | Springfox Swagger2 | 2.9.2 | Online API documentation (knife4j is not included) |
 | **Containerization** | Docker + Docker Compose | - | One-command deployment |
-| **Utilities** | Hutool / Fastjson2 / MapStruct / EasyExcel / TTL | 5.8.16 / 2.0.39 / 1.6.3 / 3.3.2 / 2.13.2 | Utility library collection |
+| **Utilities** | Hutool / Fastjson2 / MapStruct / EasyExcel / TTL | 5.8.16 / 2.0.39 / 1.6.3 / 3.3.2 / 2.13.2 | Utility libraries |
 
 ## Features
 
-### Core Architecture
+### 🏗️ Core Architecture
 
-- **Multi-Tenant Isolation** — Shared database with row-level isolation. `TenantFilter` extracts tenant ID from domain/header, `TransmittableThreadLocal` propagates tenant context to async threads, `MyBatis-Plus TenantLineInnerInterceptor` auto-appends `WHERE tenant_id = ?` conditions
-- **Dynamic Datasource** — Runtime datasource switching via `@DataSource` annotation + AOP, supports read/write split scenarios
-- **RBAC Permission System** — Complete user, role, menu, department, and post permission model with fine-grained access control
-- **Data Permission Control** — `@DataScope` annotation enables department-level/personal-level data isolation, dynamically appends department filter conditions via AOP
-- **Code Generator** — Freemarker-based template engine for rapid CRUD code generation (Controller/Service/Mapper/Entity/VO/DTO)
+- **Multi-tenant isolation** — Shared database with row-level isolation. `TenantFilter` resolves the tenant
+  from the domain or header, `TransmittableThreadLocal` propagates the tenant context to async threads, and
+  `MyBatis-Plus TenantLineInnerInterceptor` appends `WHERE tenant_id = ?` automatically.
+- **Dynamic data sources** — Switch datasources at runtime with the `@DataSource` annotation + AOP, supporting
+  read/write splitting.
+- **RBAC** — Full user, role, menu, department, and post permission model with fine-grained control.
+- **Data permissions** — `@DataScope` isolates data by department or by individual, appending filter
+  conditions dynamically via AOP.
+- **Code generator** — Generates CRUD code (Controller/Service/Mapper/Entity/VO/DTO) from Freemarker templates.
 
-### Security Module
+### 🔐 Security Module
 
-- **JWT Authentication** — Stateless token auth with JWT as Redis key index, server-side session lifecycle control (kick user, refresh permissions)
-- **OAuth2 Social Login** — Integrated with JustAuth, supporting 20+ social platforms (GitHub, Google, WeChat, etc.)
-- **API Rate Limiting** — `@RequestLimit` annotation-driven, based on Redisson `RRateLimiter` token bucket algorithm, supports three dimensions: IP / User / Global
-- **RSA Encryption** — End-to-end password transmission encryption
-- **CAPTCHA** — Image CAPTCHA with Redis TTL expiration, prevents brute force attacks
-- **CORS** — Unified cross-origin configuration with whitelisted domain control
+- **JWT authentication** — Stateless token auth. The JWT is used as a Redis key index so the server keeps
+  control of the session lifecycle (kick users, refresh permissions).
+- **OAuth2 social login** — Integrated with JustAuth (40+ platforms supported upstream). Currently wired to
+  **GitHub / Gitee**; adding a platform takes one enum constant plus one config row.
+- **API rate limiting** — `@RateLimit` annotation-driven, based on the Redisson `RRateLimiter` token bucket.
+  Supports IP / user / endpoint / expression dimensions, and they can be combined.
+- **Password security** — BCrypt with salt; accounts lock for 30 minutes after 5 consecutive failures;
+  CAPTCHA and login rate limiting together defend against brute force.
+- **CAPTCHA** — Image CAPTCHA backed by Redis TTL expiration.
+- **CORS** — Unified cross-origin configuration with a whitelist of allowed origins.
 
-### Middleware Integration
+### 📡 Middleware Integration
 
-- **WebSocket Push** — Netty-based WebSocket server on independent port (12001) with token authentication, heartbeat detection (30s), and idle connection cleanup
-- **Message Queue** — RabbitMQ with producer Confirm + Return callbacks to prevent message loss, manual consumer ACK for reliable consumption
-- **Distributed Scheduling** — XXL-JOB with shard broadcasting, failover, and retry capabilities
-- **Distributed Lock** — `@RedisLock` annotation-driven, based on Redisson RLock, supports SpEL-based dynamic lock key granularity (ALL/KEY modes), configurable wait timeout, retry count, and auto-release time
-- **Payment Integration** — Unified `PayClient` interface abstracting multi-channel payment (Alipay PC/WAP/QR/App/Barcode + WeChat JSAPI/Native/WAP/App/Barcode), `@PayClientCode` annotation + factory pattern for auto-registration, supports unified order, refund, and callback parsing
-- **Object Storage** — MinIO file upload/download with pre-signed URL direct uploads to reduce backend bandwidth
-- **PDF Conversion** — Spire.PDF integration for PDF to Word and other document format conversions
+- **WebSocket push** — Netty-based server on a dedicated port (12001) with pre-handshake token
+  authentication, heartbeat detection (3 consecutive 60s read-idle events trigger a disconnect), and idle
+  connection cleanup.
+- **Message queue** — RabbitMQ with publisher confirms and returns enabled
+  (`publisher-confirm-type: correlated` / `publisher-returns`); manual consumer ACK is managed by
+  `MqConsumeTemplate`.
+- **Distributed scheduling** — XXL-JOB with shard broadcasting, failover, and retry.
+- **Distributed locks** — `@RedisLock` annotation-driven, based on Redisson `RLock`, with SpEL-driven lock
+  granularity (`ALL` / `KEY` modes) and configurable wait time, retry count, and lease time.
+- **Payments** — A unified `PayClient` interface abstracts multiple channels (Alipay PC/WAP/QR/APP/barcode and
+  WeChat JSAPI/Native/WAP/App/barcode). `@PayClientCode` + a factory register clients automatically, covering
+  unified order, refund, and callback parsing.
+- **Object storage** — MinIO upload/download with presigned URLs so clients upload directly, reducing backend
+  bandwidth.
+- **PDF conversion** — Spire.PDF integration (PDF to Word and other formats).
 
-### Infrastructure
+### 🔧 Infrastructure
 
-- **Global Exception Handling** — Unified error response format with modular error codes (Type_Module_Number)
-- **Operation Logging** — `@OperateLog` annotation auto-records operation logs asynchronously without blocking the main flow
-- **Login Logging** — Records login IP, device, time, and status for audit trails
-- **Request Monitoring** — Druid SQL monitoring dashboard with slow query auto-detection and alerts
-- **Parameter Validation** — JSR-303 annotation validation (`@Valid` + `@NotBlank`/`@NotNull`, etc.)
-- **Type-Safe Pagination** — `PageResult<T>` generic wrapper with `PageUtils.page()` for unified pagination logic
-- **Thread Pool Management** — Dedicated thread pool isolation (Netty, operation log, notice push) with `DelegatingSecurityContextExecutor` for security context propagation
-- **Docker Deployment** — Docker Compose one-command deployment for app + middleware
+- **Global exception handling** — Unified error responses with segmented error codes
+  (`10` + two-digit module + three-digit sequence).
+- **Operation logs** — `@OperateLog` records operations asynchronously without blocking the main flow.
+- **Login logs** — Login IP, device, time, and status for auditing.
+- **Request monitoring** — Druid SQL monitoring with automatic slow-query detection.
+- **Validation** — JSR-303 annotations (`@Valid` + `@NotBlank` / `@NotNull`, etc.).
+- **Type-safe pagination** — `PageResult<T>` plus `PageUtils.page()` for consistent pagination.
+- **Thread pools** — Dedicated pools (operation-log pool and notification pool). The operation-log pool uses
+  `DelegatingSecurityContextExecutor` to propagate the security context; the notification pool uses TTL to
+  propagate the tenant context.
+- **Docker deployment** — Docker Compose brings up the application and middleware in one command.
 
-### Workflow Engine (Flowable)
+### 🔄 Workflow Engine (Flowable)
 
-- **BPMN 2.0 Designer** — Visual process design based on bpmn.js, supporting user tasks, gateways, and multi-instance (countersign / or-sign)
-- **Dedicated Engine Datasource** — Flowable uses a separate schema (`xd11cc_flowable`) to keep engine tables out of the business database
-- **Expression Config Center** — Assignees, candidates, and conditions are configured via `expressionConfigKey`, decoupling BPMN from business users
-- **Process Definition Management** — Draft save/deploy/version/suspend/activate/copy
-- **Approval Flow** — Todo/Done lists, approve, reject (return to any historical node), delegate, cancel
-- **Candidate Tasks** — Supports `candidateUsers` / `candidateGroups`; groups map to system roles
-- **Real-time Notification** — Approval actions pushed via WebSocket (`WORKFLOW_APPROVED` / `WORKFLOW_REJECTED`, etc.)
-- **Multi-Tenant Isolation** — Explicit `tenantId` on deployment; engine tables carry tenant identifiers
+- **BPMN 2.0 designer** — Visual process design with bpmn.js, supporting user tasks, gateways, and
+  multi-instance (parallel/sequential) approval.
+- **Isolated engine datasource** — Flowable runs in its own schema (`xd11cc_flowable`), keeping `ACT_*` tables
+  out of the business database.
+- **Expression config center** — Approvers, candidates, and conditions are declared through
+  `expressionConfigKey`, decoupling BPMN from business staff.
+- **Process definition management** — Draft save, deploy, versioning, suspend/activate, and copy.
+- **Approval flow** — Todo/done, approve, reject (including jumping back to any historical node), delegate,
+  and withdraw.
+- **Candidate tasks** — `candidateUsers` / `candidateGroups`, with candidate groups mapped to system roles.
+- **Real-time notification** — Approval actions are pushed over WebSocket (`WORKFLOW_APPROVED` /
+  `WORKFLOW_REJECTED`, etc.).
+- **Multi-tenant isolation** — `tenantId` is passed explicitly at deploy time, so `ACT_RE_*` / `ACT_RU_*` rows
+  carry the tenant identifier.
 
-### Business Modules
+### 📊 Business Modules
 
-- **System Management** — Users, roles, menus, departments, posts, dictionaries, configs, logs
-- **Tenant Management** — Tenant CRUD, domain binding, tenant isolation configuration
-- **Notifications** — System announcements with publish/revoke, read status, WebSocket push and unread counters
-- **Workflow** — Categories, definitions, designer, expression config, todo/done approvals
-- **File Management** — File upload/download/preview (MinIO)
-- **Social Login Config** — Third-party login application configuration management
-- **Online Users** — View and force-logout active sessions
+- **System management** — Users, roles, menus, departments, posts, dictionaries, config, logs.
+- **Tenant management** — Tenant CRUD, domain binding, tenant isolation config.
+- **Notices** — Publish, revoke, and track read status, with WebSocket push and unread counts.
+- **Workflow** — Categories, definitions, design, expression config, todo/done approvals.
+- **File management** — Upload, download, and preview via MinIO.
+- **Social login config** — Manage third-party login application configs.
+- **Online users** — Inspect active sessions and force logout.
 
 ## Project Structure
 
 ```
 src/main/java/com/xd11cc/single/
-├── common/                            # Shared foundational capabilities
+├── common/                            # Shared capabilities
 │   ├── annotation/                    #   Custom annotations
-│   │   ├── DataScope.java             #     Data permission control
+│   │   ├── DataScope.java             #     Data permissions
 │   │   ├── DataSource.java            #     Dynamic datasource switching
 │   │   ├── RedisLock.java             #     Distributed lock
-│   │   ├── RequestLimit.java          #     API rate limiting
-│   │   ├── OperateLog.java            #     Operation log recording
+│   │   ├── RateLimit.java             #     API rate limiting
+│   │   ├── OperateLog.java            #     Operation logging
 │   │   ├── TenantIgnore.java          #     Skip tenant filtering
 │   │   ├── PayClientCode.java         #     Payment channel marker
-│   │   └── PayClientScan.java         #     Payment client scan registration
-│   ├── aspectj/                       #   Corresponding AOP aspects
+│   │   └── PayClientScan.java         #     Payment client scanning
+│   ├── aspectj/                       #   AOP aspects
 │   ├── base/                          #   Base classes/interfaces (ArrayValuable)
 │   ├── auth/                          #   OAuth2 authorization (AuthRequestFactory)
 │   ├── concurrency/                   #   Thread pool configuration
 │   ├── context/                       #   Context holders (Tenant/DataSource/Permission)
-│   ├── docs/                          #   Swagger / Knife4j
+│   ├── docs/                          #   Swagger configuration
 │   ├── event/                         #   Spring events (NoticeEvent, etc.)
 │   ├── exception/                     #   ServiceException / ErrorCode
-│   ├── initializer/                   #   Startup initializers (tenant cache warm-up)
+│   ├── initializer/                   #   Startup initialization (tenant cache warm-up)
 │   ├── mq/                            #   RabbitMQ queue configuration
-│   ├── properties/                    #   @ConfigurationProperties beans
+│   ├── properties/                    #   @ConfigurationProperties classes
+│   ├── ratelimit/                     #   Rate limiting core (RateLimiter / KeyResolver / Spec)
 │   ├── security/                      #   Spring Security configuration
-│   └── web/                           #   Filters / Interceptors / global exception / CORS
+│   └── web/                           #   Filters / interceptors / global exception / CORS
 ├── infrastructure/                    # Middleware and infrastructure
 │   ├── datasource/                    #   Druid pool + dynamic datasource
-│   ├── mybatis/                       #   MyBatis-Plus interceptor config
+│   ├── mybatis/                       #   MyBatis-Plus interceptor configuration
 │   ├── netty/                         #   Netty WebSocket server
 │   ├── redis/                         #   Redis cache + serialization
-│   ├── schedule/                      #   XXL-JOB scheduled tasks
+│   ├── schedule/                      #   XXL-JOB scheduling
 │   └── storage/                       #   MinIO object storage
 ├── modules/                           # Business modules (vertical slices)
-│   ├── pay/                           #   Payment (PayClient + Alipay/WeChat impls)
-│   └── workflow/                      #   Workflow engine wiring & extension points
-│       ├── FlowableConfig.java        #     Engine bootstrap (dedicated datasource)
+│   ├── pay/                           #   Payments (PayClient + Alipay/WeChat implementations)
+│   └── workflow/                      #   Workflow engine wiring and business extension points
+│       ├── FlowableConfig.java        #     Engine construction (separate datasource)
 │       ├── FlowableWebMvcConfig.java  #     Interceptor registration
 │       ├── FlowableSecurityInterceptor.java  # Flowable identity context
 │       ├── AbstractWorkflowHandler.java      # Business extension point
 │       ├── WorkflowHandlerFactory.java       # Handler strategy factory
 │       ├── WorkflowEvent.java                # Domain event
 │       └── WorkflowEventListener.java        # Event → WebSocket push
-├── constants/                         # Application constants
-├── controller/                        # REST API controllers
-├── convert/                           # MapStruct object converters
+├── constants/                         # Application constants (CacheConstants/SecurityConstants)
+├── controller/                        # REST controllers
+├── convert/                           # MapStruct converters
 ├── entity/
 │   ├── base/                          #   Base entities (BaseDO/BaseTenantDO/ResponseVO/PageResult)
 │   ├── domain/                        #   Database entities (DO)
-│   ├── dto/                           #   Data transfer objects (internal)
+│   ├── dto/                           #   Internal transfer objects
 │   └── vo/                            #   View objects (request/response)
 ├── enums/                             # Business enums (SystemErrorEnum, etc.)
 ├── mapper/                            # MyBatis-Plus mappers
 ├── service/                           # Service interfaces
 │   └── impl/                          #   Service implementations
 └── utils/                             # Utilities
-    ├── SecurityUtils.java             #   Security helper (current user/password)
+    ├── SecurityUtils.java             #   Security helpers (current user/password)
     ├── PageUtils.java                 #   Pagination helper (PageHelper wrapper)
-    ├── TreeUtils.java                 #   Tree builder (O(n))
+    ├── TreeUtils.java                 #   Tree building (O(n))
     ├── ExcelUtils.java                #   Excel import/export (EasyExcel)
     ├── JwtUtils.java                  #   JWT signing and parsing
     ├── IpUtils.java                   #   IP resolution
-    ├── RSAUtils.java                  #   RSA encryption
-    ├── TenantUtils.java               #   Tenant context helper
+    ├── RSAUtils.java                  #   RSA encryption/decryption
+    ├── TenantUtils.java               #   Tenant context helpers
     └── ...                            #   Other utilities
 ```
 
@@ -172,24 +199,24 @@ controller → service → mapper → entity
 ```
 
 - `entity`, `utils`, and `enums` depend only on `common` — never on `infrastructure` or `modules`
-- `common` and `infrastructure` stay one-directional and never depend on `service` / `controller`
-- New business modules go under `modules/<name>/`, not into `common` or `infrastructure`
+- `common` and `infrastructure` have a one-way relationship; they must not depend on `service` / `controller`
+- New business modules go under `modules/<module>/`, never inside `common` or `infrastructure`
 
 ## Quick Start
 
 ### Prerequisites
 
 | Component | Version | Required |
-|------|------|------|
-| JDK | 8+ | ✅ Required |
-| MySQL | 8.0+ | ✅ Required |
-| Redis | 6.0+ | ✅ Required |
+|------|------|----------|
+| JDK | 8+ | ✅ Yes |
+| MySQL | 8.0+ | ✅ Yes |
+| Redis | 6.0+ | ✅ Yes |
 | RabbitMQ | 3.8+ | Optional |
 | MinIO | - | Optional (file features) |
 
-> Flowable uses a **separate database** `xd11cc_flowable`. It is created automatically
-> on first startup through `createDatabaseIfNotExist=true` in the JDBC URL, and the
-> `ACT_*` tables are initialized by the engine itself.
+> Flowable uses a **separate database** `xd11cc_flowable`. On first startup it is created automatically
+> through `createDatabaseIfNotExist=true` on the connection string, so no manual setup is needed; the `ACT_*`
+> tables are initialized by the engine.
 
 ### Local Development
 
@@ -200,7 +227,7 @@ CREATE DATABASE xd11cc_single DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900
 ```
 
 ```bash
-# Schema first, then seed data — both are required
+# Schema first, then seed data — both are required and must run in order
 mysql -uroot -p xd11cc_single < doc/sql/xd11cc_single.sql
 mysql -uroot -p xd11cc_single < doc/sql/xd11cc_single_data.sql
 ```
@@ -215,8 +242,8 @@ Update the following in `src/main/resources/application-dev.yml`:
 
 **3. Set the JWT secret (required)**
 
-For security reasons the JWT signing key **must not be hard-coded**. Inject it via an
-environment variable or startup argument, with a length of **at least 32 bytes**:
+For security reasons the JWT signing key **must not be hard-coded**. Inject it via an environment variable or
+startup argument, with a length of **at least 32 bytes**:
 
 ```bash
 export SECURITY_TOKEN_SECRET="your-strong-secret-key-at-least-32-bytes"
@@ -239,22 +266,36 @@ mvn spring-boot:run
 > **Note**: If you previously compiled with the old package layout, run `mvn clean` first.
 > Stale classes under `target/classes` from the old package paths can cause bean conflicts.
 
+**5. Log in**
+
+The seed data ships with an administrator account — use it to log in (change the password immediately
+afterwards):
+
+| Username | Password | Notes |
+|------|------|------|
+| `admin` | `xd11cc@1216` | Administrator of tenant 1, holds every menu permission |
+
+> Call `/login/getCaptcha` first to obtain a CAPTCHA, then POST `username` / `password` / `captchaId` /
+> `captcha` to `/login/loginByPassword`. Requests must carry `tenant-id: 1` (or resolve the tenant through
+> the `tenant_domain` mapping).
+
 ### Database Scripts
 
 | Script | Purpose |
 |------|------|
 | `doc/sql/xd11cc_single.sql` | **Schema only** (DROP + CREATE + indexes for 24 tables); no INSERT statements |
-| `doc/sql/xd11cc_single_data.sql` | **Seed data** (tenant/users/roles/menus/dictionaries/config/workflow, 16 tables) |
-| `doc/sql/template.sql` | Table templates (business / tree / association patterns) |
+| `doc/sql/xd11cc_single_data.sql` | **Seed data** (tenants, users, roles, menus, dictionaries, config, workflow categories — 15 tables) |
+| `doc/sql/template.sql` | Table templates (business / tree / association / global / log — five patterns) |
 
-> The schema script has been verified column-by-column and index-by-index against a running
-> database. Running both scripts reproduces it exactly.
+> The schema script has been verified column-by-column and index-by-index against a running database;
+> running both scripts reproduces it exactly. The schema script intentionally contains no INSERTs so it can
+> be replayed against an empty or test database.
 
-### Flowable on Existing Environments
+### Upgrading Flowable on an Existing Environment
 
-The `ACT_*` tables are created automatically when the engine first connects to the
-`xd11cc_flowable` database. To control the timing manually, temporarily set
-`flowable.database-schema-update` to `true`, start once, then revert it to `false`.
+Flowable's `ACT_*` tables are created automatically the first time it connects to `xd11cc_flowable`. To
+control when that happens, set `flowable.database-schema-update` to `true` in `application.yml`, start the
+application once, then set it back to `false`.
 
 ### Docker Deployment
 
@@ -262,108 +303,139 @@ The `ACT_*` tables are created automatically when the engine first connects to t
 # Package
 mvn clean package -DskipTests
 
-# Build image
+# Build the image
 docker build -t xd11cc-single .
 
 # Start
 docker-compose up -d
 ```
 
-## API Endpoints
+## API Overview
 
-| Module | Endpoint | Description |
+> For the full API surface, see Swagger UI at `/xd11cc/swagger-ui.html`. The main entry points per module
+> are listed below.
+> All endpoints are prefixed with `/xd11cc` (for example `/xd11cc/system/user/page`).
+
+### Auth `/login`
+
+| Method | Path | Description |
 |------|------|------|
-| **Auth** | `POST /login/loginByPassword` | Username/password login |
-| Auth | `GET /login/getCaptcha` | Get CAPTCHA |
-| Auth | `GET /login/getUserInfo` | Get current user info |
-| Auth | `GET /login/getRoutes` | Get user route menus |
-| Auth | `GET /login/authorize/{source}` | OAuth2 social login |
-| Auth | `GET /login/callback/{source}` | OAuth2 callback |
-| **User** | `POST /system/user/page` | User paginated list |
-| User | `POST /system/user/add` | Add user |
-| User | `PUT /system/user/edit` | Edit user |
-| User | `DELETE /system/user/remove/{id}` | Delete user |
-| User | `PUT /system/user/resetPassword` | Reset password |
-| **Role** | `POST /system/role/page` | Role paginated list |
-| Role | `POST /system/role/assign` | Assign role permissions |
-| **Menu** | `GET /system/menu/list` | Menu list (tree) |
-| **Dept** | `GET /system/dept/list` | Department list (tree) |
-| Dept | `POST /system/dept/add` | Add department |
-| **Post** | `POST /system/post/page` | Post paginated list |
-| **Dict** | `POST /system/dict/type/page` | Dict type paginated list |
-| Dict | `POST /system/dict/data/page` | Dict data paginated list |
-| **Config** | `POST /system/config/page` | System config paginated list |
-| **Tenant** | `POST /system/tenant/page` | Tenant paginated list |
-| Tenant | `POST /system/tenant/add` | Add tenant |
-| Tenant | `PUT /system/tenant/edit` | Edit tenant |
-| **Notice** | `POST /system/notice/page` | Notice paginated list |
-| Notice | `POST /system/notice/publish/{id}` | Publish notice |
-| Notice | `PUT /system/notice/revoke/{id}` | Revoke notice |
-| **Log** | `POST /system/operateLog/page` | Operation log paginated list |
-| Log | `POST /system/loginLog/page` | Login log paginated list |
-| **File** | `POST /file/upload` | File upload (MinIO) |
-| File | `GET /file/download/{id}` | File download |
-| **CodeGen** | `POST /generate/code/preview` | Code generation preview |
-| CodeGen | `POST /generate/code/download` | Code generation download |
-| **Social Login** | `POST /auth/client/config/list` | Social login config list |
+| GET | `/login/getCaptcha` | Get an image CAPTCHA |
+| POST | `/login/loginByPassword` | Username/password login |
+| GET | `/login/getUserInfo` | Current user info |
+| GET | `/login/getRoutes` | Current user's dynamic route menus |
+| GET | `/login/authorize/{source}` | OAuth2 authorization redirect |
+| GET | `/login/callback/{source}` | OAuth2 callback |
+
+### System Management
+
+| Module | Main endpoints |
+|------|----------|
+| User | `POST /system/user/page` · `/add` · `/modifyById` · `/list` · `GET /getById/{id}` · `/removeByIds/{ids}` · `POST /resetPassword/{id}` |
+| Role | `POST /system/role/page` · `/add` · `/modifyById` · `GET /menuIds/{roleId}` · `/deptIds/{roleId}` |
+| Menu | `POST /menu/treeList` (tree) |
+| Department | `POST /system/dept/treeList` · `/add` · `/modifyById` |
+| Post | `POST /system/post/page` |
+| Dictionary | `POST /dict/type/page` · `POST /dict/data/page` |
+| Config | `POST /system/config/page` |
+| Tenant | `POST /system/tenant/page` · `/add` · `/modifyById` |
+| Online users | `GET /system/onlineUser/list` · force logout |
+
+### Notices
+
+| Method | Path | Description |
+|------|------|------|
+| POST | `/system/notice/page` | Paged notices |
+| POST | `/system/notice/publish/{id}` | Publish a notice (triggers a WebSocket push) |
+| POST | `/system/notice/revoke/{id}` | Revoke a notice |
+| POST | `/system/notice-user/myPage` | My notices |
+| GET | `/system/notice-user/unreadCount` | Unread count |
+| POST | `/system/notice-user/markAsRead/{noticeId}` | Mark as read |
+
+### Workflow `/workflow`
+
+| Module | Main endpoints |
+|------|----------|
+| Category | `POST /workflow/category/page` · `/add` · `/modifyById` · `GET /list` |
+| Definition | `POST /workflow/draft/save` · `/draft/deploy` · `GET /draft/{modelId}` · `POST /definition/page` · `/definition/suspend` · `/definition/activate` |
+| Expression config | `POST /workflow/expression-config/page` · `/add` · `GET /options` |
+| Process instance | `POST /workflow/process/mine` · `/cancel` · `GET /process/{processInstanceId}` (`process/start` is not exposed yet — it must be bound to a business document) |
+| Approval tasks | `POST /workflow/task/todo` · `/done` · `/task/approve` · `/task/reject` · `/task/delegate` · `GET /task/rejectable-nodes` |
+
+### Other
+
+| Module | Main endpoints |
+|------|----------|
+| File | `POST /file/upload` · `/upload/batch` · `/download` |
+| Code generator | `POST /generate/code/page` · `GET /generate/code?tableName=xxx` |
+| Social login config | `POST /auth/client/config/page` |
 
 ## Architecture Highlights
 
 ### Multi-Tenant Data Isolation
 
 ```
-Request → TenantFilter (extract tenant ID from domain/header)
-        → TenantContextHolder (store in TransmittableThreadLocal, auto-propagate to async threads)
+Request → TenantFilter (resolve tenant ID from domain/header)
+        → TenantContextHolder (store in TransmittableThreadLocal, propagates to async threads)
         → JwtAuthenticationTokenFilter (JWT authentication)
-        → TenantDatabaseInterceptor (MyBatis-Plus TenantLineInnerInterceptor auto-appends WHERE tenant_id = ?)
-        → Business logic execution
-        → TenantContextHolder.clear() (cleanup in finally block, prevents thread pool pollution)
+        → TenantDatabaseInterceptor (MyBatis-Plus TenantLineInnerInterceptor appends WHERE tenant_id = ?)
+        → Business logic
+        → TenantContextHolder.clear() (in a finally block, to avoid thread-pool reuse pollution)
 ```
 
-**Key Design**:
-- `TransmittableThreadLocal` solves tenant context loss caused by thread pool reuse
-- `@TenantIgnore` annotation + AOP allows specific methods to skip tenant filtering (e.g., admin cross-tenant queries)
-- `TenantUtils.executeIgnore()` programmatic skip
-- Logical delete field `del_flag = NULL` combined with unique index `(xxx, tenant_id, del_flag)` — NULL does not participate in uniqueness checks, allowing重建 (re-create) of deleted records
+**Key design points**:
+- `TransmittableThreadLocal` prevents tenant context loss when threads are pooled and reused
+- The `@TenantIgnore` annotation + AOP skips tenant filtering for specific methods (for example,
+  super-admin cross-tenant queries)
+- `TenantUtils.executeIgnore()` provides a programmatic equivalent
+- The logical-delete column `del_flag = NULL` combined with the unique index
+  `(tenant_id, business key, del_flag)` works because `NULL` is not compared during uniqueness checks,
+  allowing a record to be recreated after deletion
 
 ### Authentication Flow
 
 ```
-Login Request → LoginService.loginByPassword()
-              → UserDetailServiceImpl.loadUserByUsername() (Spring Security authentication)
-              → BCryptPasswordEncoder password validation
-              → JWT Token generation (UUID as Redis key)
-              → Redis stores LoginUserDTO (TTL auto-expires)
-              → Return Token
+Login request → LoginService.loginByPassword()
+             → UserDetailServiceImpl.loadUserByUsername() (load user + status check)
+             → PasswordAuthenticationProvider (BCrypt check + failure-count lockout)
+             → JWT token generation (UUID as the Redis key)
+             → Redis stores LoginUserDTO (expires via TTL)
+             → Return token
 
-Subsequent Requests → JwtAuthenticationTokenFilter
-                    → Extract token from header
-                    → Query LoginUserDTO from Redis
-                    → Validate token expiry (auto-renew when remaining time < threshold)
-                    → Build UsernamePasswordAuthenticationToken
-                    → Set SecurityContextHolder
-                    → Continue filter chain
-                    → finally: TenantContextHolder.clear()
+Subsequent requests → JwtAuthenticationTokenFilter
+                   → Extract token from header
+                   → Query LoginUserDTO from Redis
+                   → Validate token expiry (auto-renew when remaining time < threshold)
+                   → Build UsernamePasswordAuthenticationToken
+                   → Set SecurityContextHolder
+                   → Continue the filter chain
+                   → finally: TenantContextHolder.clear()
 ```
 
-**Key Design**:
-- JWT as Redis key index allows server-side kick/refresh of permissions
-- Token renewal at filter layer, transparent to client
+**Key design points**:
+- The JWT acts as a Redis key index, so the server can kick users or refresh permissions at will
+- Token renewal happens in the filter layer — clients never notice it
 - Fully stateless (`SessionCreationPolicy.STATELESS`)
 
 ### Rate Limiting
 
 ```java
-@RequestLimit(key = "login:", time = 60, count = 10, type = RequestLimitEnum.IP)
+@RateLimit(permits = 5, windowSeconds = 60,
+        subject = {Subject.IP, Subject.EXPRESSION}, expression = "#p0.username")
 @PostMapping("/login/loginByPassword")
 public ResponseVO<String> loginByPassword(...) { ... }
 ```
 
-**Implementation**:
-- `@RequestLimit` annotation + `RequestLimitAspect` AOP
-- Redisson `RRateLimiter` token bucket algorithm (multi-instance quota sharing in distributed scenarios)
-- Supports three dimensions: `IP` / `USER` / `DEFAULT`
-- Key format: `request_limit:{prefix}{key}{dimension}:{identifier}`
+**How it works**:
+- `@RateLimit` annotation + `RateLimitAspect`; bucket creation and accounting live in
+  `common/ratelimit/RateLimiter`
+- Redisson `RRateLimiter` token bucket (quotas are shared across instances in a distributed deployment)
+- Supports `IP` / `USER` / `METHOD` / `EXPRESSION` dimensions; they can be combined and the request is
+  rejected if any dimension is exceeded
+- The key carries a spec fingerprint: `rate_limit:{identity}:{permits}/{window}s`, so changing the limit
+  switches to a fresh bucket and takes effect immediately
+- Two deliberately different strategies: the HTTP entry point is fail-closed (reject) when the limiter is
+  unavailable, while the WebSocket entry point is fail-open (allow)
 
 ### Distributed Lock
 
@@ -372,81 +444,78 @@ public ResponseVO<String> loginByPassword(...) { ... }
 public void processPayment(String orderId) { ... }
 ```
 
-**Implementation**:
-- `@RedisLock` annotation + `RedisLockAspect` AOP aspect
-- Redisson `RLock` reentrant lock implementation
-- Supports two granularity modes: `ALL` (global mutual exclusion, all args concatenated) / `KEY` (sharded by SpEL expression)
-- Configurable parameters: `waitTime` (lock acquisition timeout), `leaseTime` (auto-release time), `retryTimes` (retry count)
+**How it works**:
+- `@RedisLock` annotation + `RedisLockAspect`
+- Backed by Redisson's reentrant `RLock`
+- Two granularities: `ALL` (all arguments joined into the lock key) and `KEY` (the lock key is the SpEL result)
+- Configurable: `waitTime` (acquisition timeout), `leaseTime` (auto-release), `retryTimes`
 - Lock key format: `redlock:{prefix}:{declaringClass}.{methodName}:{resolvedValue}`
-  - KEY mode (key specified): `resolvedValue` is the SpEL result, e.g. `redlock:tenant:add:SystemTenantServiceImpl.add:example.com`
-  - ALL mode (key empty): `resolvedValue` is all args concatenated with `|`
+  - `KEY` mode (non-empty key): `resolvedValue` is the SpEL result, e.g.
+    `redlock:tenant:add:SystemTenantServiceImpl.add:example.com`
+  - `ALL` mode (empty key): `resolvedValue` joins all arguments with `|`
 
 ### Payment Client Architecture
 
 ```
-Payment Request → PayClientFactory.getPayClient(channel)
-                → PayClient.unifiedOrder(reqDTO)      // Unified order placement
-                → PayClient.parseOrderNotify(...)     // Channel callback parsing
-                → PayClient.unifiedRefund(reqDTO)     // Unified refund
-                → PayClient.parseRefundNotify(...)    // Refund callback parsing
+Payment request → PayClientFactory.getPayClient(channel)
+                → PayClient.unifiedOrder(reqDTO)      // unified order
+                → PayClient.parseOrderNotify(...)     // channel callback parsing
+                → PayClient.unifiedRefund(reqDTO)     // unified refund
+                → PayClient.parseRefundNotify(...)    // refund callback parsing
 ```
 
-**Key Design**:
-- `PayClient<Config>` generic interface unifies channel differences across Alipay/WeChat/etc.
-- `@PayClientCode(PayChannelEnum.ALIPAY_WAP)` annotation marks channel implementation classes
-- `PayClientScannerRegistrar` scans and registers implementations into `PayClientFactory` at startup
-- `AbstractAlipayPayClient` / `AbstractWxPayClient` encapsulates common SDK logic
-- Supported channels: Alipay (PC/WAP/QR/App/Barcode), WeChat (JSAPI/Native/WAP/App/Barcode)
+**Key design points**:
+- The generic `PayClient<Config>` interface hides channel differences between Alipay and WeChat
+- `@PayClientCode(PayChannelEnum.ALIPAY_WAP)` marks channel implementations
+- `PayClientScannerRegistrar` scans and registers them into `PayClientFactory` at startup
+- `AbstractAlipayPayClient` / `AbstractWxPayClient` hold shared SDK logic
+- Wired channels: Alipay (PC/WAP/QR/APP/barcode) and WeChat (JSAPI/Native/WAP/App/barcode)
 
 ### Thread Pool Design
 
 ```java
-// Netty business thread pool (IO-intensive)
-@Bean("nettyTaskExecutor")
-corePoolSize = CPU_CORES, maxPoolSize = CPU_CORES * 2
-RejectionPolicy = DiscardPolicy (WebSocket messages can tolerate loss)
-Wrapper = TtlExecutors.getTtlExecutor() (propagate ThreadLocal)
-
-// Operation log thread pool (data must not be lost)
+// Operation-log pool (data must not be lost)
 @Bean("operateLogExecutor")
 corePoolSize = CPU_CORES / 2, maxPoolSize = CPU_CORES
-RejectionPolicy = CallerRunsPolicy (back-pressure to calling thread, ensures no log loss)
+RejectionPolicy = CallerRunsPolicy (back-pressure to the calling thread, so no log is dropped)
 Wrapper = DelegatingSecurityContextExecutor + TTL (propagate SecurityContext + ThreadLocal)
 
-// Notice push thread pool
+// Notification push pool
 @Bean("noticeTaskExecutor")
 corePoolSize = CPU_CORES / 2, maxPoolSize = CPU_CORES
 RejectionPolicy = CallerRunsPolicy
 Wrapper = TtlExecutors.getTtlExecutor()
 ```
 
-**Key Design**:
-- Dedicated thread pool isolation to prevent cross-business interference
-- `DelegatingSecurityContextExecutor` propagates SecurityContext to async threads
-- `TtlExecutors.getTtlExecutor()` propagates TransmittableThreadLocal
-- Rejection policy principle: loss-tolerant → Discard; loss-intolerant → CallerRuns
+**Key design points**:
+- Dedicated pools keep unrelated workloads from interfering with each other
+- `DelegatingSecurityContextExecutor` propagates the SecurityContext to async threads
+- `TtlExecutors.getTtlExecutor()` propagates `TransmittableThreadLocal`
+- Rejection policy rule of thumb: lossy data → `Discard`; must-not-lose data → `CallerRuns`
 
 ### Netty WebSocket Architecture
 
 ```
-Client Connection → BossGroup(1 thread) accepts connections
-                  → WorkerGroup(N threads) handles read/write
-                  → Pipeline chain:
-                      1. HttpServerCodec (HTTP encoding/decoding)
-                      2. ChunkedWriteHandler (large data chunking)
-                      3. HttpObjectAggregator (HTTP aggregation)
-                      4. IdleStateHandler (30s read idle / 60s write idle detection)
-                      5. WebSocketServerProtocolHandler (WebSocket handshake)
-                      6. WebSocketAuthHandler (custom token auth)
-                      7. WebSocketServerHandler (business message processing)
-                  → ChannelManager manages user connection mapping (userId ↔ Channel)
+Client connect → BossGroup (1 thread) accepts connections
+              → WorkerGroup (N threads) handles reads/writes
+              → Pipeline:
+                 1. IdleStateHandler (60s read idle / 25s write idle)
+                 2. HttpServerCodec (HTTP codec)
+                 3. HttpObjectAggregator (HTTP aggregation)
+                 4. WebSocketAuthHandler (token authentication before the handshake)
+                 5. WebSocketServerProtocolHandler (WebSocket handshake)
+                 6. WebSocketServerHandler (business messages)
+              → ChannelManager maps users to channels (userId ↔ Channel)
 ```
 
-**Key Design**:
-- Independent port (12001), no interference with HTTP requests
-- Reactor multi-threaded model, supports 10k+ connections on a single machine
-- TCP tuning: `TCP_NODELAY=true` disables Nagle algorithm for lower latency
-- Heartbeat: disconnects dead connections after 30s without client messages
+**Key design points**:
+- Dedicated port (12001), isolated from HTTP traffic
+- Reactor threading model, capable of tens of thousands of connections per node
+- TCP tuning: `TCP_NODELAY=true` disables Nagle's algorithm to cut latency
+- Dead-connection detection: only after 3 consecutive read-idle events (60s each), to avoid killing
+  connections on flaky networks
+- Two layers of rate limiting: a Redis token bucket on the sending side (shared across instances) plus a
+  per-connection frame guard (in-memory counter that disconnects the client when exceeded)
 
 ### Data Permission Control
 
@@ -456,58 +525,57 @@ Client Connection → BossGroup(1 thread) accepts connections
 public ResponseVO<PageResult<SystemUserVO>> page(...) { ... }
 ```
 
-**Implementation**:
-- `@DataScope` annotation + `DataScopeAspect` AOP
-- Dynamically appends SQL conditions based on user's data permission level:
-  - All data: no additional conditions
-  - Custom permissions: `WHERE d.id IN (1,2,3)`
-  - Same department: `WHERE d.id = #{deptId}`
-  - Department and below: `WHERE d.id IN (recursive sub-department query)`
+**How it works**:
+- `@DataScope` annotation + `DataScopeAspect`
+- SQL conditions are appended dynamically based on the current user's data scope:
+  - All data: nothing appended
+  - Custom scope: `WHERE d.id IN (1,2,3)`
+  - Own department: `WHERE d.id = #{deptId}`
+  - Own department and below: `WHERE d.id IN (recursively resolved child departments)`
   - Self only: `WHERE u.id = #{userId}`
 
 ### Workflow Integration Architecture
 
 ```
-                ┌─────────────────────────────┐
- Designer ──────→│  /workflow/draft/save       │  draft → ACT_RE_MODEL
- (bpmn.js)       │  expressionConfigKey parse  │  configurable assignees
-                └──────────────┬──────────────┘
-                               ↓ deploy
-                ┌─────────────────────────────┐
-                │  ACT_RE_PROCDEF (tenantId)  │  engine DB xd11cc_flowable
-                └──────────────┬──────────────┘
-                               ↓ start
- Initiator ─────→│  workflow_instance (biz DB) │  business link + state machine
-                               ↓
- Approver ──────→│  Todo query (assignee/candidate) │
-                │  approve / reject / delegate     │
-                └──────────────┬──────────────┘
-                               ↓ domain event
-                WorkflowEvent → WorkflowEventListener
-                               ↓ @Async + AFTER_COMMIT
-                        WebSocket approval notification
+                     ┌─────────────────────────────┐
+   Designer (bpmn.js) ─→│  /workflow/draft/save       │  Draft stored in ACT_RE_MODEL
+                     │  expressionConfigKey        │  Approver config
+                     └──────────────┬──────────────┘
+                                    ↓ deploy
+                     ┌─────────────────────────────┐
+                     │  ACT_RE_PROCDEF (tenantId)  │  Engine DB: xd11cc_flowable
+                     └──────────────┬──────────────┘
+                                    ↓ start
+   Requester ───────→│  workflow_instance (biz DB) │  Business link + state machine
+                                    ↓
+   Approver ────────→│  Todo query (assignee/candidates)  │
+                     │  Approve / Reject / Delegate       │
+                     └──────────────┬──────────────┘
+                                    ↓ publish domain event
+                     WorkflowEvent → WorkflowEventListener
+                                    ↓ @Async + AFTER_COMMIT
+                           WebSocket approval notification
 ```
 
-**Key design decisions**:
+**Key design points**:
 
-- **Dual-datasource isolation** — Engine tables (`ACT_*`) live in `xd11cc_flowable`
-  while business tables stay in `xd11cc_single`, linked by `process_instance_id`.
-  This prevents engine upgrades from touching business data.
-- **Explicit tenant propagation** — Flowable 6.7.2 has no ThreadLocal tenant injection;
-  both deployment and queries pass `tenantId` explicitly, so engine rows are naturally
-  partitioned per tenant.
-- **Expression config center** — BPMN does not hard-code assignees. Nodes declare an
-  `expressionConfigKey`, which `WorkflowExpressionResolver` expands at deploy time,
-  letting business users maintain approval rules in the UI.
-- **Business extension points** — `AbstractWorkflowHandler` exposes `onProcessStart`,
-  `onTaskApprove`, `onProcessComplete`, etc. Register a handler per `processDefinitionKey`;
-  when none is registered a no-op implementation is used so the flow is never blocked.
-- **Explicit transaction boundary** — Approval events use
-  `@TransactionalEventListener(AFTER_COMMIT)` so notifications are only sent after the
-  database commit succeeds.
-- **Candidate support** — Todo queries cover `assignee`, `candidateUsers`, and
-  `candidateGroups` (groups map to system roles), preventing orphaned candidate tasks.
+- **Dual datasources** — Engine tables (`ACT_*`) live in `xd11cc_flowable`, business tables in
+  `xd11cc_single`, so engine upgrades cannot damage business data; the two are linked by
+  `process_instance_id`.
+- **Explicit tenant passing** — Flowable 6.7.2 has no ThreadLocal-based tenant injection, so the business
+  layer passes `tenantId` explicitly on deploy and query, which keeps engine data tenant-isolated by
+  construction.
+- **Expression config center** — BPMN does not hard-code approvers; it declares an `expressionConfigKey`
+  which `WorkflowExpressionResolver` resolves at deploy time, letting business staff maintain approval rules
+  in the UI.
+- **Business extension points** — `AbstractWorkflowHandler` exposes `onProcessStart` / `onTaskApprove` /
+  `onProcessComplete` callbacks; business code registers by `processDefinitionKey`. When nothing is
+  registered, a no-op implementation is used so the process is never blocked.
+- **Explicit transaction boundary** — Approval events use `@TransactionalEventListener(AFTER_COMMIT)`, so a
+  notification is only pushed after the database commit succeeds — no more "pushed but rolled back".
+- **Candidate support** — Todo queries cover `assignee`, `candidateUsers`, and `candidateGroups`; candidate
+  groups map to system role IDs so candidate tasks are never invisible.
 
 ## License
 
-See [LICENSE](LICENSE) for details.
+See [LICENSE](LICENSE).

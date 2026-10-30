@@ -116,7 +116,7 @@ controller → service → mapper → entity
 ### SQL 脚本
 
 15. **`doc/sql/` 三份文件职责不重叠**：`xd11cc_single.sql` 只有结构（禁止 INSERT）、`xd11cc_single_data.sql` 只有数据、`template.sql` 是建表模板。
-16. **改表后必须重跑 `doc/sql/sync.sh`** 同步两个脚本；脚本由运行库生成，不要手工编辑，也不要以脚本为准反过来改库。
+16. **改表后必须同步两个 SQL 脚本**（结构 + 种子数据），以运行库为准修脚本，不要反过来。
 
 ### 消息队列
 
@@ -157,8 +157,6 @@ controller → service → mapper → entity
 ## 常用命令
 
 ```bash
-cd doc/sql && ./sync.sh --check   # 校验 SQL 脚本与运行库是否一致
-cd doc/sql && ./sync.sh           # 从运行库重新生成两个 SQL 脚本
 mvn -o test                      # 全量测试（当前 800+ 用例）
 mvn -o spring-boot:run           # 本地 dev 启动（需先建库并导入 SQL）
 mvn clean package -DskipTests    # 跳过测试打包

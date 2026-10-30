@@ -33,7 +33,7 @@ public class WebSocketChannelInitializer extends ChannelInitializer<SocketChanne
     @Override
     protected void initChannel(SocketChannel socketChannel) {
         ChannelPipeline pipeline = socketChannel.pipeline();
-        // 心跳检测（读空闲 30s，写空闲 60s）
+        // 心跳检测（读空闲 60s，写空闲 25s）
         pipeline.addLast(new IdleStateHandler(
                 nettyProperties.getReaderIdleTime(),
                 nettyProperties.getWriterIdleTime(),

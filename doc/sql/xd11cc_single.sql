@@ -5,12 +5,12 @@
  内容   : 仅表结构（DROP + CREATE + 索引 + 注释）
  数据   : 见同目录 xd11cc_single_data.sql（种子/基础数据）
  适用   : MySQL 8.0
- 生成   : doc/sql/sync.sh —— 请勿手工编辑，改库后重跑脚本
+ 维护   : 表结构变更后同步更新本文件，与运行库保持一致
 
  说明   :
    1. 本文件不含任何 INSERT，可安全用于重建空库
    2. 建表模板见同目录 template.sql
-   3. 已剔除 AUTO_INCREMENT 计数值，避免数据变动导致结构文件漂移
+   3. 不含 AUTO_INCREMENT 计数值，避免数据插入导致结构文件漂移
 */
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;

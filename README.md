@@ -18,7 +18,7 @@
 |------|------|------|------|
 | **基础框架** | Spring Boot | 2.7.18 | 应用框架 |
 | **安全认证** | Spring Security + JWT | 5.7.x + 0.11.5 | 无状态认证，Redis 会话管理 |
-| **社交登录** | JustAuth | 1.16.7 | OAuth2 第三方登录（GitHub/Google/微信等） |
+| **社交登录** | JustAuth | 1.16.7 | OAuth2 第三方登录（已接入 GitHub / Gitee） |
 | **ORM 框架** | MyBatis-Plus | 3.5.3.1 | 增强 CRUD + 自动填充 + 多租户拦截 |
 | **分页插件** | PageHelper | 1.4.6 | 基于 ThreadLocal 的分页拦截 |
 | **数据库** | MySQL | 8.0.33 | utf8mb4 + utf8mb4_0900_ai_ci |
@@ -30,7 +30,7 @@
 | **对象存储** | MinIO | 8.6.0 | 兼容 S3 协议的分布式存储 |
 | **支付集成** | 支付宝 SDK + 微信支付 SDK | 4.40.831 / 4.8.0 | 多渠道支付客户端抽象 |
 | **工作流引擎** | Flowable | 6.7.2 | BPMN 2.0 流程引擎，独立数据源 |
-| **接口文档** | Swagger2 + Knife4j | 2.9.2 / 3.0.3 | 在线 API 文档 |
+| **接口文档** | Springfox Swagger2 | 2.9.2 | 在线 API 文档（未引入 knife4j） |
 | **容器化** | Docker + Docker Compose | - | 一键部署 |
 | **工具库** | Hutool / Fastjson2 / MapStruct / EasyExcel / TTL | 5.8.16 / 2.0.39 / 1.6.3 / 3.3.2 / 2.13.2 | 实用工具集 |
 
@@ -47,16 +47,16 @@
 ### 🔐 安全模块
 
 - **JWT 认证** — 无状态 Token 认证，JWT 作为 Redis Key 索引，服务端主动控制会话生命周期（踢人、刷新权限）
-- **OAuth2 社交登录** — 集成 JustAuth，支持 GitHub、Google、微信等 20+ 社交平台登录
-- **接口限流** — `@RequestLimit` 注解驱动，基于 Redisson RRateLimiter 实现令牌桶算法，支持 IP/用户/全局三种限流维度
-- **RSA 加密** — 密码传输端到端加密，防止中间人窃取
+- **OAuth2 社交登录** — 集成 JustAuth（底层支持 40+ 平台），当前已接入 **GitHub / Gitee**，新增平台只需加一个枚举常量与一条配置
+- **接口限流** — `@RateLimit` 注解驱动，基于 Redisson RRateLimiter 令牌桶，支持 IP/用户/接口/表达式四种维度且可组合
+- **密码安全** — BCrypt 加盐存储；连续 5 次失败锁定 30 分钟；图形验证码 + 登录限流双重防爆破
 - **验证码** — 图形验证码 + Redis TTL 过期机制，防暴力破解
 - **CORS 跨域** — 统一跨域配置，支持白名单域名控制
 
 ### 📡 中间件集成
 
-- **WebSocket 推送** — 基于 Netty 独立端口（12001）提供 WebSocket 服务，支持 Token 认证、心跳检测（30s）、空闲连接清理
-- **消息队列** — RabbitMQ 集成，生产者 Confirm + Return 回调保证消息不丢，消费者手动 ACK 确保可靠消费
+- **WebSocket 推送** — 基于 Netty 独立端口（12001）提供 WebSocket 服务，支持握手前 Token 认证、心跳检测（读空闲 60s × 3 次断开）、空闲连接清理
+- **消息队列** — RabbitMQ 集成，开启生产者确认与退回（`publisher-confirm-type: correlated` / `publisher-returns`），消费者手动 ACK 由 `MqConsumeTemplate` 控制
 - **分布式调度** — XXL-JOB 集成，支持分片广播、故障转移、失败重试等企业级调度能力
 - **分布式锁** — `@RedisLock` 注解驱动，基于 Redisson RLock 实现，支持 SpEL Key 动态锁粒度（ALL/KEY 两种模式），可配置等待超时、重试次数、自动释放时间
 - **支付集成** — 统一 `PayClient` 接口抽象多渠道支付（支付宝 PC/WAP/扫码/APP/条码 + 微信 JSAPI/Native/WAP/App/条码），`@PayClientCode` 注解 + 工厂模式自动注册，支持统一下单、退款、回调解析
@@ -65,13 +65,13 @@
 
 ### 🔧 基础设施
 
-- **全局异常处理** — 统一错误响应格式，模块化错误码设计（类型_模块_编号）
+- **全局异常处理** — 统一错误响应格式，分段错误码（`10` + 模块两位 + 序号三位）
 - **操作日志** — `@OperateLog` 注解自动记录操作日志，异步写入不影响主流程
 - **登录日志** — 记录登录 IP、设备、时间、状态，支持审计追溯
 - **请求监控** — Druid SQL 监控面板，慢查询自动检测告警
 - **参数校验** — JSR-303 注解校验（`@Valid` + `@NotBlank`/`@NotNull` 等）
 - **类型安全分页** — `PageResult<T>` 泛型封装分页结果，配合 `PageUtils.page()` 工具方法统一分页逻辑
-- **线程池管理** — 专用线程池隔离（Netty 业务池、操作日志池、通知推送池），配合 `DelegatingSecurityContextExecutor` 传递安全上下文
+- **线程池管理** — 专用线程池隔离（操作日志池、通知推送池），操作日志池用 `DelegatingSecurityContextExecutor` 传递安全上下文，通知池用 TTL 传递租户上下文
 - **Docker 部署** — Docker Compose 一键部署应用 + 中间件
 
 ### 🔄 工作流引擎（Flowable）
@@ -104,7 +104,7 @@ src/main/java/com/xd11cc/single/
 │   │   ├── DataScope.java             #     数据权限控制
 │   │   ├── DataSource.java            #     动态数据源切换
 │   │   ├── RedisLock.java             #     分布式锁
-│   │   ├── RequestLimit.java          #     接口限流
+│   │   ├── RateLimit.java             #     接口限流
 │   │   ├── OperateLog.java            #     操作日志记录
 │   │   ├── TenantIgnore.java          #     跳过租户过滤
 │   │   ├── PayClientCode.java         #     支付渠道标记
@@ -114,12 +114,13 @@ src/main/java/com/xd11cc/single/
 │   ├── auth/                          #   OAuth2 授权 (AuthRequestFactory)
 │   ├── concurrency/                   #   线程池配置
 │   ├── context/                       #   上下文持有者 (Tenant/DataSource/Permission)
-│   ├── docs/                          #   Swagger/Knife4j 配置
+│   ├── docs/                          #   Swagger 配置
 │   ├── event/                         #   Spring 事件 (NoticeEvent 等)
 │   ├── exception/                     #   ServiceException / ErrorCode
 │   ├── initializer/                   #   启动初始化 (租户缓存预热)
 │   ├── mq/                            #   RabbitMQ 队列配置
 │   ├── properties/                    #   @ConfigurationProperties 属性类
+│   ├── ratelimit/                     #   限流机制层 (RateLimiter / KeyResolver / Spec)
 │   ├── security/                      #   Spring Security 配置
 │   └── web/                           #   Filter / Interceptor / 全局异常 / CORS
 ├── infrastructure/                    # 中间件与基础设施连接
@@ -237,13 +238,25 @@ mvn spring-boot:run
 > **注意**：若此前用旧包结构编译过，请先执行 `mvn clean`，避免 `target/classes`
 > 残留旧包路径的 class 导致 Bean 冲突。
 
+**5. 登录**
+
+种子数据里已内置管理员账号，直接用它登录（首次登录后请立即修改密码）：
+
+| 账号 | 密码 | 说明 |
+|------|------|------|
+| `admin` | `xd11cc@1216` | 租户 1 的管理员，拥有全部菜单权限 |
+
+> 登录需先调 `/login/getCaptcha` 取验证码，再调 `/login/loginByPassword` 提交
+> `username` / `password` / `captchaId` / `captcha`；请求需带 `tenant-id: 1`
+> （或通过 `tenant_domain` 解析域名）。
+
 ### 数据库脚本
 
 | 脚本 | 用途 |
 |------|------|
 | `doc/sql/xd11cc_single.sql` | **仅表结构**（24 张表的 DROP + CREATE + 索引），不含任何 INSERT |
-| `doc/sql/xd11cc_single_data.sql` | **种子数据**（租户/用户/角色/菜单/字典/配置/工作流分类等 16 张表） |
-| `doc/sql/template.sql` | 建表模板（业务表 / 树形表 / 关联表三种范式） |
+| `doc/sql/xd11cc_single_data.sql` | **种子数据**（租户/用户/角色/菜单/字典/配置/工作流分类等 15 张表） |
+| `doc/sql/template.sql` | 建表模板（业务表 / 树形表 / 关联表 / 全局表 / 日志表 五种范式） |
 
 > 结构脚本与运行库已逐列、逐索引比对一致；两个脚本执行后可与运行库完全对齐。
 > 结构脚本刻意不含 INSERT，便于在空库或测试库中反复重建。
@@ -268,7 +281,7 @@ docker-compose up -d
 
 ## 接口概览
 
-> 完整接口请访问演示环境的 Knife4j 文档。以下为各模块的主要入口。
+> 完整接口请访问 Swagger UI（`/xd11cc/swagger-ui.html`）。以下为各模块的主要入口。
 > 所有接口均以 `/xd11cc` 为前缀（如 `/xd11cc/system/user/page`）。
 
 ### 认证授权 `/login`
@@ -288,10 +301,10 @@ docker-compose up -d
 |------|----------|
 | 用户 | `POST /system/user/page` · `/add` · `/modifyById` · `/list` · `GET /getById/{id}` · `/removeByIds/{ids}` · `POST /resetPassword/{id}` |
 | 角色 | `POST /system/role/page` · `/add` · `/modifyById` · `GET /menuIds/{roleId}` · `/deptIds/{roleId}` |
-| 菜单 | `GET /system/menu/list`（树形） |
+| 菜单 | `POST /menu/treeList`（树形） |
 | 部门 | `POST /system/dept/treeList` · `/add` · `/modifyById` |
 | 岗位 | `POST /system/post/page` |
-| 字典 | `POST /system/dictType/page` · `POST /system/dictData/page` |
+| 字典 | `POST /dict/type/page` · `POST /dict/data/page` |
 | 配置 | `POST /system/config/page` |
 | 租户 | `POST /system/tenant/page` · `/add` · `/modifyById` |
 | 在线用户 | `GET /system/onlineUser/list` · 强制下线 |
@@ -314,7 +327,7 @@ docker-compose up -d
 | 流程分类 | `POST /workflow/category/page` · `/add` · `/modifyById` · `GET /list` |
 | 流程定义 | `POST /workflow/draft/save` · `/draft/deploy` · `GET /draft/{modelId}` · `POST /definition/page` · `/definition/suspend` · `/definition/activate` |
 | 表达式配置 | `POST /workflow/expression-config/page` · `/add` · `GET /options` |
-| 流程实例 | `POST /workflow/process/start` · `/mine` · `/cancel` · `GET /process/{processInstanceId}` |
+| 流程实例 | `POST /workflow/process/mine` · `/cancel` · `GET /process/{processInstanceId}`（`process/start` 尚未开放，需与业务单据绑定） |
 | 审批任务 | `POST /workflow/task/todo` · `/done` · `/task/approve` · `/task/reject` · `/task/delegate` · `GET /task/rejectable-nodes` |
 
 ### 其他
@@ -342,14 +355,14 @@ docker-compose up -d
 - `TransmittableThreadLocal` 解决线程池复用时的租户上下文丢失问题
 - `@TenantIgnore` 注解 + AOP 支持特定方法跳过租户过滤（如超管跨租户查询）
 - `TenantUtils.executeIgnore()` 编程式忽略
-- 逻辑删除字段 `del_flag = NULL` 配合唯一索引 `(xxx, tenant_id, del_flag)`，NULL 不参与判重，允许删除后重建同名记录
+- 逻辑删除字段 `del_flag = NULL` 配合唯一索引 `(tenant_id, 业务唯一键, del_flag)`，NULL 不参与判重，允许删除后重建同名记录
 
 ### 认证流程
 
 ```
 登录请求 → LoginService.loginByPassword()
-        → UserDetailServiceImpl.loadUserByUsername() (Spring Security 认证)
-        → BCryptPasswordEncoder 密码校验
+        → UserDetailServiceImpl.loadUserByUsername() (加载用户 + 状态校验)
+        → PasswordAuthenticationProvider (BCrypt 密码校验 + 错误次数锁定)
         → JWT Token 生成 (UUID 作为 Redis Key)
         → Redis 存储 LoginUserDTO (TTL 过期自动失效)
         → 返回 Token
@@ -372,16 +385,18 @@ docker-compose up -d
 ### 接口限流
 
 ```java
-@RequestLimit(key = "login:", time = 60, count = 10, type = RequestLimitEnum.IP)
+@RateLimit(permits = 5, windowSeconds = 60,
+        subject = {Subject.IP, Subject.EXPRESSION}, expression = "#p0.username")
 @PostMapping("/login/loginByPassword")
 public ResponseVO<String> loginByPassword(...) { ... }
 ```
 
 **实现原理**：
-- `@RequestLimit` 注解 + `RequestLimitAspect` AOP 切面
+- `@RateLimit` 注解 + `RateLimitAspect` AOP 切面；建桶与计数收敛在 `common/ratelimit/RateLimiter`
 - Redisson `RRateLimiter` 令牌桶算法（分布式场景多实例共享配额）
-- 支持 `IP`/`USER`/`DEFAULT` 三种限流维度
-- Key 格式：`request_limit:{prefix}{key}{dimension}:{identifier}`
+- 支持 `IP` / `USER` / `METHOD` / `EXPRESSION` 四种维度，可多选，任一超限即拒绝
+- Key 含规格指纹：`rate_limit:{身份}:{permits}/{window}s`，改阈值即换新桶、立即生效
+- 两条策略刻意不同：HTTP 入口组件故障时 fail-closed（拒绝），WebSocket 入口 fail-open（放行）
 
 ### 分布式锁
 
@@ -419,12 +434,6 @@ public void processPayment(String orderId) { ... }
 ### 线程池设计
 
 ```java
-// Netty 业务线程池 (IO密集型)
-@Bean("nettyTaskExecutor")
-corePoolSize = CPU_CORES, maxPoolSize = CPU_CORES * 2
-拒绝策略 = DiscardPolicy (WebSocket 消息可容忍丢失)
-包装 = TtlExecutors.getTtlExecutor() (传递 ThreadLocal)
-
 // 操作日志线程池 (数据不可丢)
 @Bean("operateLogExecutor")
 corePoolSize = CPU_CORES / 2, maxPoolSize = CPU_CORES
@@ -448,23 +457,23 @@ corePoolSize = CPU_CORES / 2, maxPoolSize = CPU_CORES
 
 ```
 客户端连接 → BossGroup(1线程) 接受连接
-          → WorkerGroup(N线程) 处理读写
-          → Pipeline 处理链:
-              1. HttpServerCodec (HTTP编解码)
-              2. ChunkedWriteHandler (大数据分块)
-              3. HttpObjectAggregator (HTTP聚合)
-              4. IdleStateHandler (30s读空闲/60s写空闲检测)
-              5. WebSocketServerProtocolHandler (WebSocket握手)
-              6. WebSocketAuthHandler (自定义Token认证)
-              7. WebSocketServerHandler (业务消息处理)
-          → ChannelManager 管理用户连接映射 (userId ↔ Channel)
+         → WorkerGroup(N线程) 处理读写
+         → Pipeline 处理链:
+            1. IdleStateHandler (读空闲 60s / 写空闲 25s)
+            2. HttpServerCodec (HTTP 编解码)
+            3. HttpObjectAggregator (HTTP 聚合)
+            4. WebSocketAuthHandler (握手前 Token 认证)
+            5. WebSocketServerProtocolHandler (WebSocket 握手)
+            6. WebSocketServerHandler (业务消息处理)
+         → ChannelManager 管理用户连接映射 (userId ↔ Channel)
 ```
 
 **关键设计**：
 - 独立端口（12001），不与 HTTP 请求互相影响
 - Reactor 多线程模型，单机可支撑万级连接
 - TCP 参数优化：`TCP_NODELAY=true` 禁用 Nagle 算法降低延迟
-- 心跳机制：30s 未收到客户端消息 → 主动断开死连接
+- 死连接判定：连续 3 次读空闲（60s）才断开，避免误杀弱网连接
+- 双重限流：发送侧 Redis 令牌桶（跨实例）+ 单连接帧率保护（内存计数，超限直接断开）
 
 ### 数据权限控制
 

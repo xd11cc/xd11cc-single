@@ -5,7 +5,7 @@
  内容   : 种子/基础数据（租户、用户、角色、菜单、字典、配置、工作流分类等）
  前置   : 先执行 xd11cc_single.sql 建表
  适用   : MySQL 8.0
- 生成   : doc/sql/sync.sh —— 请勿手工编辑，改数据后重跑脚本
+ 维护   : 种子数据变更后同步更新本文件
 
  包含的表（15 张）:
    system_tenant  system_config  system_menu  system_role  system_role_menu

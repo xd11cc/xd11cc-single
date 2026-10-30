@@ -140,29 +140,20 @@ TenantContextHolder.runAsTenant(tenantId, () -> {
 
 ## 6. 改表结构 / 改种子数据
 
-两个 SQL 文件由脚本从运行库生成，**不要手工编辑**：
-
-```bash
-cd doc/sql
-
-./sync.sh            # 改完库后重新生成两个文件
-./sync.sh --check    # 只检查是否漂移，有差异以非 0 退出（可进 CI）
-```
-
-流程：
+两个 SQL 文件手工维护，**改完必须同步**：
 
 1. 改实体 / 改数据库
-2. 跑 `./sync.sh` 重新生成 `xd11cc_single.sql` 与 `xd11cc_single_data.sql`
-3. 跑 `./sync.sh --check` 确认幂等（应输出「✓ 两个脚本与运行库一致」）
-4. 提交改动
+2. 同步 `doc/sql/xd11cc_single.sql` 的 `CREATE TABLE`
+3. 有初始化数据的，同步 `doc/sql/xd11cc_single_data.sql`
+4. 验证脚本与真实库一致
 
-脚本的行为：
+```bash
+# 导入临时库后与真实库比对，期望无差异
+mysql -uroot -p xd11cc_check < doc/sql/xd11cc_single.sql
+mysql -uroot -p xd11cc_check < doc/sql/xd11cc_single_data.sql
+```
 
-- 结构文件从 `information_schema` 全量导出，**剔除 `AUTO_INCREMENT` 计数值**，避免插一条数据就让结构文件漂移
-- 数据文件只导出 15 张种子表，顺序固定；`auth_client_config`（含第三方 secret）与日志/流水/业务数据刻意排除
-- 运行库里新增/删除了表而脚本清单没跟上时，**直接报错**而不是静默漏掉
-
-脚本与真实库不一致时，**以真实库为准**（重新生成即可），不要反过来手改脚本文件。
+脚本与真实库不一致时，**以真实库为准修脚本**，不要反过来。
 
 表名用 `模块_实体`（`system_dict_data`、`workflow_task_record`），所有列必须有 `COMMENT`。
 
