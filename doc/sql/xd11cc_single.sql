@@ -2,17 +2,16 @@
  xd11cc-single 数据库结构脚本
  ------------------------------------------------------------
  库名   : xd11cc_single
- 内容   : 仅表结构（24 张表：DROP + CREATE + 索引 + 注释）
+ 内容   : 仅表结构（DROP + CREATE + 索引 + 注释）
  数据   : 见同目录 xd11cc_single_data.sql（种子/基础数据）
  适用   : MySQL 8.0
- 校验   : 已与运行库逐列/逐索引比对一致
+ 生成   : doc/sql/sync.sh —— 请勿手工编辑，改库后重跑脚本
 
  说明   :
    1. 本文件不含任何 INSERT，可安全用于重建空库
    2. 建表模板见同目录 template.sql
-   3. 修改表结构时请同步更新本文件
+   3. 已剔除 AUTO_INCREMENT 计数值，避免数据变动导致结构文件漂移
 */
-
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -39,9 +38,7 @@ CREATE TABLE `auth_client_config` (
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenant_source` (`tenant_id`,`source`,`del_flag`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='授权应用配置表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='授权应用配置表';
 
 -- ----------------------------
 -- Table structure for auth_social_user
@@ -67,9 +64,7 @@ CREATE TABLE `auth_social_user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenant_source_uuid` (`tenant_id`,`source`,`uuid`,`del_flag`),
   KEY `idx_tenant_user` (`tenant_id`,`user_id`,`del_flag`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='社交用户表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='社交用户表';
 
 -- ----------------------------
 -- Table structure for system_config
@@ -89,9 +84,7 @@ CREATE TABLE `system_config` (
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenant_config_key` (`tenant_id`,`config_key`,`del_flag`) COMMENT '同一租户下 key 唯一'
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统配置';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统配置';
 
 -- ----------------------------
 -- Table structure for system_dept
@@ -115,9 +108,7 @@ CREATE TABLE `system_dept` (
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `uk_tenant_dept_code` (`tenant_id`,`dept_code`,`del_flag`),
   KEY `idx_tenant_parent` (`tenant_id`,`parent_id`,`del_flag`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='部门表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='部门表';
 
 -- ----------------------------
 -- Table structure for system_dept_post
@@ -137,9 +128,7 @@ CREATE TABLE `system_dept_post` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenant_dept_post` (`tenant_id`,`dept_id`,`post_id`,`del_flag`),
   KEY `idx_tenant_post` (`tenant_id`,`post_id`,`del_flag`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='部门岗位表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='部门岗位表';
 
 -- ----------------------------
 -- Table structure for system_dict_data
@@ -164,9 +153,7 @@ CREATE TABLE `system_dict_data` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenant_type_label` (`tenant_id`,`dict_type`,`label`,`del_flag`) USING BTREE,
   KEY `idx_tenant_type_status_sort` (`tenant_id`,`dict_type`,`status`,`sort`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='字典数据表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='字典数据表';
 
 -- ----------------------------
 -- Table structure for system_dict_type
@@ -184,9 +171,7 @@ CREATE TABLE `system_dict_type` (
   `remark` varchar(255) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_dict_type` (`dict_type`,`del_flag`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='字典类型表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='字典类型表';
 
 -- ----------------------------
 -- Table structure for system_login_log
@@ -206,9 +191,7 @@ CREATE TABLE `system_login_log` (
   PRIMARY KEY (`id`),
   KEY `idx_login_time` (`login_time`,`id`),
   KEY `idx_login_type_status_time` (`login_type`,`status`,`login_time`,`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=150 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='登录日志表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='登录日志表';
 
 -- ----------------------------
 -- Table structure for system_menu
@@ -238,9 +221,7 @@ CREATE TABLE `system_menu` (
   UNIQUE KEY `uk_path` (`path`,`del_flag`) USING BTREE,
   KEY `idx_menu_type_status_sort` (`menu_type`,`status`,`del_flag`,`sort`),
   KEY `idx_parent_del_sort` (`parent_id`,`del_flag`,`sort`)
-) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单表';
 
 -- ----------------------------
 -- Table structure for system_notice
@@ -269,9 +250,7 @@ CREATE TABLE `system_notice` (
   KEY `idx_tenant_type_status_id` (`tenant_id`,`type`,`status`,`id`),
   KEY `idx_tenant_sender` (`tenant_id`,`sender_id`,`del_flag`),
   KEY `idx_tenant_create_time` (`tenant_id`,`create_time`,`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统通知表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统通知表';
 
 -- ----------------------------
 -- Table structure for system_notice_user
@@ -292,9 +271,7 @@ CREATE TABLE `system_notice_user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenant_notice_user` (`tenant_id`,`notice_id`,`user_id`,`del_flag`),
   KEY `idx_tenant_user_read` (`tenant_id`,`user_id`,`del_flag`,`read_status`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统通知用户关联表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统通知用户关联表';
 
 -- ----------------------------
 -- Table structure for system_operate_log
@@ -324,9 +301,7 @@ CREATE TABLE `system_operate_log` (
   KEY `idx_tenant_create_time` (`tenant_id`,`create_time`,`id`),
   KEY `idx_tenant_module_type_status` (`tenant_id`,`module`,`operate_type`,`status`),
   KEY `idx_tenant_operator` (`tenant_id`,`create_user_id`,`create_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=194 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='操作日志表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='操作日志表';
 
 -- ----------------------------
 -- Table structure for system_post
@@ -346,9 +321,7 @@ CREATE TABLE `system_post` (
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenant_post_code` (`tenant_id`,`post_code`,`del_flag`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='岗位表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='岗位表';
 
 -- ----------------------------
 -- Table structure for system_role
@@ -369,9 +342,7 @@ CREATE TABLE `system_role` (
   `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenant_role_code` (`tenant_id`,`role_code`,`del_flag`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色表';
 
 -- ----------------------------
 -- Table structure for system_role_dept
@@ -393,8 +364,6 @@ CREATE TABLE `system_role_dept` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色-部门关联表（自定义数据权限）';
 
 -- ----------------------------
-
--- ----------------------------
 -- Table structure for system_role_menu
 -- ----------------------------
 DROP TABLE IF EXISTS `system_role_menu`;
@@ -412,9 +381,7 @@ CREATE TABLE `system_role_menu` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenant_role_menu` (`tenant_id`,`role_id`,`menu_id`,`del_flag`),
   KEY `idx_tenant_menu` (`tenant_id`,`menu_id`,`del_flag`)
-) ENGINE=InnoDB AUTO_INCREMENT=140 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色菜单表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色菜单表';
 
 -- ----------------------------
 -- Table structure for system_tenant
@@ -436,9 +403,7 @@ CREATE TABLE `system_tenant` (
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_domain` (`domain`,`del_flag`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='租户表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='租户表';
 
 -- ----------------------------
 -- Table structure for system_user
@@ -470,9 +435,7 @@ CREATE TABLE `system_user` (
   UNIQUE KEY `uk_tenant_username` (`tenant_id`,`username`,`del_flag`),
   KEY `idx_tenant_email` (`tenant_id`,`email`,`del_flag`),
   KEY `idx_tenant_dept_status` (`tenant_id`,`dept_id`,`status`,`del_flag`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
-
--- ----------------------------
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
 
 -- ----------------------------
 -- Table structure for system_user_role
@@ -492,7 +455,7 @@ CREATE TABLE `system_user_role` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_tenant_user_role` (`tenant_id`,`user_id`,`role_id`,`del_flag`),
   KEY `idx_tenant_role` (`tenant_id`,`role_id`,`del_flag`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色表';
 
 -- ----------------------------
 -- Table structure for mq_fail_message
@@ -574,14 +537,14 @@ DROP TABLE IF EXISTS `workflow_instance`;
 CREATE TABLE `workflow_instance` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
   `tenant_id` bigint NOT NULL COMMENT '租户ID',
-  `process_definition_key` varchar(255) NOT NULL COMMENT '流程定义Key',
-  `process_definition_id` varchar(64) NOT NULL COMMENT 'Flowable流程定义ID',
-  `process_instance_id` varchar(64) NOT NULL COMMENT 'Flowable流程实例ID',
-  `business_key` varchar(255) NOT NULL COMMENT '业务标识，格式建议为业务类型:业务ID',
-  `title` varchar(256) DEFAULT NULL COMMENT '流程标题',
+  `process_definition_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '流程定义Key',
+  `process_definition_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'Flowable流程定义ID',
+  `process_instance_id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'Flowable流程实例ID',
+  `business_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '业务标识，格式建议为业务类型:业务ID',
+  `title` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '流程标题',
   `status` char(2) NOT NULL DEFAULT '0' COMMENT '状态，字典类型workflow_status（0-进行中 1-已完成 2-已取消 3-已驳回）',
   `starter_user_id` bigint NOT NULL COMMENT '发起人ID',
-  `starter_username` varchar(64) DEFAULT NULL COMMENT '发起人用户名',
+  `starter_username` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '发起人用户名',
   `variables` json DEFAULT NULL COMMENT '业务流程变量JSON快照',
   `end_time` datetime DEFAULT NULL COMMENT '流程结束时间',
   `create_user_id` bigint DEFAULT NULL COMMENT '创建人ID',
@@ -589,13 +552,13 @@ CREATE TABLE `workflow_instance` (
   `update_user_id` bigint DEFAULT NULL COMMENT '更新人ID',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `del_flag` tinyint DEFAULT '0' COMMENT '删除标识：0-未删除，NULL-已删除',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_process_instance` (`process_instance_id`,`del_flag`),
-  KEY `idx_tenant_business` (`tenant_id`,`business_key`,`del_flag`),
-  KEY `idx_tenant_status_time` (`tenant_id`,`status`,`del_flag`,`create_time`,`id`),
-  KEY `idx_tenant_starter_status` (`tenant_id`,`starter_user_id`,`status`,`del_flag`),
-  KEY `idx_process_definition` (`tenant_id`,`process_definition_key`,`del_flag`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='工作流实例业务关联表';
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `uk_process_instance` (`process_instance_id`,`del_flag`) USING BTREE,
+  KEY `idx_tenant_business` (`tenant_id`,`business_key`,`del_flag`) USING BTREE,
+  KEY `idx_tenant_status_time` (`tenant_id`,`status`,`del_flag`,`create_time`,`id`) USING BTREE,
+  KEY `idx_tenant_starter_status` (`tenant_id`,`starter_user_id`,`status`,`del_flag`) USING BTREE,
+  KEY `idx_process_definition` (`tenant_id`,`process_definition_key`,`del_flag`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci ROW_FORMAT=DYNAMIC COMMENT='工作流实例业务关联表';
 
 -- ----------------------------
 -- Table structure for workflow_task_record
@@ -633,7 +596,5 @@ CREATE TABLE `workflow_task_record` (
   KEY `idx_tenant_proc_time` (`tenant_id`,`process_definition_key`,`end_time`),
   KEY `idx_tenant_time` (`tenant_id`,`end_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Flowable任务记录表（审批流水宽表）';
-
--- ----------------------------
 
 SET FOREIGN_KEY_CHECKS = 1;
