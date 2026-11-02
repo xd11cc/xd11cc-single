@@ -22,8 +22,4 @@ public enum Subject {
      */
     METHOD,
 
-    /**
-     * 由 SpEL 表达式从方法参数中取值，例如 {@code #p0.username}
-     */
-    EXPRESSION,
 }

@@ -52,7 +52,7 @@ public class LoginController {
     @PostMapping("/loginByPassword")
     @ApiOperation("账号密码登录")
     @RateLimit(permits = 5, windowSeconds = 60,
-            subject = {Subject.IP, Subject.EXPRESSION}, expression = "#p0.username")
+            subject = {Subject.IP}, argField = "username")
     public ResponseVO<String> loginByPassword(@Valid @RequestBody LoginPasswordVO loginPasswordVO){
         return ResponseVO.success(loginService.loginByPassword(loginPasswordVO));
     }

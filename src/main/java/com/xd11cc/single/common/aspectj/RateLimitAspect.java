@@ -57,28 +57,41 @@ public class RateLimitAspect {
         RateLimitSpec spec = new RateLimitSpec(rateLimit.permits(),
                 Duration.ofSeconds(rateLimit.windowSeconds()));
 
-        // 多维度：任一超限即拒绝；按声明顺序短路，已被拦下的请求不再消耗后续维度的配额
+        // 维度一：谁在调用（IP / 用户 / 接口）
         for (Subject subject : rateLimit.subject()) {
-            String key = keyResolver.resolve(subject, rateLimit.expression(), method, args);
+            acquire(keyResolver.resolve(subject, method), spec, method, subject.name());
+        }
 
-            boolean allowed;
-            try {
-                allowed = rateLimiter.tryAcquire(key, spec);
-            } catch (RateLimiterUnavailableException e) {
-                // fail-closed：宁可拒绝，也不在失去保护的情况下放行
-                log.error("[ratelimit] 组件不可用，拒绝请求 key={}", key, e);
-                throw new ServiceException(SystemErrorEnum.RATE_LIMIT_UNAVAILABLE);
-            }
-
-            if (!allowed) {
-                log.warn("[ratelimit] 触发限流 key={} 规则={} 维度={} 接口={}.{}",
-                        key, spec.fingerprint(), subject,
-                        method.getDeclaringClass().getSimpleName(), method.getName());
-                throw new ServiceException(SystemErrorEnum.TOO_MANY_REQUESTS);
+        // 维度二：调用的是谁的数据（请求内容），与 subject 正交
+        String argField = rateLimit.argField();
+        if (argField != null && !argField.trim().isEmpty()) {
+            String argKey = keyResolver.resolveArg(argField.trim(), method, args);
+            if (argKey != null) {
+                acquire(argKey, spec, method, "ARG(" + argField.trim() + ")");
             }
         }
 
         return joinPoint.proceed();
+    }
+
+    /**
+     * 取一次配额：任一维度超限即拒绝
+     */
+    private void acquire(String key, RateLimitSpec spec, Method method, String dimension) throws Throwable {
+        boolean allowed;
+        try {
+            allowed = rateLimiter.tryAcquire(key, spec);
+        } catch (RateLimiterUnavailableException e) {
+            // fail-closed：宁可拒绝，也不在失去保护的情况下放行
+            log.error("[ratelimit] 组件不可用，拒绝请求 key={}", key, e);
+            throw new ServiceException(SystemErrorEnum.RATE_LIMIT_UNAVAILABLE);
+        }
+        if (!allowed) {
+            log.warn("[ratelimit] 触发限流 key={} 规则={} 维度={} 接口={}.{}",
+                    key, spec.fingerprint(), dimension,
+                    method.getDeclaringClass().getSimpleName(), method.getName());
+            throw new ServiceException(SystemErrorEnum.TOO_MANY_REQUESTS);
+        }
     }
 
     private void validate(RateLimit rateLimit) {

@@ -40,12 +40,21 @@ public @interface RateLimit {
     int windowSeconds() default 60;
 
     /**
-     * 限流维度，可多选
+     * 限流维度，可多选；与 {@link #argField()} 可组合
      */
     Subject[] subject() default {Subject.METHOD};
 
     /**
-     * subject 含 {@link Subject#EXPRESSION} 时必填，如 {@code #p0.username}
+     * 额外按「请求内容」限流：填写参数名或参数对象的字段名，例如 {@code "username"}、{@code "phone"}。
+     * <p>
+     * 与 {@link #subject()} 是两个独立的轴：subject 限「谁在调用」（IP / 用户 / 接口），
+     * argField 限「调用的是谁的数据」（登录用户名、手机号、订单号……）。
+     * 只要填了，就多一个按该值计数的桶。
+     * </p>
+     * <p>
+     * 留空表示不按请求内容限流。配置是否正确由启动期的
+     * {@code RateLimitConfigValidator} 校验。
+     * </p>
      */
-    String expression() default "";
+    String argField() default "";
 }

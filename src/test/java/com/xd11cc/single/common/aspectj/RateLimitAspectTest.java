@@ -68,7 +68,7 @@ class RateLimitAspectTest {
     void around_allowed() throws Throwable {
         given(methodSignature.getMethod()).willReturn(methodOf("single"));
         given(joinPoint.getArgs()).willReturn(new Object[]{"alice"});
-        given(keyResolver.resolve(any(), anyString(), any(), any())).willReturn("login:ip:1.1.1.1");
+        given(keyResolver.resolve(any(), any())).willReturn("login:ip:1.1.1.1");
         given(rateLimiter.tryAcquire(anyString(), any())).willReturn(true);
         given(joinPoint.proceed()).willReturn("ok");
 
@@ -83,7 +83,7 @@ class RateLimitAspectTest {
     void around_denied() throws Throwable {
         given(methodSignature.getMethod()).willReturn(methodOf("single"));
         given(joinPoint.getArgs()).willReturn(new Object[]{"alice"});
-        given(keyResolver.resolve(any(), anyString(), any(), any())).willReturn("k");
+        given(keyResolver.resolve(any(), any())).willReturn("k");
         given(rateLimiter.tryAcquire(anyString(), any())).willReturn(false);
 
         assertThatThrownBy(() -> aspect.around(joinPoint, annotationOf("single")))
@@ -98,13 +98,13 @@ class RateLimitAspectTest {
     void around_multiSubject_shortCircuits() throws Throwable {
         given(methodSignature.getMethod()).willReturn(methodOf("multi"));
         given(joinPoint.getArgs()).willReturn(new Object[]{"alice"});
-        given(keyResolver.resolve(eq(Subject.IP), anyString(), any(), any())).willReturn("ip-key");
+        given(keyResolver.resolve(eq(Subject.IP), any())).willReturn("ip-key");
         given(rateLimiter.tryAcquire(anyString(), any())).willReturn(false);
 
         assertThatThrownBy(() -> aspect.around(joinPoint, annotationOf("multi")))
                 .isInstanceOf(ServiceException.class);
 
-        then(keyResolver).should(never()).resolve(eq(Subject.EXPRESSION), anyString(), any(), any());
+        then(keyResolver).should(never()).resolveArg(anyString(), any(), any());
     }
 
     @Test
@@ -112,7 +112,8 @@ class RateLimitAspectTest {
     void around_multiSubject_allAllowed() throws Throwable {
         given(methodSignature.getMethod()).willReturn(methodOf("multi"));
         given(joinPoint.getArgs()).willReturn(new Object[]{"alice"});
-        given(keyResolver.resolve(any(), anyString(), any(), any())).willReturn("k");
+        given(keyResolver.resolve(any(), any())).willReturn("k");
+        given(keyResolver.resolveArg(anyString(), any(), any())).willReturn("arg-key");
         given(rateLimiter.tryAcquire(anyString(), any())).willReturn(true);
         given(joinPoint.proceed()).willReturn("ok");
 
@@ -125,7 +126,7 @@ class RateLimitAspectTest {
     void around_componentDown_failClosed() throws Throwable {
         given(methodSignature.getMethod()).willReturn(methodOf("single"));
         given(joinPoint.getArgs()).willReturn(new Object[]{"alice"});
-        given(keyResolver.resolve(any(), anyString(), any(), any())).willReturn("k");
+        given(keyResolver.resolve(any(), any())).willReturn("k");
         given(rateLimiter.tryAcquire(anyString(), any()))
                 .willThrow(new RateLimiterUnavailableException("k", new IllegalStateException("down")));
 
@@ -165,7 +166,7 @@ class RateLimitAspectTest {
         }
 
         @RateLimit(permits = 5, windowSeconds = 60,
-                subject = {Subject.IP, Subject.EXPRESSION}, expression = "#p0")
+                subject = {Subject.IP}, argField = "username")
         void multi(String username) {
         }
 

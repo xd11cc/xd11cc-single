@@ -53,7 +53,7 @@ class RateLimitKeyResolverTest {
     void resolve_ip() {
         ipUtils.when(IpUtils::getIpAddr).thenReturn("1.2.3.4");
 
-        assertThat(resolver.resolve(Subject.IP, "", sampleMethod, new Object[]{"alice"}))
+        assertThat(resolver.resolve(Subject.IP, sampleMethod))
                 .isEqualTo("ip:1.2.3.4:t7");
     }
 
@@ -62,7 +62,7 @@ class RateLimitKeyResolverTest {
     void resolve_user_withoutLogin() {
         securityUtils.when(SecurityUtils::getUserId).thenReturn(null);
 
-        assertThatThrownBy(() -> resolver.resolve(Subject.USER, "", sampleMethod, new Object[]{"alice"}))
+        assertThatThrownBy(() -> resolver.resolve(Subject.USER, sampleMethod))
                 .isInstanceOf(com.xd11cc.single.common.exception.ServiceException.class);
     }
 
@@ -71,30 +71,54 @@ class RateLimitKeyResolverTest {
     void resolve_user() {
         securityUtils.when(SecurityUtils::getUserId).thenReturn(88L);
 
-        assertThat(resolver.resolve(Subject.USER, "", sampleMethod, new Object[]{"alice"}))
+        assertThat(resolver.resolve(Subject.USER, sampleMethod))
                 .isEqualTo("user:88:t7");
     }
 
     @Test
     @DisplayName("METHOD 维度：类名.方法名")
     void resolve_method() {
-        assertThat(resolver.resolve(Subject.METHOD, "", sampleMethod, new Object[]{"alice"}))
+        assertThat(resolver.resolve(Subject.METHOD, sampleMethod))
                 .isEqualTo("method:Sample.login:t7");
     }
 
     @Test
-    @DisplayName("EXPRESSION 维度：按 SpEL 从参数取值")
-    void resolve_expression() {
-        assertThat(resolver.resolve(Subject.EXPRESSION, "#p0", sampleMethod, new Object[]{"alice"}))
-                .isEqualTo("expr:alice:t7");
+    @DisplayName("请求内容维度：按参数名取值（简单参数）")
+    void resolveArg_byParamName() throws Exception {
+        Method m = Sample.class.getDeclaredMethod("sendSms", String.class);
+
+        assertThat(resolver.resolveArg("phone", m, new Object[]{"13800000000"}))
+                .isEqualTo("arg:13800000000:t7");
     }
 
     @Test
-    @DisplayName("EXPRESSION 维度：表达式为空直接报错")
-    void resolve_expression_missingExpression() {
-        assertThatThrownBy(() -> resolver.resolve(Subject.EXPRESSION, "", sampleMethod, new Object[]{"alice"}))
+    @DisplayName("请求内容维度：按参数对象字段取值")
+    void resolveArg_byFieldOfObject() throws Exception {
+        Method m = Sample.class.getDeclaredMethod("loginVo", Sample.LoginVO.class);
+        Sample.LoginVO vo = new Sample.LoginVO();
+        vo.username = "bob";
+
+        assertThat(resolver.resolveArg("username", m, new Object[]{vo}))
+                .isEqualTo("arg:bob:t7");
+    }
+
+    @Test
+    @DisplayName("请求内容维度：取值为空时返回 null，由调用方跳过该维度")
+    void resolveArg_nullValue() throws Exception {
+        Method m = Sample.class.getDeclaredMethod("loginVo", Sample.LoginVO.class);
+
+        assertThat(resolver.resolveArg("username", m, new Object[]{new Sample.LoginVO()}))
+                .isNull();
+    }
+
+    @Test
+    @DisplayName("请求内容维度：字段不存在时报出可读错误")
+    void resolveArg_fieldNotFound() throws Exception {
+        Method m = Sample.class.getDeclaredMethod("loginVo", Sample.LoginVO.class);
+
+        assertThatThrownBy(() -> resolver.resolveArg("userName", m, new Object[]{new Sample.LoginVO()}))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("expression");
+                .hasMessageContaining("找不到");
     }
 
     @Test
@@ -103,7 +127,7 @@ class RateLimitKeyResolverTest {
         TenantContextHolder.clear();
         TenantContextHolder.setTenantAware(false);
 
-        assertThat(resolver.resolve(Subject.METHOD, "", sampleMethod, new Object[]{"alice"}))
+        assertThat(resolver.resolve(Subject.METHOD, sampleMethod))
                 .isEqualTo("method:Sample.login");
     }
 
@@ -113,6 +137,16 @@ class RateLimitKeyResolverTest {
     @SuppressWarnings("unused")
     private static class Sample {
         void login(String username) {
+        }
+
+        void loginVo(LoginVO vo) {
+        }
+
+        void sendSms(String phone) {
+        }
+
+        static class LoginVO {
+            private String username;
         }
     }
 }

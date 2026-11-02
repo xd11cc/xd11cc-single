@@ -48,7 +48,7 @@
 
 - **JWT 认证** — 无状态 Token 认证，JWT 作为 Redis Key 索引，服务端主动控制会话生命周期（踢人、刷新权限）
 - **OAuth2 社交登录** — 集成 JustAuth（底层支持 40+ 平台），当前已接入 **GitHub / Gitee**，新增平台只需加一个枚举常量与一条配置
-- **接口限流** — `@RateLimit` 注解驱动，基于 Redisson RRateLimiter 令牌桶，支持 IP/用户/接口/表达式四种维度且可组合
+- **接口限流** — `@RateLimit` 注解驱动，基于 Redisson RRateLimiter 令牌桶；`subject` 按 IP/用户/接口限「谁在调用」，`argField` 按参数值限「调用的是谁的数据」，两轴可组合
 - **密码安全** — BCrypt 加盐存储；连续 5 次失败锁定 30 分钟；图形验证码 + 登录限流双重防爆破
 - **验证码** — 图形验证码 + Redis TTL 过期机制，防暴力破解
 - **CORS 跨域** — 统一跨域配置，支持白名单域名控制
@@ -386,7 +386,7 @@ docker-compose up -d
 
 ```java
 @RateLimit(permits = 5, windowSeconds = 60,
-        subject = {Subject.IP, Subject.EXPRESSION}, expression = "#p0.username")
+        subject = {Subject.IP}, argField = "username")
 @PostMapping("/login/loginByPassword")
 public ResponseVO<String> loginByPassword(...) { ... }
 ```
@@ -394,8 +394,9 @@ public ResponseVO<String> loginByPassword(...) { ... }
 **实现原理**：
 - `@RateLimit` 注解 + `RateLimitAspect` AOP 切面；建桶与计数收敛在 `common/ratelimit/RateLimiter`
 - Redisson `RRateLimiter` 令牌桶算法（分布式场景多实例共享配额）
-- 支持 `IP` / `USER` / `METHOD` / `EXPRESSION` 四种维度，可多选，任一超限即拒绝
+- 支持 `IP` / `USER` / `METHOD` 维度（谁在调用），可多选，任一超限即拒绝；`argField` 按参数名或字段名追加「请求内容」维度（登录用户名、手机号等），无需写表达式
 - Key 含规格指纹：`rate_limit:{身份}:{permits}/{window}s`，改阈值即换新桶、立即生效
+- 配置在启动期校验：`argField` 写错、参数不匹配会直接启动失败，不会等到线上才发现
 - 两条策略刻意不同：HTTP 入口组件故障时 fail-closed（拒绝），WebSocket 入口 fail-open（放行）
 
 ### 分布式锁

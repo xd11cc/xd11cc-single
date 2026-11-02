@@ -56,7 +56,8 @@ authentication and authorization, real-time messaging, task scheduling, and a wo
 - **OAuth2 social login** — Integrated with JustAuth (40+ platforms supported upstream). Currently wired to
   **GitHub / Gitee**; adding a platform takes one enum constant plus one config row.
 - **API rate limiting** — `@RateLimit` annotation-driven, based on the Redisson `RRateLimiter` token bucket.
-  Supports IP / user / endpoint / expression dimensions, and they can be combined.
+  `subject` limits by IP / user / endpoint ("who is calling"), `argField` limits by a request value ("whose
+  data is being called"), and the two axes combine.
 - **Password security** — BCrypt with salt; accounts lock for 30 minutes after 5 consecutive failures;
   CAPTCHA and login rate limiting together defend against brute force.
 - **CAPTCHA** — Image CAPTCHA backed by Redis TTL expiration.
@@ -421,7 +422,7 @@ Subsequent requests → JwtAuthenticationTokenFilter
 
 ```java
 @RateLimit(permits = 5, windowSeconds = 60,
-        subject = {Subject.IP, Subject.EXPRESSION}, expression = "#p0.username")
+        subject = {Subject.IP}, argField = "username")
 @PostMapping("/login/loginByPassword")
 public ResponseVO<String> loginByPassword(...) { ... }
 ```
@@ -430,10 +431,13 @@ public ResponseVO<String> loginByPassword(...) { ... }
 - `@RateLimit` annotation + `RateLimitAspect`; bucket creation and accounting live in
   `common/ratelimit/RateLimiter`
 - Redisson `RRateLimiter` token bucket (quotas are shared across instances in a distributed deployment)
-- Supports `IP` / `USER` / `METHOD` / `EXPRESSION` dimensions; they can be combined and the request is
-  rejected if any dimension is exceeded
+- `subject` supports `IP` / `USER` / `METHOD` (who is calling); they can be combined and the request is
+  rejected if any dimension is exceeded. `argField` adds a "request content" dimension (login username, phone
+  number, etc.) matched by parameter name or object field name — no expression language needed
 - The key carries a spec fingerprint: `rate_limit:{identity}:{permits}/{window}s`, so changing the limit
   switches to a fresh bucket and takes effect immediately
+- Configuration is validated at startup: a misspelled `argField` or a mismatched parameter list fails the
+  application at boot instead of at runtime
 - Two deliberately different strategies: the HTTP entry point is fail-closed (reject) when the limiter is
   unavailable, while the WebSocket entry point is fail-open (allow)
 
