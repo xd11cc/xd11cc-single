@@ -92,7 +92,10 @@ public class SystemUserServiceImpl extends ServiceImpl<SystemUserMapper, SystemU
     public int modifyById(SystemUserUpdateVO systemUserUpdateVO) {
         SystemUserDO systemUserDO = SystemUserConvert.INSTANCE.updateVO2DO(systemUserUpdateVO);
         int row = baseMapper.updateById(systemUserDO);
-        if (row > 0) {
+        // 只在显式传入 roleIds 时才重算角色关联：
+        // 个人中心保存资料、只更新头像这类调用不该顺带改动角色，
+        // 而原先无条件 remove + 重建，传入空数组等于把该用户的角色清空。
+        if (row > 0 && systemUserUpdateVO.getRoleIds() != null) {
             // 先删后插更新角色关联
             systemUserRoleService.remove(new LambdaQueryWrapper<SystemUserRoleDO>()
                     .eq(SystemUserRoleDO::getUserId, systemUserUpdateVO.getId()));

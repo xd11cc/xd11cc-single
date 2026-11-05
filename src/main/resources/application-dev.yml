@@ -148,3 +148,11 @@ minio:
 # 本地/测试为 HTTP，HSTS 无意义
 security:
   hsts-enabled: false
+
+# 文件回收策略（上传中/临时文件）
+file:
+  cleanup:
+    pending-expire-hours: 1
+    temp-retention-days: 7
+    dry-run: false
+    batch-size: 200

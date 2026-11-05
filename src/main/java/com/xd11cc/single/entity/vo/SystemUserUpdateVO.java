@@ -25,6 +25,10 @@ public class SystemUserUpdateVO {
     @NotBlank(message = "昵称不能为空")
     @Size(max = 30, message = "昵称不能超过30个字符")
     private String nickname;
+    /**
+     * 头像对象键（相对 minio 桶的路径），由 /file/upload 返回
+     */
+    private String headUrl;
 
     @ApiModelProperty("手机号码")
     @Size(max = 11, message = "手机号码不能超过11个字符")

@@ -113,6 +113,8 @@ public enum SystemErrorEnum implements ErrorCode {
     MINIO_DELETE_FILE(1005004, "删除文件失败"),
     MINIO_DOWNLOAD_FILE(1005005, "文件下载失败"),
     PDF_TO_WORD_ERROR(1005006, "PDF 转 Word 失败"),
+    FILE_NOT_FOUND(1005007, "文件不存在或已删除"),
+    FILE_ACCESS_DENIED(1005008, "无权访问该文件"),
 
     // ==================== 006 - 代码生成模块 ====================
     TEMPLATE_LOADING_ERROR(1006001, "模板加载失败"),

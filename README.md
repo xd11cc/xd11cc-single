@@ -254,7 +254,7 @@ mvn spring-boot:run
 
 | 脚本 | 用途 |
 |------|------|
-| `doc/sql/xd11cc_single.sql` | **仅表结构**（24 张表的 DROP + CREATE + 索引），不含任何 INSERT |
+| `doc/sql/xd11cc_single.sql` | **仅表结构**（25 张表的 DROP + CREATE + 索引），不含任何 INSERT |
 | `doc/sql/xd11cc_single_data.sql` | **种子数据**（租户/用户/角色/菜单/字典/配置/工作流分类等 15 张表） |
 | `doc/sql/template.sql` | 建表模板（业务表 / 树形表 / 关联表 / 全局表 / 日志表 五种范式） |
 

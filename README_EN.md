@@ -284,7 +284,7 @@ afterwards):
 
 | Script | Purpose |
 |------|------|
-| `doc/sql/xd11cc_single.sql` | **Schema only** (DROP + CREATE + indexes for 24 tables); no INSERT statements |
+| `doc/sql/xd11cc_single.sql` | **Schema only** (DROP + CREATE + indexes for 25 tables); no INSERT statements |
 | `doc/sql/xd11cc_single_data.sql` | **Seed data** (tenants, users, roles, menus, dictionaries, config, workflow categories — 15 tables) |
 | `doc/sql/template.sql` | Table templates (business / tree / association / global / log — five patterns) |
 

@@ -15,7 +15,7 @@ import com.xd11cc.single.entity.vo.WorkflowExpressionConfigUpdateVO;
 import com.xd11cc.single.enums.SystemErrorEnum;
 import com.xd11cc.single.enums.SystemStatusEnum;
 import com.xd11cc.single.mapper.WorkflowExpressionConfigMapper;
-import com.xd11cc.single.service.IWorkflowExpressionConfigService;
+import com.xd11cc.single.modules.workflow.IWorkflowExpressionConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,16 @@ public class WorkflowExpressionConfigServiceImpl extends ServiceImpl<WorkflowExp
     private static final long EXPRESSION_OPTIONS_CACHE_MINUTES = 30L;
 
     private static final Pattern KEY_PATTERN = Pattern.compile("^[a-z][a-z0-9_.-]{0,127}$");
-    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\{\\{([a-zA-Z][a-zA-Z0-9_.-]*)}}") ;
+
+    /**
+     * 占位符：推荐 {@code {key}}，兼容旧写法 {@code {{key}}}。
+     * <p>
+     * 单花括号两侧都加了边界：前面不能是字母/数字/{/$，后面不能是字母/数字/}，
+     * 所以 {@code {{key}}} 的内层花括号和 JUEL 外壳的 {@code ${} 都不会被误判。
+     * </p>
+     */
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile(
+            "\\{\\{([a-zA-Z][a-zA-Z0-9_.-]*)}}|(?<![\\w${])\\{([a-zA-Z][a-zA-Z0-9_.-]*)\\}(?![\\w}])");
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_.-]*$");
     private static final Map<String, Set<String>> TYPE_RETURN_TYPES = new HashMap<>();
     static {
@@ -152,25 +161,76 @@ public class WorkflowExpressionConfigServiceImpl extends ServiceImpl<WorkflowExp
         try {
             JsonNode schema = objectMapper.readTree(config.getParameterSchema());
             JsonNode values = objectMapper.readTree(StringUtils.defaultIfBlank(parametersJson, "{}"));
-            String result = config.getExpressionTemplate();
+            Map<String, String> replacements = new HashMap<>();
             for (JsonNode parameter : schema) {
                 String key = parameter.path("key").asText();
                 String type = parameter.path("type").asText();
                 boolean required = parameter.path("required").asBoolean(false);
                 JsonNode value = values.get(key);
-                if (required && (value == null || value.isNull() || value.asText().trim().isEmpty())) {
-                    throw new ServiceException(SystemErrorEnum.EXPRESSION_PARAM_MISSING, new Object[]{key});
+                boolean blank = value == null || value.isNull() || value.asText().trim().isEmpty();
+                if (blank) {
+                    if (required) {
+                        throw new ServiceException(SystemErrorEnum.EXPRESSION_PARAM_MISSING, new Object[]{key});
+                    }
+                    // 可选参数没填：按「同名流程变量」处理，交给运行期取值
+                    continue;
                 }
-                String replacement = formatParameter(type, value);
-                result = result.replace("{{" + key + "}}", replacement);
+                replacements.put(key, formatParameter(type, value));
             }
-            if (PLACEHOLDER_PATTERN.matcher(result).find()) throw new ServiceException(SystemErrorEnum.EXPRESSION_PARAM_UNRESOLVED);
-            return result;
+            String rendered = render(bodyOf(config.getExpressionTemplate()), replacements);
+            if (!collectPlaceholderKeys(rendered).isEmpty()) {
+                throw new ServiceException(SystemErrorEnum.EXPRESSION_PARAM_UNRESOLVED);
+            }
+            return "${" + rendered.trim() + "}";
         } catch (ServiceException e) {
             throw e;
         } catch (Exception e) {
             throw new ServiceException(SystemErrorEnum.EXPRESSION_PARAM_FORMAT_ERROR);
         }
+    }
+
+    /**
+     * 把占位符替换成实际值；未声明的占位符原样保留，由调用方判断是否需要报错
+     */
+    private String render(String template, Map<String, String> replacements) {
+        Matcher matcher = PLACEHOLDER_PATTERN.matcher(template);
+        StringBuffer result = new StringBuffer();
+        while (matcher.find()) {
+            String key = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
+            // 没有声明参数的占位符，直接当作同名流程变量引用：
+            // 模板写 {dayVariable} 就等价于运行期的 dayVariable，无需再配映射。
+            String value = replacements.get(key);
+            matcher.appendReplacement(result, Matcher.quoteReplacement(value == null ? key : value));
+        }
+        matcher.appendTail(result);
+        return result.toString();
+    }
+
+    /**
+     * 收集模板里的占位符 key，两种写法都认
+     */
+    private Set<String> collectPlaceholderKeys(String template) {
+        Set<String> keys = new HashSet<>();
+        Matcher matcher = PLACEHOLDER_PATTERN.matcher(template == null ? "" : template);
+        while (matcher.find()) {
+            keys.add(matcher.group(1) != null ? matcher.group(1) : matcher.group(2));
+        }
+        return keys;
+    }
+
+    /**
+     * 取表达式主体：允许模板写成完整 {@code ${...}}，也允许只写主体。
+     * <p>
+     * 统一剥掉外壳后再扫描占位符，可以避免 {@code ${} 与单花括号占位符在边界上产生歧义
+     * ——{@code ${{day} > {threshold}}} 这种写法也能被正确识别。
+     * </p>
+     */
+    private String bodyOf(String template) {
+        String trimmed = template == null ? "" : template.trim();
+        if (trimmed.startsWith("${") && trimmed.endsWith("}") && trimmed.length() > 3) {
+            return trimmed.substring(2, trimmed.length() - 1);
+        }
+        return trimmed;
     }
 
     private String formatParameter(String type, JsonNode value) {
@@ -196,7 +256,12 @@ public class WorkflowExpressionConfigServiceImpl extends ServiceImpl<WorkflowExp
         if (!KEY_PATTERN.matcher(key).matches()) throw new ServiceException(SystemErrorEnum.EXPRESSION_CONFIG_KEY_INVALID);
         if (!TYPE_RETURN_TYPES.containsKey(expressionType)) throw new ServiceException(SystemErrorEnum.EXPRESSION_TYPE_UNSUPPORTED);
         if (!TYPE_RETURN_TYPES.get(expressionType).contains(returnType)) throw new ServiceException(SystemErrorEnum.EXPRESSION_RETURN_TYPE_MISMATCH);
-        if (!template.trim().startsWith("${") || !template.trim().endsWith("}")) throw new ServiceException(SystemErrorEnum.EXPRESSION_TEMPLATE_INVALID);
+        if (StringUtils.isBlank(template)) throw new ServiceException(SystemErrorEnum.EXPRESSION_TEMPLATE_INVALID);
+        String trimmedTemplate = template.trim();
+        // 允许两种写法：完整的 ${...} 表达式，或只写表达式主体（解析时补外壳）
+        if (trimmedTemplate.startsWith("${") && !trimmedTemplate.endsWith("}")) {
+            throw new ServiceException(SystemErrorEnum.EXPRESSION_TEMPLATE_INVALID);
+        }
         try {
             JsonNode node = objectMapper.readTree(schema);
             if (!node.isArray()) throw new IllegalArgumentException();
@@ -208,10 +273,11 @@ public class WorkflowExpressionConfigServiceImpl extends ServiceImpl<WorkflowExp
                     throw new ServiceException(SystemErrorEnum.EXPRESSION_PARAM_KEY_DUPLICATE);
                 }
             }
-            Set<String> placeholderKeys = new HashSet<>();
-            Matcher matcher = PLACEHOLDER_PATTERN.matcher(template);
-            while (matcher.find()) placeholderKeys.add(matcher.group(1));
-            if (!placeholderKeys.equals(parameterKeys)) throw new ServiceException(SystemErrorEnum.EXPRESSION_PLACEHOLDER_MISMATCH);
+            // 模板里的占位符默认就是流程变量名；只有「声明了参数却没在模板里用到」才视为配置错误
+            Set<String> placeholderKeys = collectPlaceholderKeys(bodyOf(template));
+            if (!placeholderKeys.containsAll(parameterKeys)) {
+                throw new ServiceException(SystemErrorEnum.EXPRESSION_PLACEHOLDER_MISMATCH);
+            }
         } catch (ServiceException e) {
             throw e;
         } catch (Exception e) {

@@ -174,6 +174,31 @@ CREATE TABLE `system_dict_type` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='字典类型表';
 
 -- ----------------------------
+-- Table structure for system_file
+-- ----------------------------
+DROP TABLE IF EXISTS `system_file`;
+CREATE TABLE `system_file` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `file_id` varchar(36) NOT NULL COMMENT '文件唯一标识（UUID），对外暴露',
+  `object_key` varchar(512) NOT NULL COMMENT '对象存储 key：{tenantId}/{yyyyMM}/{uuid}',
+  `bucket_name` varchar(64) NOT NULL COMMENT '写入时的桶名，便于换桶后旧文件仍可读',
+  `original_name` varchar(255) NOT NULL COMMENT '原始文件名，仅用于展示与下载命名',
+  `content_type` varchar(128) NOT NULL COMMENT 'MIME 类型',
+  `size_bytes` bigint NOT NULL COMMENT '文件大小（字节）',
+  `status` char(2) NOT NULL DEFAULT '0' COMMENT '状态，字典类型system_file_status（0-临时 1-已引用）',
+  `create_user_id` bigint NOT NULL COMMENT '上传人id',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_user_id` bigint NOT NULL COMMENT '更新人id',
+  `update_time` datetime NOT NULL COMMENT '更新时间',
+  `del_flag` tinyint DEFAULT '0' COMMENT '删除标识 0-未删除 null-已删除',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `tenant_id` bigint DEFAULT NULL COMMENT '租户id',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_tenant_file_id` (`tenant_id`,`file_id`,`del_flag`),
+  KEY `idx_status_create_time` (`status`,`del_flag`,`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统文件';
+
+-- ----------------------------
 -- Table structure for system_login_log
 -- ----------------------------
 DROP TABLE IF EXISTS `system_login_log`;

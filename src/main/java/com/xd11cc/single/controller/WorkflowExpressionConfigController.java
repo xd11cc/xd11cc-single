@@ -8,7 +8,7 @@ import com.xd11cc.single.entity.vo.WorkflowExpressionConfigAddVO;
 import com.xd11cc.single.entity.vo.WorkflowExpressionConfigQueryVO;
 import com.xd11cc.single.entity.vo.WorkflowExpressionConfigUpdateVO;
 import com.xd11cc.single.enums.OperateTypeEnum;
-import com.xd11cc.single.service.IWorkflowExpressionConfigService;
+import com.xd11cc.single.modules.workflow.IWorkflowExpressionConfigService;
 import com.xd11cc.single.utils.PageUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

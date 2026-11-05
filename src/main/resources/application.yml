@@ -118,8 +118,6 @@ security:
     - /login/callback/**
     - /login/social-user/bind
     - /auth/client/config/list
-    # 匿名上传文件
-    - /file/upload/anonymous
     # minio域名白名单
     - /system/config/getConfig/minio-domain
 
@@ -143,3 +141,11 @@ flowable:
   database-schema-update: false            # 首次启动自动建/升级 ACT_* 表；建完后请手动改为 false
   history-level: audit                    # 保留完整历史（变量、任务详情等）
   async-executor-activate: false          # 关闭异步执行器；开启后需手动传递 TransmittableThreadLocal
+
+# 文件回收策略（上传中/临时文件）
+file:
+  cleanup:
+    pending-expire-hours: 1
+    temp-retention-days: 7
+    dry-run: false
+    batch-size: 200

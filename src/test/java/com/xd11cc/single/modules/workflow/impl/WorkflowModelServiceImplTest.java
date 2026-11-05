@@ -4,7 +4,7 @@ import com.xd11cc.single.common.context.TenantContextHolder;
 import com.xd11cc.single.common.exception.ServiceException;
 import com.xd11cc.single.entity.vo.WorkflowDraftDeployVO;
 import com.xd11cc.single.enums.SystemErrorEnum;
-import com.xd11cc.single.service.WorkflowExpressionResolver;
+import com.xd11cc.single.modules.workflow.WorkflowExpressionResolver;
 import com.xd11cc.single.util.BaseUnitTest;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Deployment;
