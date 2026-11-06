@@ -164,7 +164,6 @@ mvn clean package -DskipTests    # 跳过测试打包
 
 ## 注意事项
 
-- 主类是 `SingleController.java`（命名非 Application，不要误删）
 - `DataSourceAutoConfiguration` 已排除（动态数据源）
 - `spring.main.allow-circular-references=true` 已开启
 - URL 匹配策略强制 `ant_path_matcher`（与 Security 兼容）

@@ -15,9 +15,9 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @MapperScan("com.xd11cc.single.mapper")
 @PayClientScan(basePackages = "com.xd11cc.single.modules.pay.impl")
 @EnableAsync
-public class SingleController {
+public class SingleApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SingleController.class, args);
+        SpringApplication.run(SingleApplication.class, args);
     }
 }
