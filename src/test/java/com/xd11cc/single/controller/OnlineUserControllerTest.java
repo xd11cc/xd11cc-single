@@ -39,7 +39,7 @@ class OnlineUserControllerTest {
 
     @Test
     void list_无登录用户_返回空列表() {
-        given(redisCache.keys(CacheConstants.LOGIN_TOKEN_KEY)).willReturn(Collections.emptySet());
+        given(redisCache.scanKeys(CacheConstants.LOGIN_TOKEN_KEY)).willReturn(Collections.emptySet());
 
         ResponseVO<List<OnlineUserVO>> result = onlineUserController.list(null);
 
@@ -54,7 +54,7 @@ class OnlineUserControllerTest {
             tenantMock.when(() -> TenantContextHolder.<LoginUserDTO>runWithoutTenantAwareness(any(Supplier.class)))
                     .thenAnswer(invocation -> ((Supplier<?>) invocation.getArgument(0)).get());
 
-            given(redisCache.keys(CacheConstants.LOGIN_TOKEN_KEY)).willReturn(new HashSet<>(Arrays.asList("token-1", "token-2")));
+            given(redisCache.scanKeys(CacheConstants.LOGIN_TOKEN_KEY)).willReturn(new HashSet<>(Arrays.asList("token-1", "token-2")));
 
             // user2 登录时间更晚，排序后应排在前面
             LoginUserDTO loginUser1 = buildLoginUser(1L, "user1", "token-1", 1L, 1000000L);
@@ -78,7 +78,7 @@ class OnlineUserControllerTest {
             tenantMock.when(() -> TenantContextHolder.<LoginUserDTO>runWithoutTenantAwareness(any(Supplier.class)))
                     .thenAnswer(invocation -> ((Supplier<?>) invocation.getArgument(0)).get());
 
-            given(redisCache.keys(CacheConstants.LOGIN_TOKEN_KEY)).willReturn(new HashSet<>(Collections.singletonList("token-1")));
+            given(redisCache.scanKeys(CacheConstants.LOGIN_TOKEN_KEY)).willReturn(new HashSet<>(Collections.singletonList("token-1")));
 
             LoginUserDTO loginUser = buildLoginUser(1L, "admin", "token-1", 1L);
             given(redisCache.getCacheObject("token-1")).willReturn(loginUser);
@@ -98,7 +98,7 @@ class OnlineUserControllerTest {
             tenantMock.when(() -> TenantContextHolder.<LoginUserDTO>runWithoutTenantAwareness(any(Supplier.class)))
                     .thenAnswer(invocation -> ((Supplier<?>) invocation.getArgument(0)).get());
 
-            given(redisCache.keys(CacheConstants.LOGIN_TOKEN_KEY)).willReturn(new HashSet<>(Collections.singletonList("token-1")));
+            given(redisCache.scanKeys(CacheConstants.LOGIN_TOKEN_KEY)).willReturn(new HashSet<>(Collections.singletonList("token-1")));
 
             // 用户属于租户2，但当前租户是1
             LoginUserDTO loginUser = buildLoginUser(1L, "other_tenant_user", "token-1", 2L);

@@ -18,6 +18,12 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class RedisCache {
 
+    /**
+     * SCAN 每次迭代建议返回的 key 数量。
+     * 只是「建议值」：Redis 可能一次返回更多或更少，调用方不应依赖其精确性。
+     */
+    private static final long SCAN_COUNT = 500;
+
     @Autowired
     private RedisTemplate redisTemplate;
 
@@ -86,6 +92,20 @@ public class RedisCache {
     public <T> T getCacheObject(String key) {
         ValueOperations<String, T> valueOperations = redisTemplate.opsForValue();
         return valueOperations.get(resolveKey(key));
+    }
+
+    /**
+     * 原子地取出并删除（GETDEL）。适用于「一次性凭证」的消费场景，
+     * 例如验证码校验——读取与删除之间不能有窗口，否则并发请求会
+     * 各自读到同一个值，凭证就被用了两次。
+     *
+     * @param key key
+     * @param <T> 值类型
+     * @return key 存在时返回值，不存在返回 null
+     */
+    public <T> T getAndDelete(String key) {
+        ValueOperations<String, T> valueOperations = redisTemplate.opsForValue();
+        return valueOperations.getAndDelete(resolveKey(key));
     }
 
     /**
@@ -261,10 +281,17 @@ public class RedisCache {
     }
 
     /**
+     * 按前缀扫描 key，底层使用 SCAN 游标分批迭代。
+     * <p>
+     * 不使用 Redis 的 {@code KEYS} 命令：它是 O(N) 且全程阻塞单线程的 Redis，
+     * key 越多阻塞越久，会拖慢所有其他请求。SCAN 每次只返回一批，
+     * 虽然总复杂度仍是 O(N)，但不会长时间独占 Redis。
+     * </p>
+     *
      * @param prefix key前缀
      * @return 匹配的key集合
      */
-    public Set<String> keys(String prefix) {
+    public Set<String> scanKeys(String prefix) {
         String pattern = prefix + "*";
         if (TenantContextHolder.isTenantAware()) {
             Long tenantId = TenantContextHolder.getTenantId();
@@ -272,7 +299,15 @@ public class RedisCache {
                 pattern = prefix + "*:" + tenantId;
             }
         }
-        return redisTemplate.keys(pattern);
+        ScanOptions options = ScanOptions.scanOptions().match(pattern).count(SCAN_COUNT).build();
+        Set<String> result = new HashSet<>();
+        // Cursor 持有连接上的游标状态，必须关闭以释放资源
+        try (Cursor<String> cursor = redisTemplate.scan(options)) {
+            while (cursor.hasNext()) {
+                result.add(cursor.next());
+            }
+        }
+        return result;
     }
 
     // ==================== Key Resolution ====================

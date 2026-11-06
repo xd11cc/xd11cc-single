@@ -398,6 +398,102 @@ class RedisCacheTest {
         verify(redisTemplate).delete("mykey");
     }
 
+    // ==================== 原子消费 ====================
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void getAndDelete_返回被取出的值() {
+        org.springframework.data.redis.core.ValueOperations<String, Object> valueOps =
+                mock(org.springframework.data.redis.core.ValueOperations.class);
+        given(redisTemplate.opsForValue()).willReturn(valueOps);
+        given(valueOps.getAndDelete("mykey")).willReturn("v");
+
+        Object result = redisCache.getAndDelete("mykey");
+
+        assertThat(result).isEqualTo("v");
+        // 必须走 GETDEL 而不是 get + delete，否则并发下会重复消费
+        verify(valueOps).getAndDelete("mykey");
+        verify(valueOps, never()).get("mykey");
+        verify(redisTemplate, never()).delete("mykey");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void getAndDelete_不存在_返回null() {
+        org.springframework.data.redis.core.ValueOperations<String, Object> valueOps =
+                mock(org.springframework.data.redis.core.ValueOperations.class);
+        given(redisTemplate.opsForValue()).willReturn(valueOps);
+        given(valueOps.getAndDelete("miss")).willReturn(null);
+
+        Object result = redisCache.getAndDelete("miss");
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void getAndDelete_有租户时_拼接租户ID到key() {
+        org.springframework.data.redis.core.ValueOperations<String, Object> valueOps =
+                mock(org.springframework.data.redis.core.ValueOperations.class);
+        given(redisTemplate.opsForValue()).willReturn(valueOps);
+        given(valueOps.getAndDelete("mykey:10")).willReturn("value");
+
+        TenantContextHolder.setTenantId(10L);
+
+        Object result = redisCache.getAndDelete("mykey");
+
+        assertThat(result).isEqualTo("value");
+        verify(valueOps).getAndDelete("mykey:10");
+    }
+
+    // ==================== scanKeys（禁止使用 KEYS）====================
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void scanKeys_返回游标中的所有key_并关闭游标() {
+        Cursor<String> cursor = mock(Cursor.class);
+        given(cursor.hasNext()).willReturn(true, true, false);
+        given(cursor.next()).willReturn("login_tokens:a", "login_tokens:b");
+        given(redisTemplate.scan(any(ScanOptions.class))).willReturn(cursor);
+
+        Set<String> result = redisCache.scanKeys("login_tokens:");
+
+        assertThat(result).containsExactlyInAnyOrder("login_tokens:a", "login_tokens:b");
+        // 游标持有连接状态，必须关闭，否则连接泄漏
+        verify(cursor).close();
+        // 绝不能走 KEYS：它是 O(N) 阻塞命令
+        verify(redisTemplate, never()).keys(anyString());
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void scanKeys_无匹配_返回空集合_且仍关闭游标() {
+        Cursor<String> cursor = mock(Cursor.class);
+        given(cursor.hasNext()).willReturn(false);
+        given(redisTemplate.scan(any(ScanOptions.class))).willReturn(cursor);
+
+        Set<String> result = redisCache.scanKeys("login_tokens:");
+
+        assertThat(result).isEmpty();
+        verify(cursor).close();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void scanKeys_有租户时_匹配模式带租户后缀() {
+        Cursor<String> cursor = mock(Cursor.class);
+        given(cursor.hasNext()).willReturn(false);
+        given(redisTemplate.scan(any(ScanOptions.class))).willReturn(cursor);
+
+        TenantContextHolder.setTenantId(7L);
+
+        redisCache.scanKeys("login_tokens:");
+
+        org.mockito.ArgumentCaptor<ScanOptions> captor =
+                org.mockito.ArgumentCaptor.forClass(ScanOptions.class);
+        verify(redisTemplate).scan(captor.capture());
+        assertThat(captor.getValue().getPattern()).isEqualTo("login_tokens:*:7");
+    }
+
     @Test
     void setCacheObject_redis连接失败_向上抛出() {
         @SuppressWarnings("unchecked")

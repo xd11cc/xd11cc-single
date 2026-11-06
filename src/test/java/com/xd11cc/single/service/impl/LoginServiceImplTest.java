@@ -66,7 +66,7 @@ class LoginServiceImplTest extends BaseUnitTest {
 
     @Test
     void loginByPassword_验证码已过期_抛异常() {
-        given(redisCache.getCacheObject(anyString())).willReturn(null);
+        given(redisCache.getAndDelete(anyString())).willReturn(null);
 
         ServiceException ex = assertThrows(ServiceException.class,
                 () -> loginService.loginByPassword(buildLoginVO("user", "pwd", "cid", "any")));
@@ -75,7 +75,7 @@ class LoginServiceImplTest extends BaseUnitTest {
 
     @Test
     void loginByPassword_验证码不匹配_抛异常() {
-        given(redisCache.getCacheObject(anyString())).willReturn("stored_captcha");
+        given(redisCache.getAndDelete(anyString())).willReturn("stored_captcha");
 
         ServiceException ex = assertThrows(ServiceException.class,
                 () -> loginService.loginByPassword(buildLoginVO("user", "pwd", "cid", "wrong")));
@@ -83,8 +83,31 @@ class LoginServiceImplTest extends BaseUnitTest {
     }
 
     @Test
+    void loginByPassword_验证码必须以原子方式消费() {
+        given(redisCache.getAndDelete(anyString())).willReturn("correct");
+        Authentication auth = mock(Authentication.class);
+        SystemUserDO userDO = new SystemUserDO();
+        userDO.setId(1L);
+        userDO.setUsername("admin");
+        userDO.setTenantId(1L);
+        LoginUserDTO loginUser = new LoginUserDTO(Collections.emptySet(), userDO);
+        loginUser.setUserId(1L);
+        given(auth.getPrincipal()).willReturn(loginUser);
+        given(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .willReturn(auth);
+        given(tokenService.createToken(loginUser)).willReturn("mock-jwt-token");
+
+        loginService.loginByPassword(buildLoginVO("admin", "Passw0rd1", "cid", "correct"));
+
+        // 必须是 GETDEL：若退回「先读再删」，并发提交同一 captchaId 会双双通过校验
+        then(redisCache).should().getAndDelete(anyString());
+        then(redisCache).should(org.mockito.BDDMockito.never()).getCacheObject(anyString());
+        then(redisCache).should(org.mockito.BDDMockito.never()).removeCacheObject(anyString());
+    }
+
+    @Test
     void loginByPassword_非PC端登录_抛非法访问() {
-        given(redisCache.getCacheObject(anyString())).willReturn("correct");
+        given(redisCache.getAndDelete(anyString())).willReturn("correct");
 
         LoginPasswordVO vo = buildLoginVO("user", "pwd", "cid", "correct");
         vo.setWay(LoginWayEnum.APP.getCode());
@@ -96,7 +119,7 @@ class LoginServiceImplTest extends BaseUnitTest {
 
     @Test
     void loginByPassword_密码短于最小长度_抛异常() {
-        given(redisCache.getCacheObject(anyString())).willReturn("correct");
+        given(redisCache.getAndDelete(anyString())).willReturn("correct");
 
         ServiceException ex = assertThrows(ServiceException.class,
                 () -> loginService.loginByPassword(buildLoginVO("user", "12345", "cid", "correct")));
@@ -105,7 +128,7 @@ class LoginServiceImplTest extends BaseUnitTest {
 
     @Test
     void loginByPassword_密码长于最大长度_抛异常() {
-        given(redisCache.getCacheObject(anyString())).willReturn("correct");
+        given(redisCache.getAndDelete(anyString())).willReturn("correct");
 
         String longPwd = "123456789012345678901"; // 21 chars, max is 20
         ServiceException ex = assertThrows(ServiceException.class,
@@ -115,7 +138,7 @@ class LoginServiceImplTest extends BaseUnitTest {
 
     @Test
     void loginByPassword_认证失败_记录失败日志_抛出异常() {
-        given(redisCache.getCacheObject(anyString())).willReturn("correct");
+        given(redisCache.getAndDelete(anyString())).willReturn("correct");
         org.mockito.BDDMockito.doThrow(new RuntimeException("Bad credentials"))
                 .when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
 
@@ -129,7 +152,7 @@ class LoginServiceImplTest extends BaseUnitTest {
 
     @Test
     void loginByPassword_认证成功_返回token并记录成功日志() {
-        given(redisCache.getCacheObject(anyString())).willReturn("correct");
+        given(redisCache.getAndDelete(anyString())).willReturn("correct");
         Authentication auth = mock(Authentication.class);
         SystemUserDO userDO = new SystemUserDO();
         userDO.setId(1L);

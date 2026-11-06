@@ -89,14 +89,15 @@ public class LoginServiceImpl implements LoginService {
     }
 
     private void checkCaptcha(String captchaId, String captcha) {
-        String captchaValue = redisCache.getCacheObject(getCaptchaKey(captchaId));
+        // 原子取出并删除：并发提交同一 captchaId 时只有一个请求能拿到值，
+        // 其余请求直接判为已过期，杜绝验证码被重复使用。
+        String captchaValue = redisCache.getAndDelete(getCaptchaKey(captchaId));
         if (StringUtils.isEmpty(captchaValue)) {
             throw new ServiceException(SystemErrorEnum.CAPTCHA_EXPIRE);
         }
         if (!captcha.equals(captchaValue)) {
             throw new ServiceException(SystemErrorEnum.CAPTCHA_ERROR);
         }
-        redisCache.removeCacheObject(getCaptchaKey(captchaId));
     }
 
     @Override

@@ -32,7 +32,7 @@ public class OnlineUserController {
     @GetMapping("/list")
     @ApiOperation("在线用户列表")
     public ResponseVO<List<OnlineUserVO>> list(@RequestParam(required = false) String username) {
-        Set<String> keys = redisCache.keys(CacheConstants.LOGIN_TOKEN_KEY);
+        Set<String> keys = redisCache.scanKeys(CacheConstants.LOGIN_TOKEN_KEY);
         if (keys == null || keys.isEmpty()) {
             return ResponseVO.success(Collections.emptyList());
         }
