@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties("xxl.job")
 public class XxlJobProperties {
 
+
     private Executor executor;
 
     private Admin admin;
@@ -23,6 +24,8 @@ public class XxlJobProperties {
 
     @Data
     public static class Executor {
+        private int port;
+
         private String appName;
 
         private String logPath;

@@ -55,7 +55,7 @@
 
 ### 📡 中间件集成
 
-- **WebSocket 推送** — 基于 Netty 独立端口（12001）提供 WebSocket 服务，支持握手前 Token 认证、心跳检测（读空闲 60s × 3 次断开）、空闲连接清理
+- **WebSocket 推送** — 基于 Netty 独立端口（10002）提供 WebSocket 服务，支持握手前 Token 认证、心跳检测（读空闲 60s × 3 次断开）、空闲连接清理
 - **消息队列** — RabbitMQ 集成，开启生产者确认与退回（`publisher-confirm-type: correlated` / `publisher-returns`），消费者手动 ACK 由 `MqConsumeTemplate` 控制
 - **分布式调度** — XXL-JOB 集成，支持分片广播、故障转移、失败重试等企业级调度能力
 - **分布式锁** — `@RedisLock` 注解驱动，基于 Redisson RLock 实现，支持 SpEL Key 动态锁粒度（ALL/KEY 两种模式），可配置等待超时、重试次数、自动释放时间
@@ -229,11 +229,11 @@ export SECURITY_TOKEN_SECRET="your-strong-secret-key-at-least-32-bytes"
 mvn spring-boot:run
 ```
 
-| 地址 | 说明 |
-|------|------|
-| `http://localhost:10001/xd11cc` | 应用根路径 |
+| 地址                                              | 说明 |
+|-------------------------------------------------|------|
+| `http://localhost:10001/xd11cc`                 | 应用根路径 |
 | `http://localhost:10001/xd11cc/swagger-ui.html` | Swagger UI（接口文档） |
-| `ws://localhost:12001/ws?token=xxx` | WebSocket 连接 |
+| `ws://localhost:10002/ws?token=xxx`             | WebSocket 连接 |
 
 > **注意**：若此前用旧包结构编译过，请先执行 `mvn clean`，避免 `target/classes`
 > 残留旧包路径的 class 导致 Bean 冲突。
@@ -470,7 +470,7 @@ corePoolSize = CPU_CORES / 2, maxPoolSize = CPU_CORES
 ```
 
 **关键设计**：
-- 独立端口（12001），不与 HTTP 请求互相影响
+- 独立端口（10002），不与 HTTP 请求互相影响
 - Reactor 多线程模型，单机可支撑万级连接
 - TCP 参数优化：`TCP_NODELAY=true` 禁用 Nagle 算法降低延迟
 - 死连接判定：连续 3 次读空闲（60s）才断开，避免误杀弱网连接

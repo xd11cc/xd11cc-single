@@ -34,7 +34,7 @@
 
 ### 中间件
 - Redis + Redisson（分布式锁/限流/会话）；Druid（监控 + 动态多数据源）
-- RabbitMQ（异步解耦）；Netty WebSocket（独立端口 12001）
+- RabbitMQ（异步解耦）；Netty WebSocket（独立端口 10002）
 - XXL-JOB（分布式定时）+ Quartz（本地调度）；MinIO（对象存储）；Spire.PDF
 
 ### 工具库
@@ -167,6 +167,6 @@ mvn clean package -DskipTests    # 跳过测试打包
 - `DataSourceAutoConfiguration` 已排除（动态数据源）
 - `spring.main.allow-circular-references=true` 已开启
 - URL 匹配策略强制 `ant_path_matcher`（与 Security 兼容）
-- 测试服务用完要关（10001 / 12001 端口），Docker 基础设施容器保持运行
+- 测试服务用完要关（10001 / 10002 端口），Docker 基础设施容器保持运行
 - CI/CD、部署、Git 操作需用户明确指令后执行（严禁 `push --force` 等破坏性操作）
 - 代码变更不要修改项目的公共文档路径约定

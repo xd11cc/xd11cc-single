@@ -65,7 +65,7 @@ authentication and authorization, real-time messaging, task scheduling, and a wo
 
 ### 📡 Middleware Integration
 
-- **WebSocket push** — Netty-based server on a dedicated port (12001) with pre-handshake token
+- **WebSocket push** — Netty-based server on a dedicated port (10002) with pre-handshake token
   authentication, heartbeat detection (3 consecutive 60s read-idle events trigger a disconnect), and idle
   connection cleanup.
 - **Message queue** — RabbitMQ with publisher confirms and returns enabled
@@ -258,11 +258,11 @@ The application fails fast with a clear message if the secret is missing or too 
 mvn spring-boot:run
 ```
 
-| URL | Description |
-|------|------|
-| `http://localhost:10001/xd11cc` | Application root |
+| URL                                             | Description |
+|-------------------------------------------------|------|
+| `http://localhost:10001/xd11cc`                 | Application root |
 | `http://localhost:10001/xd11cc/swagger-ui.html` | Swagger UI (API docs) |
-| `ws://localhost:12001/ws?token=xxx` | WebSocket endpoint |
+| `ws://localhost:10002/ws?token=xxx`             | WebSocket endpoint |
 
 > **Note**: If you previously compiled with the old package layout, run `mvn clean` first.
 > Stale classes under `target/classes` from the old package paths can cause bean conflicts.
@@ -513,7 +513,7 @@ Client connect → BossGroup (1 thread) accepts connections
 ```
 
 **Key design points**:
-- Dedicated port (12001), isolated from HTTP traffic
+- Dedicated port (10002), isolated from HTTP traffic
 - Reactor threading model, capable of tens of thousands of connections per node
 - TCP tuning: `TCP_NODELAY=true` disables Nagle's algorithm to cut latency
 - Dead-connection detection: only after 3 consecutive read-idle events (60s each), to avoid killing
