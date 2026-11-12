@@ -136,6 +136,10 @@ public class WorkflowTaskServiceImpl implements WorkflowTaskService {
         WorkflowInstanceDO instance = querySupport.getInstanceByProcessId(processInstanceId);
         AbstractWorkflowHandler handler = handlerFactory.getHandler(instance.getProcessDefinitionKey());
 
+        // moveActivityIdTo 只保证节点存在于流程定义，不保证流程走到过它；
+        // 不校验就允许退回到后续节点，等于跳过中间审批
+        validateRejectTarget(task, rejectVO.getTargetActivityId());
+
         taskService.addComment(task.getId(), processInstanceId, "reject",
                 rejectVO.getComment() != null ? rejectVO.getComment() : "驳回");
 
@@ -201,6 +205,14 @@ public class WorkflowTaskServiceImpl implements WorkflowTaskService {
     @Override
     public List<WorkflowActivityVO> getRejectableNodes(String taskId) {
         Task task = getAndValidateTask(taskId);
+        return buildRejectableNodes(task);
+    }
+
+    /**
+     * 汇总当前任务可退回的历史节点。
+     * 查询接口与驳回校验共用此处，避免两边口径分叉。
+     */
+    private List<WorkflowActivityVO> buildRejectableNodes(Task task) {
         String processInstanceId = task.getProcessInstanceId();
         WorkflowInstanceDO instance = querySupport.getInstanceByProcessId(processInstanceId);
         AbstractWorkflowHandler handler = handlerFactory.getHandler(instance.getProcessDefinitionKey());
@@ -225,6 +237,23 @@ public class WorkflowTaskServiceImpl implements WorkflowTaskService {
         }
 
         return new ArrayList<>(nodeMap.values());
+    }
+
+    /**
+     * 只允许退回到流程已走过的节点。
+     */
+    private void validateRejectTarget(Task task, String targetActivityId) {
+        if (StringUtils.isBlank(targetActivityId)) {
+            throw new ServiceException(SystemErrorEnum.REJECT_TARGET_INVALID,
+                    new Object[]{String.valueOf(targetActivityId)});
+        }
+        boolean allowed = buildRejectableNodes(task).stream()
+                .anyMatch(node -> Objects.equals(node.getActivityId(), targetActivityId));
+        if (!allowed) {
+            log.warn("[工作流] 非法驳回目标节点：taskId={}, target={}", task.getId(), targetActivityId);
+            throw new ServiceException(SystemErrorEnum.REJECT_TARGET_INVALID,
+                    new Object[]{targetActivityId});
+        }
     }
 
     @Override

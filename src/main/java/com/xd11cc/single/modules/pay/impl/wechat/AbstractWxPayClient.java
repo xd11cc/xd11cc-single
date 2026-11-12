@@ -409,7 +409,8 @@ public abstract class AbstractWxPayClient extends AbstractPayClient<WxPayClientC
     private PayRefundRespDTO doGetRefund3(String outTradeNo, String outRefundNo) throws WxPayException {
         // 1. 构建 WxPayRefundQueryV3Request 请求
         WxPayRefundQueryV3Request request = new WxPayRefundQueryV3Request();
-        request.setOutRefundNo(outTradeNo);
+        // 按退款单号查询：传订单号会查不到单，或命中单号相同的另一笔退款
+        request.setOutRefundNo(outRefundNo);
         // 2.1 执行请求
         WxPayRefundQueryV3Result response = client.refundQueryV3(request);
         // 2.2 创建返回结果

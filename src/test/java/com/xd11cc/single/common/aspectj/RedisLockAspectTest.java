@@ -82,12 +82,32 @@ class RedisLockAspectTest {
     }
 
     @Test
-    void around_仅leaseTime_调用二参tryLock() throws Throwable {
+    void around_仅waitTime_遵循注解配置的时间单位() throws Throwable {
+        ProceedingJoinPoint joinPoint = mockJoinPoint(WaitTimeMinutesService.METHOD);
+        given(joinPoint.proceed()).willReturn("result");
+
+        RLock rLock = mock(RLock.class);
+        given(rLock.tryLock(5, TimeUnit.MINUTES)).willReturn(true);
+        given(rLock.isHeldByCurrentThread()).willReturn(true);
+        RedissonClient redissonClient = mock(RedissonClient.class);
+        given(redissonClient.getLock(anyString())).willReturn(rLock);
+
+        injectRedissonClient(redissonClient);
+
+        aspect.around(joinPoint);
+
+        // 曾经这里硬编码 TimeUnit.SECONDS，忽略注解的 unit，导致 5 分钟被当成 5 秒
+        verify(rLock).tryLock(5, TimeUnit.MINUTES);
+        verify(rLock, never()).tryLock(5, TimeUnit.SECONDS);
+    }
+
+    @Test
+    void around_仅leaseTime_走三参tryLock且等待时间为0() throws Throwable {
         ProceedingJoinPoint joinPoint = mockJoinPoint(LeaseTimeService.METHOD);
         given(joinPoint.proceed()).willReturn("result");
 
         RLock rLock = mock(RLock.class);
-        given(rLock.tryLock(10, TimeUnit.MINUTES)).willReturn(true);
+        given(rLock.tryLock(0, 10, TimeUnit.MINUTES)).willReturn(true);
         given(rLock.isHeldByCurrentThread()).willReturn(true);
         RedissonClient redissonClient = mock(RedissonClient.class);
         given(redissonClient.getLock(anyString())).willReturn(rLock);
@@ -97,6 +117,9 @@ class RedisLockAspectTest {
         Object result = aspect.around(joinPoint);
 
         assertThat(result).isEqualTo("result");
+        // 两参 tryLock 表达的是等待时间：用它会把 leaseTime 误当等待时间，且不设租期
+        verify(rLock, never()).tryLock(anyLong(), any(TimeUnit.class));
+        verify(rLock).tryLock(0, 10, TimeUnit.MINUTES);
     }
 
     @Test
@@ -307,6 +330,15 @@ class RedisLockAspectTest {
             try { METHOD = LeaseTimeService.class.getMethod("lockMethod"); } catch (NoSuchMethodException e) { throw new RuntimeException(e); }
         }
         @RedisLock(waitTime = 0, leaseTime = 10, unit = TimeUnit.MINUTES)
+        public void lockMethod() {}
+    }
+
+    static class WaitTimeMinutesService {
+        public static final Method METHOD;
+        static {
+            try { METHOD = WaitTimeMinutesService.class.getMethod("lockMethod"); } catch (NoSuchMethodException e) { throw new RuntimeException(e); }
+        }
+        @RedisLock(waitTime = 5, leaseTime = 0, unit = TimeUnit.MINUTES)
         public void lockMethod() {}
     }
 

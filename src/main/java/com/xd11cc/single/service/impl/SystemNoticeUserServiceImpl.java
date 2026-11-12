@@ -12,6 +12,7 @@ import com.xd11cc.single.enums.NoticeScopeEnum;
 import com.xd11cc.single.enums.NoticeStatusEnum;
 import com.xd11cc.single.enums.NoticeTypeEnum;
 import com.xd11cc.single.enums.ReadStatusEnum;
+import com.xd11cc.single.common.context.TenantContextHolder;
 import com.xd11cc.single.common.event.NoticeEvent;
 import com.xd11cc.single.mapper.SystemNoticeMapper;
 import com.xd11cc.single.mapper.SystemNoticeUserMapper;
@@ -77,10 +78,11 @@ public class SystemNoticeUserServiceImpl extends ServiceImpl<SystemNoticeUserMap
                 }).collect(Collectors.toList());
         saveBatch(noticeUserList, 500);
 
-        // 发布事件（事务提交后由 NoticeEventListener 异步推送）
+        // 事务提交后由 NoticeEventListener 异步推送；tenantId 为空会被 ChannelManager
+        // 判为非法参数直接丢弃，表现为消息落库成功但收不到实时推送
         eventPublisher.publishEvent(NoticeEvent.publish(this, notice.getId(),
                 notice.getTitle(), notice.getType(), NoticeScopeEnum.USER.getCode(),
-                null, senderName, sendVO.getReceiverIds()));
+                TenantContextHolder.getTenantId(), senderName, sendVO.getReceiverIds()));
     }
 
     @Override

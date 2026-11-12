@@ -24,6 +24,8 @@ import org.flowable.engine.runtime.ChangeActivityStateBuilder;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskQuery;
+import org.flowable.task.api.history.HistoricTaskInstance;
+import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -39,7 +41,9 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -166,6 +170,8 @@ class WorkflowTaskServiceImplTest extends BaseUnitTest {
         given(handler.getStartActivityId()).willReturn("start-node");
         given(handlerFactory.getHandler("leave")).willReturn(handler);
         given(querySupport.getInstanceByProcessId("proc-1")).willReturn(instance);
+        // "approve-node" 是已完成的节点，才允许退回到它
+        stubHistoricNodes("start-node", "approve-node");
 
         ChangeActivityStateBuilder stateBuilder = mock(ChangeActivityStateBuilder.class);
         given(runtimeService.createChangeActivityStateBuilder()).willReturn(stateBuilder);
@@ -186,6 +192,33 @@ class WorkflowTaskServiceImplTest extends BaseUnitTest {
         then(workflowInstanceMapper).should(never()).updateById(any());
         then(handler).should().onTaskReject(any());
         then(runtimeService).should().createChangeActivityStateBuilder();
+    }
+
+    @Test
+    @DisplayName("rejectTask：驳回目标不在历史节点白名单内时拒绝，且不改变流程状态")
+    void rejectTask_targetNotInRejectableNodes() {
+        WorkflowTaskRejectVO rejectVO = new WorkflowTaskRejectVO();
+        rejectVO.setTaskId("task-1");
+        // 该节点在流程定义里存在，但流程从未走到过它 —— 属于"跳过审批"
+        rejectVO.setTargetActivityId("future-node");
+
+        Task task = mockTask("task-1", String.valueOf(CURRENT_USER_ID));
+        WorkflowInstanceDO instance = runningInstance();
+        AbstractWorkflowHandler handler = mock(AbstractWorkflowHandler.class);
+        given(handler.getStartActivityId()).willReturn("start-node");
+        given(handlerFactory.getHandler("leave")).willReturn(handler);
+        given(querySupport.getInstanceByProcessId("proc-1")).willReturn(instance);
+        stubHistoricNodes("start-node", "approve-node");
+
+        assertThatThrownBy(() -> workflowTaskService.rejectTask(rejectVO))
+                .isInstanceOf(ServiceException.class)
+                .satisfies(e -> assertThat(((ServiceException) e).getErrorCode().getErrorCode())
+                        .isEqualTo(SystemErrorEnum.REJECT_TARGET_INVALID.getErrorCode()));
+
+        // 关键不变式：校验失败时绝不能已经推动 Flowable 改状态
+        then(runtimeService).should(never()).createChangeActivityStateBuilder();
+        then(taskService).should(never()).addComment(anyString(), anyString(), anyString(), anyString());
+        then(handler).should(never()).onTaskReject(any());
     }
 
     @Test
@@ -231,5 +264,25 @@ class WorkflowTaskServiceImplTest extends BaseUnitTest {
         instance.setStarterUserId(CURRENT_USER_ID);
         instance.setStatus(WorkflowStatusEnum.RUNNING.getCode());
         return instance;
+    }
+
+    /**
+     * 打桩「已完成的历史任务」，即驳回白名单的来源。
+     */
+    private void stubHistoricNodes(String... activityIds) {
+        List<HistoricTaskInstance> historic = new ArrayList<>();
+        for (String id : activityIds) {
+            HistoricTaskInstance ht = mock(HistoricTaskInstance.class);
+            given(ht.getTaskDefinitionKey()).willReturn(id);
+            given(ht.getName()).willReturn(id + "-name");
+            historic.add(ht);
+        }
+        HistoricTaskInstanceQuery query = mock(HistoricTaskInstanceQuery.class);
+        given(query.processInstanceId(anyString())).willReturn(query);
+        given(query.finished()).willReturn(query);
+        given(query.orderByHistoricTaskInstanceEndTime()).willReturn(query);
+        given(query.asc()).willReturn(query);
+        given(query.list()).willReturn(historic);
+        given(historyService.createHistoricTaskInstanceQuery()).willReturn(query);
     }
 }

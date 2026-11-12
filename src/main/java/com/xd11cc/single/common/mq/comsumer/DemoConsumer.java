@@ -10,25 +10,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * MQ 消费者标准结构演示。
+ * MQ 消费者模板，后续消费者照此结构编写。
  * <p>
- * 这是后续所有消费者的模板，包含以下要点：
+ * 三条不能违反的约束：
  * </p>
  *
- * <ol>
- *     <li><b>类上 {@code @RabbitListener}</b>：声明监听哪个队列</li>
- *     <li><b>方法上 {@code @RabbitHandler}</b>：
- *         <ul>
- *             <li>切面 {@code MqTenantAspect} 只切这个注解，进入方法前已设置好租户上下文</li>
- *             <li>参数只需业务对象（{@code DemoMessage}）。
- *                 {@code Message}/{@code Channel}/{@code deliveryTag} 属于框架帧信息，
- *                 由监听适配器收进 {@code MqDelivery} 线程上下文，业务方法不必感知</li>
- *         </ul>
- *     </li>
- *     <li><b>业务逻辑包在 {@code mqConsumeTemplate.consume(...)} 内</b>：
- *         统一处理「租户校验 → 重试 3 次 → 失败落表 → NACK 进死信」</li>
- *     <li><b>业务方法内不要再 catch 异常</b>：让异常抛给模板，由模板决定重试</li>
- * </ol>
+ * <ul>
+ *     <li>业务方法必须标注 {@code @RabbitHandler}：切面 {@code MqTenantAspect} 只切这个注解，
+ *         漏标则进入方法时没有租户上下文，后续查库会直接抛「租户缺失」</li>
+ *     <li>方法签名只接业务对象（{@code DemoMessage}）。
+ *         {@code Message}/{@code Channel}/{@code deliveryTag} 属于框架帧信息，
+ *         由监听适配器收进 {@code MqDelivery} 线程上下文，业务方法不必感知</li>
+ *     <li>业务逻辑包在 {@code mqConsumeTemplate.consume(...)} 内，且方法内不要再 catch 异常：
+ *         重试、失败落表、NACK 进死信都由模板统一处理，自己 catch 会绕过整套机制</li>
+ * </ul>
  *
  * <p><b>可删除说明</b>：本类仅用于验证 MQ 基础设施，业务接入后可直接删除。</p>
  *

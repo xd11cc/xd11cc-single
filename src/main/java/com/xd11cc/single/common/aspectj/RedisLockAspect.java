@@ -71,10 +71,10 @@ public class RedisLockAspect {
                 acquired = rLock.tryLock(waitTime, leaseTime, unit);
             } else if (waitTime > 0) {
                 // 只设置等待时间，不自动释放（靠finally手动unlock）
-                acquired = rLock.tryLock(waitTime, TimeUnit.SECONDS);
+                acquired = rLock.tryLock(waitTime, unit);
             } else if (leaseTime > 0) {
-                // 不等待，直接尝试获取并设置自动释放时间
-                acquired = rLock.tryLock(leaseTime, unit);
+                // 两参 tryLock 表达的是「最多等多久」，不是租期；这里等待 0、租期 leaseTime
+                acquired = rLock.tryLock(0, leaseTime, unit);
             } else {
                 // 不等待、不自动释放，立即尝试
                 acquired = rLock.tryLock();

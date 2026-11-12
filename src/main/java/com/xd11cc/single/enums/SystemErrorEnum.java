@@ -96,6 +96,7 @@ public enum SystemErrorEnum implements ErrorCode {
     DELEGATE_TARGET_USER_INVALID(1002042, "转办目标用户ID必须为数字：{}"),
     BPMN_PROCESS_COUNT_INVALID(1002043, "BPMN 必须且只能包含一个 process，当前数量：{}"),
     BPMN_PROCESS_ID_MISMATCH(1002044, "流程标识与 BPMN 中 processId 不一致：modelKey={}, bpmnProcessId={}"),
+    REJECT_TARGET_INVALID(1002045, "驳回目标节点不合法：{}"),
 
     // ==================== 003 - 字典模块 ====================
     DICT_TYPE_HAVE_DATA(1003001, "{}字典类型下存在字典数据"),
